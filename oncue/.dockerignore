@@ -1,0 +1,6 @@
+*
+!server/
+!server/**
+server/__pycache__/
+server/**/__pycache__/
+server/**/*.pyc

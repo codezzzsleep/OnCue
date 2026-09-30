@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "id": "oncue-screening-room",
+  "name": "OnCue · 群聊试映室",
+  "version": "0.1.0",
+  "capabilities": [
+    "storage",
+    "matrix.room_info",
+    "matrix.read_messages",
+    "octos.session.open",
+    "octos.turn.start",
+    "octos.turn.interrupt"
+  ],
+  "storage": {
+    "max_bytes": 65536
+  },
+  "compute": {
+    "instruction_budget": 8000000,
+    "memory_bytes": 33554432
+  },
+  "integrity": {
+    "bundle_blake3": "fc06c8905d4349e0f17516cd0c61f6619d05f67f85e1b9fa585709e1d7cc36f2"
+  }
+}
