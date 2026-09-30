@@ -4,6 +4,8 @@
   const state = {scenes: [], scene: null, result: null, selected: 0, revision: 0,
     current: null, busy: false, controller: null, status: null, archives: [], draft: ""};
   const ARCHIVES_KEY = "oncue.takes.v02", DRAFT_KEY = "oncue.draft.v02";
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const playback = {timer: null, revision: 0, items: [], index: 0, running: false};
   let storageNotice = "";
 
   function node(tag, className, text) {
@@ -43,6 +45,7 @@
         r.replies.every(t => typeof t === "string") && Array.isArray(r.evidence));
   }
   function invalidate() {
+    cancelPlayback();
     state.revision += 1;
     if (state.controller) state.controller.abort();
     state.controller = null;
@@ -113,16 +116,79 @@
     source.classList.add("highlight");
     source.scrollIntoView({behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "nearest"});
   }
+  function cancelPlayback() {
+    window.clearTimeout(playback.timer);
+    playback.timer = null; playback.revision += 1; playback.running = false;
+    if ($("#playback-status")) updatePlaybackControls();
+  }
+  function updatePlaybackControls() {
+    const complete = playback.index === playback.items.length;
+    $("#play-scene").textContent = complete ? "重新播放" : playback.running ? "暂停" :
+      playback.index ? "继续播放" : "播放下一幕";
+    $("#next-cue").disabled = complete;
+    $("#show-scene").disabled = complete;
+    $("#playback-status").textContent = complete ? "本幕结束 · 已展开 " + playback.index + " 句假设接话" :
+      (playback.running ? "播放中" : "已暂停") + " · 假设接话 " + playback.index + "/" + playback.items.length;
+  }
+  function revealCue(animate = true) {
+    const reply = playback.items[playback.index];
+    if (!reply) return;
+    reply.hidden = false;
+    reply.classList.toggle("scene-enter", animate && !reducedMotion.matches);
+    playback.index += 1;
+  }
+  function showScene() {
+    if (!state.result) return;
+    cancelPlayback();
+    while (playback.index < playback.items.length) revealCue(false);
+    updatePlaybackControls();
+  }
+  function startPlayback() {
+    if (reducedMotion.matches) {showScene(); return;}
+    if (document.hidden) {updatePlaybackControls(); return;}
+    const revision = playback.revision;
+    playback.running = true;
+    updatePlaybackControls();
+    const step = () => {
+      if (!state.result || revision !== playback.revision || !playback.running) return;
+      revealCue();
+      if (playback.index === playback.items.length) cancelPlayback();
+      else playback.timer = window.setTimeout(step, 900);
+      updatePlaybackControls();
+    };
+    playback.timer = window.setTimeout(step, 650);
+  }
+  function playScene() {
+    if (!state.result) return;
+    if (playback.running) {cancelPlayback(); updatePlaybackControls(); return;}
+    if (playback.index === playback.items.length) {
+      playback.items.forEach(reply => {reply.hidden = true; reply.classList.remove("scene-enter");});
+      playback.index = 0;
+    }
+    startPlayback();
+  }
+  function nextCue() {
+    if (!state.result) return;
+    cancelPlayback(); revealCue(); updatePlaybackControls();
+  }
+  function renderPlayback(route) {
+    cancelPlayback(); playback.index = 0;
+    $("#scene-line").textContent = state.current.trial;
+    const replies = $("#replies"); replies.replaceChildren();
+    playback.items = route.replies.map((text, i) => {
+      const reply = node("div", "reply"); reply.hidden = true;
+      reply.append(node("span", "", "假设接话 " + (i + 1)), node("p", "", text));
+      replies.append(reply); return reply;
+    });
+    if (reducedMotion.matches || document.hidden || !playback.items.length) showScene();
+    else startPlayback();
+  }
   function selectRoute(index) {
     state.selected = index;
     const route = state.result.routes[index];
     document.querySelectorAll(".route").forEach((el, i) => el.setAttribute("aria-pressed", String(i === index)));
     $("#route-subtitle").textContent = route.subtitle;
-    const replies = $("#replies"); replies.replaceChildren();
-    route.replies.forEach((text, i) => {
-      const reply = node("div", "reply");
-      reply.append(node("span", "", "虚构回应 " + (i + 1)), node("p", "", text)); replies.append(reply);
-    });
+    renderPlayback(route);
     const refs = $("#evidence-links"); refs.replaceChildren();
     route.evidence.forEach(ref => {
       const button = node("button", "", "#" + ref.message_id);
@@ -260,6 +326,7 @@
     });
   }
   function showLogin() {
+    cancelPlayback();
     $("#studio").hidden = true; $("#login-panel").hidden = false;
     $("#logout").hidden = true; $("#mode-badge").textContent = "私人试映室";
   }
@@ -292,6 +359,13 @@
   $("#trial").addEventListener("input", () => {$("#model-consent").checked = false; invalidate();});
   $("#generation-mode").addEventListener("change", () => {invalidate(); $("#model-consent").checked = false; updateMode();});
   $("#rehearse-form").addEventListener("submit", rehearse);
+  $("#play-scene").addEventListener("click", playScene);
+  $("#next-cue").addEventListener("click", nextCue);
+  $("#show-scene").addEventListener("click", showScene);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden && playback.running) {cancelPlayback(); updatePlaybackControls();}
+  });
+  reducedMotion.addEventListener("change", () => {if (reducedMotion.matches && state.result) showScene();});
   $("#stop").addEventListener("click", () => {invalidate(); say("#stage-status", "已停止等待。已经发起的模型调用仍可能完成并计费。");});
   $("#use-draft").addEventListener("click", () => {
     if (!state.result) return;

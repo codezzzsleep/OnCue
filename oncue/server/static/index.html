@@ -59,7 +59,14 @@
             <div id="routes" class="routes" aria-label="选择路线"></div>
             <article class="screen">
               <div class="screen-heading"><h3 id="route-subtitle"></h3><span class="fiction-tag">假设对白</span></div>
-              <div id="replies" class="replies"></div>
+              <div class="scene-toolbar" role="group" aria-label="下一幕播放">
+                <button id="play-scene" type="button">暂停</button>
+                <button id="next-cue" type="button">下一句</button>
+                <button id="show-scene" type="button" class="quiet">一次看完</button>
+                <span id="playback-status" class="hint" role="status" aria-live="polite" aria-atomic="true"></span>
+              </div>
+              <div class="cue-origin"><span>你尚未发出的台词</span><p id="scene-line"></p></div>
+              <div id="replies" class="replies" aria-label="匿名的假设接话"></div>
               <div class="evidence"><span>取材于</span><div id="evidence-links"></div></div>
               <div id="route-warnings" class="route-warnings" hidden></div>
               <div class="suggested-line"><span class="suggestion-label">这条路线，可以这样接</span><p id="suggested-text"></p><button id="use-draft">放进我的草稿</button></div>
