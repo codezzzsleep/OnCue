@@ -154,8 +154,14 @@ def route_warnings(route: dict, messages: list) -> list:
     # Check the messages themselves: real rooms do not exactly match the demo scenes.
     # These are quoted reminders to review, not a full semantic contradiction detector.
     def positive_mention(text, pattern):
-        return any(not re.search(r"(?:不用|无需|不必|不需要|不想|不要|不要求|不能)$", text[:m.start()].rstrip())
-                   for m in re.finditer(pattern, text))
+        for match in re.finditer(pattern, text):
+            before, after = text[:match.start()].rstrip(), text[match.end():]
+            if re.search(r"(?:不用|无需|不必|不需要|不想|不要|不要求|不能)(?:再|安排|考虑)?$", before):
+                continue
+            if re.match(r"(?:这一步|这项安排|安排|计划)?(?:可以|应该|需要|要)?(?:先|直接)?(?:拿掉|取消|去掉|省掉)", after):
+                continue
+            return True
+        return False
 
     same_day = next((m for m in messages if positive_mention(
         m["text"], r"(?:当天|当日).{0,4}(?:回来|返回|返程|回家|回去|能回)")), None)

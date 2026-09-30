@@ -7,3 +7,4 @@
 .scene-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:16px}.scene-toolbar button{font-size:12px;padding:8px 11px}.scene-toolbar .hint{flex-basis:100%;font-family:var(--utility);font-size:11px}.cue-origin{padding:11px 13px;margin-bottom:16px;border-left:2px solid var(--green);background:var(--tint);border-radius:0 9px 9px 0}.cue-origin>span{font-size:10px;color:var(--green)}.cue-origin p{margin-top:5px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px}.reply.scene-enter{animation:cue-enter .22s ease-out}.reply p{white-space:pre-wrap}
 @keyframes cue-enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @media(prefers-reduced-motion:reduce){.reply.scene-enter{animation:none}}
+.cue-origin .route-warnings{margin-top:10px;padding:9px 10px}.cue-origin .route-warnings p{font-size:11px;white-space:normal}

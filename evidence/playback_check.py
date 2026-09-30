@@ -114,6 +114,13 @@ try:
         check("Reduced motion has no cue animation", rp.locator("#replies .scene-enter").count() == 0)
         rp.locator("#play-scene").click()
         check("Reduced motion replay stays immediate", visible_count(rp) == reduced_total)
+        rp.locator("#routes .route").nth(1).click()
+        check("Opening warnings are separate from corrected routes", rp.locator("#trial-warnings").is_visible() and
+              rp.locator("#route-warnings").is_hidden())
+        rp.locator("#trial").fill("中午12点后出发、当天回来，预算和路线先核实？")
+        rp.locator("#rehearse").click()
+        rp.locator("#result-panel").wait_for(state="visible")
+        check("Rewriting the opening clears the old warning", rp.locator("#trial-warnings").is_hidden())
         reduced.close()
         context.close()
         browser.close()

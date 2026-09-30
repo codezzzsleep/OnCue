@@ -81,7 +81,7 @@ docker run --rm --name oncue --env-file .env -p 127.0.0.1:8787:8787 oncue:0.2
 python3 -m unittest discover -s tests -v
 ```
 
-17项检查覆盖输入限制、来源摘录、待确认条件、模型协议、错误反馈、访问口令、来源隔离与注销。
+19项检查覆盖输入限制、来源摘录、开场与路线的待确认条件、模型协议、错误反馈、访问口令、来源隔离与注销。
 真实 MiniMax 调用及浏览器基线已经实测；新增播放功能和原生功能的验证范围见 `VERIFICATION.md`。
 Key 不在交付包中，运行时需配置自己的凭证。
 

@@ -171,9 +171,17 @@
     if (!state.result) return;
     cancelPlayback(); revealCue(); updatePlaybackControls();
   }
+  function renderWarnings(selector, warnings, label) {
+    const notes = $(selector); notes.replaceChildren();
+    const items = Array.isArray(warnings) ? warnings.filter(text => typeof text === "string") : [];
+    notes.hidden = !items.length;
+    if (items.length) notes.append(node("span", "", label));
+    items.forEach(text => notes.append(node("p", "", text)));
+  }
   function renderPlayback(route) {
     cancelPlayback(); playback.index = 0;
     $("#scene-line").textContent = state.current.trial;
+    renderWarnings("#trial-warnings", state.result.trial_warnings, "这句开场还有待确认");
     const replies = $("#replies"); replies.replaceChildren();
     playback.items = route.replies.map((text, i) => {
       const reply = node("div", "reply"); reply.hidden = true;
@@ -195,11 +203,7 @@
       button.title = ref.quote; button.setAttribute("aria-label", "回看消息" + ref.message_id + "：" + ref.quote);
       button.addEventListener("click", () => highlightSource(ref.message_id)); refs.append(button);
     });
-    const notes = $("#route-warnings"); notes.replaceChildren();
-    const warnings = Array.isArray(route.warnings) ? route.warnings : [];
-    notes.hidden = !warnings.length;
-    if (warnings.length) notes.append(node("span", "", "这一幕还有待确认"));
-    warnings.forEach(text => notes.append(node("p", "", text)));
+    renderWarnings("#route-warnings", route.warnings, "这一幕还有待确认");
     $("#suggested-text").textContent = route.draft;
   }
   function renderResult() {
@@ -285,11 +289,16 @@
     const lines = ["# OnCue · 群聊试映室", "", "现场：" + take.scene_name, "", take.result.label,
       "", "所有下一幕均为假设；没有发送群消息。", "", "## 原始消息", ""];
     take.messages.forEach(m => lines.push("> #" + m.id + " " + m.sender + "：" + m.text.replace(/\n/g, "\n> ")));
-    lines.push("", "## 试写台词", "", take.trial, "", "## 三条假设路线");
+    lines.push("", "## 试写台词", "", take.trial);
+    if (Array.isArray(take.result.trial_warnings) && take.result.trial_warnings.length) {
+      lines.push("", "开场待确认：" + take.result.trial_warnings.join("；"));
+    }
+    lines.push("", "## 三条假设路线");
     take.result.routes.forEach(r => {
       lines.push("", "### " + r.title + " · " + r.subtitle, "");
       r.replies.forEach(t => lines.push("- 假设回应：" + t));
       lines.push("", "建议台词：" + r.draft, "", "来源：" + r.evidence.map(e => "#" + e.message_id + "「" + e.quote + "」").join("；"));
+      if (Array.isArray(r.warnings) && r.warnings.length) lines.push("", "这条路线待确认：" + r.warnings.join("；"));
     });
     if (take.draft) lines.push("", "## 我的草稿", "", take.draft);
     return lines.join("\n") + "\n";

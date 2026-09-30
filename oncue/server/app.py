@@ -1,4 +1,4 @@
-"""Small single-user preview service; Python 3.10+ standard library only."""
+"""Small single-user preview service; Python 3.9+ standard library only."""
 from __future__ import annotations
 
 import argparse
@@ -14,7 +14,7 @@ import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-from engine import AppError, MiniMaxProvider, local_rehearsal, normalize_request, scenes
+from engine import AppError, MiniMaxProvider, local_rehearsal, normalize_request, route_warnings, scenes
 
 STATIC = Path(__file__).resolve().parent / "static"
 ASSETS = {"/": ("index.html", "text/html; charset=utf-8"),
@@ -180,6 +180,10 @@ class Handler(BaseHTTPRequestHandler):
                         result = self.server.provider.rehearse(request)
                     finally:
                         self.server.model_slots.release()
+                result["trial_warnings"] = route_warnings({"draft": request["trial"], "replies": []}, request["messages"])
+                for route in result["routes"]:
+                    if "warnings" not in route:
+                        route["warnings"] = route_warnings(route, request["messages"])
                 self.reply(200, {"result": result})
             else:
                 raise AppError("这个操作不存在。", 404, "not_found")

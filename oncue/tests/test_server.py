@@ -152,6 +152,8 @@ class EngineTests(unittest.TestCase):
         source[0]["text"] = "我想当天返回。"
         route = {"draft": "不用住宿，不要过夜，当天回。", "replies": ["先查当天返程路线。"]}
         self.assertEqual(route_warnings(route, source), [])
+        route = {"draft": "当天回来。", "replies": ["住宿这一步可以先拿掉。"]}
+        self.assertEqual(route_warnings(route, source), [])
 
 
 class HttpTests(unittest.TestCase):
@@ -197,6 +199,17 @@ class HttpTests(unittest.TestCase):
         self.assertEqual(headers["Cache-Control"], "no-store")
         self.assertEqual(self.call("/api/logout", {}, cookie)[0], 200)
         self.assertEqual(self.call("/api/scenes", cookie=cookie)[0], 401)
+
+    def test_opening_reminders_are_separate_from_corrected_routes(self):
+        code, _, value = self.call("/api/rehearse", request_for(), self.login())
+        self.assertEqual(code, 200)
+        self.assertEqual(len(value["result"]["trial_warnings"]), 2)
+        self.assertTrue(all(route["warnings"] == [] for route in value["result"]["routes"][1:]))
+
+    def test_rewritten_opening_has_no_stale_reminder(self):
+        code, _, value = self.call("/api/rehearse", request_for(trial=1), self.login())
+        self.assertEqual(code, 200)
+        self.assertEqual(value["result"]["trial_warnings"], [])
 
     def test_origin_host_and_paths(self):
         cookie = self.login()
