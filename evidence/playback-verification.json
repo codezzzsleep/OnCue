@@ -1,0 +1,37 @@
+{
+ "steps": [
+  {
+   "step": "播放状态有初始文案",
+   "ok": true,
+   "detail": "播放中 · 假设接话 1/2"
+  },
+  {
+   "step": "下一句逐条揭示",
+   "ok": true,
+   "detail": "visible replies 1 -> 2"
+  },
+  {
+   "step": "一次看完展示全部",
+   "ok": true,
+   "detail": "replies=2 show_enabled=False status=本幕结束 · 已展开 2 句假设接话"
+  },
+  {
+   "step": "播放/暂停切换",
+   "ok": true,
+   "detail": "'重新播放' -> '暂停'"
+  },
+  {
+   "step": "场景线显示试映台词",
+   "ok": true,
+   "detail": "要不要直接住一晚再走？"
+  },
+  {
+   "step": "提醒在真实模型结果中渲染",
+   "ok": true,
+   "detail": "这一幕还有待确认  原消息#3提到当天返回；这一幕涉及住宿或跨日安排，返程条件需重新确认。"
+  }
+ ],
+ "console_errors": [],
+ "page_errors": [],
+ "verdict": "ALL PASS"
+}
