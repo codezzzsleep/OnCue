@@ -134,6 +134,25 @@ class EngineTests(unittest.TestCase):
         route = {"draft": "12点后出发、当天回，预算目标300，费用仍需核实。", "replies": ["先查路线吧。"]}
         self.assertEqual(route_warnings(route, SCENES[0]["messages"]), [])
 
+    def test_live_result_flags_lodging_against_same_day_return(self):
+        # Reproduce route B from the actual G2 model response, without relying on repo evidence files.
+        value = local_rehearsal(normalize_request(request_for()))
+        value["routes"][1].update({
+            "replies": ["周五晚出发的话，住宿费能控制在预算里吗", "那周五晚走，周六晚上回来能行吗"],
+            "draft": "周五晚出发的话，大家预算和时间都能接受吗？七喜300够不够来回加住宿，阿柚晚上出发方便吗？"})
+        result = parse_model_result(json.dumps(value), SCENES[0]["messages"])
+        self.assertTrue(any("当天返回" in warning for warning in result["routes"][1]["warnings"]))
+
+    def test_return_reminder_works_for_real_room_text_and_ignores_negation(self):
+        route = {"draft": "先查住宿费，第二天再回来？", "replies": ["先重新确认返程吧。"]}
+        source = [{"id": 7, "sender": "测试者", "text": "我想当天返回，具体时间还没定。"}]
+        self.assertTrue(any("#7" in warning for warning in route_warnings(route, source)))
+        source[0]["text"] = "不用当天返回，时间宽松。"
+        self.assertEqual(route_warnings(route, source), [])
+        source[0]["text"] = "我想当天返回。"
+        route = {"draft": "不用住宿，不要过夜，当天回。", "replies": ["先查当天返程路线。"]}
+        self.assertEqual(route_warnings(route, source), [])
+
 
 class HttpTests(unittest.TestCase):
     @classmethod

@@ -151,8 +151,17 @@ def route_warnings(route: dict, messages: list) -> list:
     if scene == "travel":
         if re.search(r"明早|早上|9\s*点", draft):
             notes.append("台词涉及早上出发；#2说12点以后才能走，时间需重新确认。")
-        if re.search(r"订住宿|住一晚|过夜", draft):
-            notes.append("台词涉及过夜；#3说希望当天返回，返程需重新确认。")
+    # Check the messages themselves: real rooms do not exactly match the demo scenes.
+    # These are quoted reminders to review, not a full semantic contradiction detector.
+    def positive_mention(text, pattern):
+        return any(not re.search(r"(?:不用|无需|不必|不需要|不想|不要|不要求|不能)$", text[:m.start()].rstrip())
+                   for m in re.finditer(pattern, text))
+
+    same_day = next((m for m in messages if positive_mention(
+        m["text"], r"(?:当天|当日).{0,4}(?:回来|返回|返程|回家|回去|能回)")), None)
+    dialogue = " ".join(route["replies"]) + " " + draft
+    if same_day and positive_mention(dialogue, r"住宿|住(?:一|两|二|三|\d+)晚|过夜|隔夜|次日|翌日|第二天|隔天"):
+        notes.append("原消息#" + str(same_day["id"]) + "提到当天返回；这一幕涉及住宿或跨日安排，返程条件需重新确认。")
     amounts = re.findall(r"(?:人均|费用|价格|车费|门票|预算)[^，。！？\n]{0,12}?\d+|\d+\s*(?:元|块|多能)",
                          " ".join(route["replies"]) + " " + draft)
     source = " ".join(m["text"] for m in messages)
@@ -258,6 +267,8 @@ class MiniMaxProvider:
             "原消息才是事实。不要把假设对白当真实回应，不预测真实群友，不推断性格、情绪或同意概率。"
             "不要编造已确认的价格、地点信息、投票或授权。新玩法应让人想参与，也要尊重原消息明确条件。"
             "每条建议台词都要保留原消息中的关键条件；涉及预算时只说目标或待核实，不能声称新玩法已经符合预算。"
+            "当天返回不能悄悄变成住宿或次日返回；改动任何明确条件都必须写出需要重新征求原发言者确认。"
+            "台词里的称呼、店名或梗若含义不清，先问是什么意思，不要擅自确定实体或纠正用户。"
             "不要靠输赢惩罚、强制请客或施压获得参与。第三条用具体的合作、盲盒、接龙或角色扮演玩法，"
             "应明显区别于用户原本提出的玩法，给出简单的第一步。"
             "第一条顺着用户的台词演练可能需要补充的事；第二条改成更容易回答的问题；第三条提出具体有趣的新玩法。"
