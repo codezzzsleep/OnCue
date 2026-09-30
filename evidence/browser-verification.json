@@ -1,0 +1,99 @@
+{
+ "console_errors": [],
+ "page_errors": [],
+ "steps": [
+  {
+   "step": "页面加载",
+   "ok": true,
+   "detail": "OnCue · 群聊试映室"
+  },
+  {
+   "step": "登录面板隐藏(本地无口令)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "step": "工作室显示",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "step": "试映出结果面板",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "step": "三条路线渲染",
+   "ok": true,
+   "detail": "route nodes=3"
+  },
+  {
+   "step": "路线切换(subtitle 变化)",
+   "ok": true,
+   "detail": "B=给大家一个容易接的选择 / C=半日旅行盲盒"
+  },
+  {
+   "step": "草稿自动填充",
+   "ok": true,
+   "detail": "玩个半日旅行盲盒吧：每人给一个想做的事，不先报目的地。一起选12点后能出发、当天"
+  },
+  {
+   "step": "草稿保留",
+   "ok": true,
+   "detail": "已保留到当前浏览器；尚未发送。"
+  },
+  {
+   "step": "两个存档点",
+   "ok": true,
+   "detail": "archive nodes=2"
+  },
+  {
+   "step": "对照面板显示",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "step": "导出台词下载",
+   "ok": true,
+   "detail": "OnCue-我的台词.txt 153B"
+  },
+  {
+   "step": "刷新后草稿持久化",
+   "ok": true,
+   "detail": "玩个半日旅行盲盒吧：每人给一个想做的事，不先报目的地。一起选12点后能出发、当天"
+  },
+  {
+   "step": "刷新后存档仍保留",
+   "ok": true,
+   "detail": "archives=2"
+  },
+  {
+   "step": "m320px 无横向溢出",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "step": "m736px 无横向溢出",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "step": "深色主题渲染",
+   "ok": true,
+   "detail": ""
+  }
+ ],
+ "screens": [
+  "01-desktop-light.png",
+  "02-routes-light.png",
+  "03-route-b.png",
+  "04-route-c.png",
+  "05-archives.png",
+  "06-compare.png",
+  "08-m320.png",
+  "08-m736.png",
+  "09-dark.png",
+  "10-after-reload.png"
+ ],
+ "verdict": "ALL PASS"
+}
