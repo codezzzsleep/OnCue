@@ -4,6 +4,8 @@ let cue_demo = true
 let cue_busy = false
 let cue_revision = 0
 let cue_scene = "样例舞台 · 国庆搭子局"
+let cue_take_a = ""
+let cue_take_b = ""
 
 fn cue_set_status(text){ ui.cue_status.set_text(text) }
 fn cue_set_busy(busy){
@@ -193,7 +195,35 @@ fn cue_restore_draft(){
     } else { cue_set_status("还没有保存过草稿。") }
 }
 
-start_timeout(0.05, || cue_show_demo())
+fn cue_refresh_takes(){
+    cue_take_a = ""
+    cue_take_b = ""
+    if fs.exists("take-a.txt") { cue_take_a = fs.read("take-a.txt") }
+    if fs.exists("take-b.txt") { cue_take_b = fs.read("take-b.txt") }
+    ui.cue_take_list.render()
+}
+fn cue_keep_take(slot){
+    let text = ui.cue_draft.text().trim()
+    if text == "" { cue_set_status("先选择或写一份草稿，再保存版本。") return }
+    let path = "take-a.txt"
+    let label = "A"
+    if slot == 1 { path = "take-b.txt" label = "B" }
+    let result = fs.write(path, text)
+    if result == nil {
+        cue_refresh_takes()
+        cue_set_status("版本 " + label + " 已保存；两个版本会留在本账号的小程序本地存储中。")
+    } else { cue_set_status("版本 " + label + " 暂时没有保存成功，请查看运行日志。") }
+}
+fn cue_restore_take(slot){
+    let text = cue_take_a
+    let label = "A"
+    if slot == 1 { text = cue_take_b label = "B" }
+    if text == "" { cue_set_status("版本 " + label + " 还没有内容。") return }
+    ui.cue_draft.set_text(text)
+    cue_set_status("版本 " + label + " 已放回编辑框；尚未发送。")
+}
+
+start_timeout(0.05, fn(){ cue_show_demo() cue_refresh_takes() })
 
 let cue_ink = #x193629
 let cue_muted = #x53675a
@@ -256,6 +286,31 @@ SolidView{width: Fill height: Fill flow: Down padding: 16 spacing: 12 new_batch:
             CueButton{text: "保留这句" on_click: || cue_keep_draft()}
             CueButton{text: "取回草稿" on_click: || cue_restore_draft()}
         }
+        Label{text: "两个版本" draw_text.color: cue_ink}
+        CueText{text: "把不同草稿存进 A / B，关闭后仍可取回并排对照。" draw_text.color: cue_muted}
+        View{width: Fill height: Fit flow: Right spacing: 8
+            CueButton{text: "保存为 A" on_click: || cue_keep_take(0)}
+            CueButton{text: "保存为 B" on_click: || cue_keep_take(1)}
+        }
+        cue_take_list := View{width: Fill height: Fit flow: Down spacing: 8 on_render: || {
+            if cue_take_a == "" && cue_take_b == "" {
+                CueText{text: "还没有保存版本。先改好一句，再分别保存为 A 和 B。"}
+            }
+            if cue_take_a != "" {
+                RoundedView{width: Fill height: Fit flow: Down spacing: 8 padding: 12 new_batch: true draw_bg.color: #xffffff
+                    Label{text: "版本 A" draw_text.color: cue_green}
+                    CueText{text: cue_take_a}
+                    CueButton{text: "把 A 放回编辑框" on_click: || cue_restore_take(0)}
+                }
+            }
+            if cue_take_b != "" {
+                RoundedView{width: Fill height: Fit flow: Down spacing: 8 padding: 12 new_batch: true draw_bg.color: #xffffff
+                    Label{text: "版本 B" draw_text.color: cue_green}
+                    CueText{text: cue_take_b}
+                    CueButton{text: "把 B 放回编辑框" on_click: || cue_restore_take(1)}
+                }
+            }
+        }}
         CueText{text: "下一幕是私下排练。原消息是事实线索，虚构对白与新提议仍需你判断。" draw_text.color: cue_muted draw_text.text_style.font_size: 12}
     }
 }
