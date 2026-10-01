@@ -1,6 +1,6 @@
 # OnCue hub review answers (recorded 2026-10-01, reviewer: operator of this OctoSense host)
 
-Packet digest: a5a413c5b5e5feb346b67124877caa23b9c343a67f42b6c86a8caee30fed158e
+Packet digest: 9fbc3f8679c9270587f7ef18d14db791946a93cdc59d97ba4a9b63d98b525fc0
 
 ## 1. Does the app do what its name, subtitle and description claim?
 Yes. The source builds the title "OnCue · 群聊试映室" (try-screening room), the subtitle "先试着说，再决定要不要发。" (try it first, then decide whether to send), a sample scene with four messages (cue_show_demo), three rehearsal routes (cue_rehearse -> 顺着这句 / 换个问法 / 换个玩法), a draft box (我的草稿), and local draft save/restore (cue_keep_draft / cue_restore_draft). That is exactly the listing's subtitle and description.
@@ -25,4 +25,4 @@ cue_prompt() composes the instruction that the app itself sends to the agent thr
 No. All sample senders (小林/阿柚/七喜) are fictional.
 
 ## 7. Route
-pass. Note for the publisher: the bundle is unsigned, so accountability rests on the hub alone (the check gate's only warning). A public-store publication would additionally need a publisher signature; this review covers the local mirror and dev gate.
+pass. Note for the publisher: this bundle is signed with the local working key (key_id oncue.local) and the manifest is stamped; the hub's own anchor cert is what ties that key to the mirror. There is no external CA in this dev setup, so trust rests on the local anchor, not on a public signature authority.
