@@ -467,8 +467,10 @@ fn cue_save_text(path, text, label){
     saved
 }
 fn cue_keep_draft(){
-    let text = ui.cue_draft.text().trim()
-    if text == "" { cue_set_status("先点用这句，或在草稿框写一句，再保存。") return }
+    let text = ui.cue_draft.text()
+    // 只用 trim 判断"是否为空"，保存的是**原始 text**：否则首尾空白会被丢掉，
+    // 输入与回读就不是逐字符相等（AI1 2026-10-02 评审 #253）。
+    if text.trim() == "" { cue_set_status("先点用这句，或在草稿框写一句，再保存。") return }
     if cue_save_text("draft.txt", text, "草稿") {
         cue_set_status("草稿已保存并回读确认；尚未发送。")
     }
@@ -486,8 +488,9 @@ fn cue_refresh_takes(){
     if fs.exists("take-b.txt") { cue_take_b = fs.read("take-b.txt") }
 }
 fn cue_keep_take(slot){
-    let text = ui.cue_draft.text().trim()
-    if text == "" { cue_set_status("先点用这句，或在草稿框写一句，再保存版本。") return }
+    let text = ui.cue_draft.text()
+    // 同上：trim 只用于判空，落盘保存原文，保证存/取逐字符相等。
+    if text.trim() == "" { cue_set_status("先点用这句，或在草稿框写一句，再保存版本。") return }
     let path = "take-a.txt"
     let label = "A"
     if slot == 1 { path = "take-b.txt" label = "B" }

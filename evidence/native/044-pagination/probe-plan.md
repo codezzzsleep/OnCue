@@ -54,34 +54,36 @@ for i in chars.len() {
 let rebuilt = page.to_string()          // U32 → char::from_u32
 log("rebuilt = " + rebuilt)
 log("equal   = " + (rebuilt == src))    // 期望 true
-log("raw     = " + page.to_string().len())     // 期望 3（字符）
+log("raw     = " + page.to_string().len())     // 期望 8（len() 是**字节**，不是字符！）
 ```
 
 | 检查 | 期望 | 依据 |
 | --- | --- | --- |
 | `rebuilt == src` | **true** | array.rs:459-482 的 `Self::U32` 分支 |
-| `rebuilt.len()` | 3（字符口径下的字节数：3+1+4=8） | 注意：这里 `len()` 仍是字节，应是 8 |
+| `page.to_string().len()` | **8** | `len()` 是 UTF-8 字节（string.rs:89-100）；`"汉A🙂"` = 3+1+4 = 8。**不是 3** |
 | `rebuilt` 打印出来 | `汉A🙂`（不是 `27721` 之类的十进制文本） | 若变成十进制文本，说明页缓冲掉进了 `ScriptValue` 存储 |
 
-> 上面表格第 2 行是**故意保留的双重口径**：`"汉A🙂"` 的 `len()` == 8，
-> 若读到 3 说明测的是 `to_chars().len()`，探针写错了位置。
+> 口径提醒：**字符数要用 `to_chars().len()`，`len()` 一律是字节。**
+> 本页第一版表格把这一行写成"期望 3"，是笔误（AI1 2026-10-02 评审 #253 指出），已改为 8；
+> 若实测读到 3，说明测的是 `to_chars().len()`，探针取错了表达式。
 
 ## 3. Probe 3 — 反证：普通 `[]` 缓冲会输出十进制文本（证明硬规则的必要性）
 
 ```javascript
 let bad = []
-bad.push(""[0].to_chars().len())   // 或任何码点数值来源
-// 更直接的写法：把上面 page 里的码点逐个 push 进普通数组
-let bad = []
-let c = "汉A🙂".to_chars()
-for i in c.len() { bad.push(c[i]) }
-log("bad = " + bad.to_string())    // 期望：不是 "汉A🙂"，而是十进制数字文本
+let c = "汉A🙂".to_chars()          // typed U32：这一步没问题
+for i in c.len() { bad.push(c[i]) } // 但 push 进普通字面量 []，落成 ScriptValue 存储
+log("bad = " + bad.to_string())     // 期望：不是 "汉A🙂"，而是十进制数字文本
 ```
 
 **判据**：`bad.to_string()` 与原文**不相等**（输出十进制数字）。
 这一条的作用是证明"页缓冲必须保留 typed U32 来源"不是洁癖，而是必需的；
 若这一条反而相等，说明该 revision 的 `cast_to_string` 行为与
 `array.rs:463-467`（`Self::ScriptValue` → `heap.cast_to_string`）不符，需要回报。
+
+> 第一版这里写了 `bad.push(""[0].to_chars().len())` 作为"例子"——那是错的：
+> `""[0]` 对空串取下标会越界，而且同一个 `let bad` 声明了两次。
+> 已删除错误示例，只保留上面这段干净的反证（AI1 2026-10-02 评审 #253 指出）。
 
 ## 4. Probe 4 — 分页器端到端（只读，不动产品代码路径）
 
