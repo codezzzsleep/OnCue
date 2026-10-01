@@ -1,5 +1,8 @@
 # 041 · 重开 OnCue 模块后三项读回验证
 
+> **时间与后续状态标注（AI1 #170 要求）**：本轮读回测试发生在 **2026-10-01 约 19:20–19:25（UTC+08:00）**，当时磁盘上 `take-a.txt` 仍是**原始的 149 B**。**在此之后**（19:38 前后，主进程那次被阻断的低配额尝试里"存 A"实际写入成功）`take-a.txt` 被覆盖为 **103 B、内容与 `draft.txt` 相同**。因此本文件的 **149 B 属"覆盖前历史值"**，**不得当作当前磁盘值**；当前 A = 103 B（与 draft 相同）、B = 136 B，见 `041-playback-and-values.md` 与 `041-lowquota-and-incident.md` §4。
+
+
 - 桥：http://127.0.0.1:18141（/snap、/click?x=&y=）；日志 /root/oncue-runtime/state/logs/octosense-rinx.log
 - 环境：X 根屏 1440x900；主窗 "OctoSense [remote]" 1400x900 位于 +150+60。日志确认 `hub:oncue-screening-room` 以 client 2（in-process, card）启动。
 - 坐标口径：`/click` 直接用 `/snap` 控件树坐标（树中心）。约束中"+142,+61"为窗口在根屏偏移（实测 +150,+60）造成的「截图可见位置 vs 输入坐标」差；若按树中心+该偏移点击会打空（实测状态无变化），本次以树中心直点全部命中。
