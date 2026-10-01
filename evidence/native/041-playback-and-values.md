@@ -1,6 +1,7 @@
 # 0.4.1 播放与取值逐字对照（native 证据）
 
-- 采集时间：2026-08-15（本机）
+- 采集时间：**2026-10-01 20:30 前后（本机时区 UTC+08:00，容器 `date` 实测）**
+- 更正：本文件初稿曾把采集日期写成 2026-08-15，那是**执行体写错的日期**，不是容器系统时钟（容器 `date -Iseconds` = `2026-10-01T20:37:41+08:00`）。以本次任务的真实日期为准。
 - 环境：bridge `http://127.0.0.1:18141`，截图 `DISPLAY=:99 XAUTHORITY=/root/oncue-runtime/state/Xauthority import -window root`
 - 约束遵守：全部判定只用 `/snap` 文本字段（Label `t` / TextInput `val`）；每次点击前重取 `/snap` 并用当次坐标；点击后 sleep 3-5s 再读；未 git commit/push；未改 bundle；未写 consent/profile。
 
@@ -197,4 +198,4 @@
 - 每次点击前重新 `/snap` 并使用当次坐标；点击后 sleep 3s（A2 播放态按任务要求 1.0s / 5.0s）再读。
 - 未 git commit / push；未改 bundle；未重启宿主；未写 consent/profile；未点 `存 A` / `存 B` / `保留这句` / `用这句`（避免写盘），磁盘三个 txt 的 mtime 与本次会话开始时一致。
 - 报告中未出现密码/token/私钥；聊天正文未抄全文，只记录长度与首尾 6 字。
-- 截图（辅助，非判定依据）：`041-playback-and-values.png`
+- 截图（辅助，**未入库**）：本报告初稿曾引用 `041-playback-and-values.png`，该文件**未提交到 main**（`git ls-files` 无匹配）。判定依据全部是只读 `/snap` 的 `val` 文本与文件长度/首尾/sha256，不依赖该图；若需配图，应另行用本机真实 X 捕获并在报告中注明方法。
