@@ -1,0 +1,15 @@
+// ==== AI2 只读探针：把 OnCue 读到的每条正文**本机**落盘（供宿主侧算 SHA256；不公开正文）====
+{
+    start_timeout(3.0, fn(){ cue_import_room() })
+    start_timeout(16.0, fn(){
+        let n = cue_sources.len()
+        let out = "count=" + n + "\n"
+        for i in n {
+            let s = cue_sources[i]
+            fs.write("body-" + (i + 1) + ".txt", s.body)
+            out = out + "M" + (i + 1) + " sender=" + s.sender + " chars=" + s.body.to_chars().len() + " bytes=" + s.body.len() + "\n"
+        }
+        fs.write("bodies-index.txt", out)
+    })
+}
+
