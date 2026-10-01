@@ -138,8 +138,54 @@ hub verify mirror/catalog.json --anchor $(hub pubkey keys/anchor.key)
 ```bash
 deploy/start.sh                  # Xvfb → 宿主 → x0vncserver → noVNC
 deploy/health.sh                 # 每步给可判定证据（含"不带认证必须被拒"的反证）
-deploy/stop.sh                   # 只按记录的 PID 停止，不用宽泛 pkill
+deploy/stop.sh                   # 只停止身份复核通过的进程，不用宽泛 pkill
 ```
+
+### 6.1 进程身份纪律（AI1 评审 #256 要求）
+
+`deploy/` 不用"同名进程"或"PID 还在"来判断归属，因为：
+
+- 同机可能有**另一个 display / 另一个 card-host** 的同名进程 → 直接 adopt 会误接管；
+- 旧 PID 会被系统**复用** → `kill -0` 通过并不代表那是我们的进程。
+
+因此每个组件在 `$ONCUE_STATE_DIR/<name>.run` 记 **pid + starttime + exe + display + 启动时刻**，
+`start.sh` 只接管特征完全一致的进程，`stop.sh` 停止前逐项复核，不符就**拒绝停止**并报出。
+另外：**宿主没停成时 stop.sh 会保留 Xvfb**——因为停掉 Xvfb 会把它上面的 X 客户端一起带走，
+那等于变相误杀。
+
+`health.sh` 的三重判据（避免假绿）：① 身份复核通过；② 日志 mtime ≥ 本次启动时刻；
+③ **本次启动动作预期的 `wm: launched` 必须出现**，否则不算全绿。
+
+### 6.2 从干净 shell 按本文跑通（hub 变量必须显式给出）
+
+`OCTOSENSE_HUB` / `OCTOSENSE_HUB_ANCHOR` 的默认值是**空的**，但本地演练镜像必须两个都给，
+否则启动门禁读不到目录缓存。完整序列：
+
+```bash
+# 0) 干净 shell，只 source 无密钥配置
+cd <this repo>
+source deploy/env.sh
+
+# 1) 指向本地演练镜像与它的**锚点公钥**（公钥，不是私钥）
+export OCTOSENSE_HUB="$ONCUE_RUNTIME_ROOT/dev/mirror"
+export OCTOSENSE_HUB_ANCHOR="$(/opt/src/apphub/OctoSense-App-Hub/target/release/hub \
+  pubkey "$ONCUE_RUNTIME_ROOT/dev/keys/anchor.key")"
+
+# 2) 把已签名目录放进宿主读取的**缓存位置**（否则报 "<app> is not in this catalog"）
+cp "$OCTOSENSE_HUB/catalog.json" "$HOME/.octosense/apps/catalog.json"
+
+# 3) 安装包到 app 数据根（布局固定为 <数据根>/<manifest-id>/bundle/）
+mkdir -p "$HOME/.octosense/apps/oncue-screening-room"
+cp -r "$OCTOSENSE_HUB/artifacts/oncue-screening-room-0.4.3.bundle" \
+      "$HOME/.octosense/apps/oncue-screening-room/bundle"
+
+# 4) 起链路并核对（health 不通过就不要往下走）
+deploy/start.sh
+deploy/health.sh
+```
+
+`start.sh` 在这两个变量为空时会打印提示但不退出——因为系统应用不需要 hub；
+只有**本地演练镜像里的应用**才必须设置它们。
 
 私有（**不进仓库**、600 权限、仓库外）：VNC 密码文件 `$ONCUE_STATE_DIR/vnc/vnc-passwd`、
 Xauthority cookie、hub 演练私钥、账号/模型凭据。
