@@ -294,6 +294,26 @@ fn cue_prompt(trial){
     rules += "\n原始消息开始：\n" + source_text + "原始消息结束。\n用户想接的话：" + trial
     rules
 }
+// 模型偶尔会使用 CRLF，或在分隔行两侧带空格。七块结构本身完整时，
+// 不能因为换行风格不同就让用户重试；但分隔符仍必须独占一行，且最终仍严格校验
+// 恰好七个非空块，避免把正文中的 "@@@" 误当结构。
+fn cue_split_blocks(text){
+    let lines = text.split("\n")
+    let blocks = []
+    let block = ""
+    for i in lines.len() {
+        let line = lines[i]
+        if line.trim() == "@@@" {
+            blocks.push(block.trim())
+            block = ""
+        } else {
+            if block != "" { block += "\n" }
+            block += line
+        }
+    }
+    blocks.push(block.trim())
+    blocks
+}
 fn cue_rehearse(){
     if cue_busy { cue_set_status("这一幕正在展开，请稍等。") return }
     let trial = ui.cue_trial.text().trim()
@@ -318,7 +338,7 @@ fn cue_rehearse(){
             if request_revision != cue_revision { return }
             cue_set_busy(false)
             if !reply.is_ok { cue_set_status("这次试映没有完成：" + reply.error) return }
-            let blocks = reply.data.text.split("\n@@@\n")
+            let blocks = cue_split_blocks(reply.data.text)
             if blocks.len() != 7 {
                 cue_set_status("Agent 尚未形成七块完整剧本，请再试一次。")
                 return
