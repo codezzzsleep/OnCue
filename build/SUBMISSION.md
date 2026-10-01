@@ -6,7 +6,7 @@
 - 0.4.2 是未通过完整阅读体验评审的历史演练候选，不是待提交的最终版本。全文查看修复已经由AI1安排、AI2正在执行，不需要用户再次批准这一开发选择。最终标题应为 `Submit oncue-screening-room <最终版本>`，并替换所有版本、tag、SHA、截图、检查输出和七问答案。
 - 用户已授权 main 开发与交付；push、最终版本的tag与SHA记录、文档修正和可复现检查由两位AI继续完成。正式外部Submit仍只准备草稿，不代发；发布者身份与密钥的最终确认留到具体材料齐备时。
 - AI1已通过公开HTTPS仓库的普通Git读取核对main及具体文件。下文“本容器未核实公开性”仅指当时执行体环境的请求超时，不是仓库不存在或尚未push的结论。
-- 原生房间读取与真实共享Octos回合仍没有成功证据。旧 `profile_unresolved` 是历史观察，后来已有私有宿主配置与Agent prepared报告；尚未运行的新回合不能被断言仍然卡在同一错误。
+- 原生房间读取与真实共享Octos回合仍没有成功证据。旧 `profile_unresolved` 是历史观察，后来已有私有宿主配置与 Agent prepared 报告；但 **`prepared` 不等于成功**，也**不能用旧错误认定当前仍卡在同一故障**——必须**实际跑一次新回合取得 fresh result** 再下结论（这与继续做宿主 GUI 配置/验证不冲突）。
 - 最终发布顺序：全文可读与准确说明/截图 → stamp → sign → check → 提交签名工件 → push并核对远端精确字节 → scan/publish/verify。保留sequence 8与旧候选历史，不重发相同版本，也不回滚镜像来掩盖顺序偏差。
 
 以下起草记录保留作溯源，**不可直接复制到正式issue**。
@@ -38,7 +38,7 @@ Submit oncue-screening-room 0.4.2
 |---|---|
 | 应用 id (`manifest.id`) | `oncue-screening-room` |
 | 应用名 (`manifest.name`) | OnCue · 群聊试映室 |
-| 版本 (`manifest.version`) | `0.4.2` —— 本仓库**最新冻结版本**（0.4.1 的次版本，冻结结论见 `evidence/native/042-freeze.md`） |
+| 版本 (`manifest.version`) | ⚠️ **占位（起草时快照，必须由最终版本全部替换）**：`0.4.2` 是本仓库最新**历史演练**候选（`evidence/native/042-freeze.md`），**不是推荐提交版本** |
 | 仓库 URL（HTTPS 形式） | `https://github.com/codezzzsleep/OnCue` |
 | bundle 在仓库中的路径 | `oncue/bundle` |
 | bundle 内文件 | `manifest.json`、`listing.json`、`main.splash`、`assets/icon.svg`、`screenshots/01-native-rinx.png`（共 5 个，138–148 KB 量级，无符号链接） |
@@ -58,8 +58,8 @@ Submit oncue-screening-room 0.4.2
 
 | issue 字段 | 填写方式 |
 |---|---|
-| `tag` | 待 HUMAN 打 tag 后填写（建议 `v0.4.2`，与 `manifest.version` 对应） |
-| `full commit SHA` | 待 HUMAN 填写 `git rev-parse HEAD` 的完整 40 位十六进制（**必须是承载上面那个签名字节的提交**，不能是它的父提交或后续提交） |
+| `tag` | ⚠️ **占位**：须在最终版本的签名提交上打 tag（形如 `v<最终版本>`），此处 `v0.4.2` 仅示范格式 |
+| `full commit SHA` | ⚠️ **占位**：填写**最终版本**签名工件的那个提交的完整 40 位十六进制（不能是父提交或后续提交） |
 
 现状（供 HUMAN 判断，不是让 HUMAN 照抄）：
 
