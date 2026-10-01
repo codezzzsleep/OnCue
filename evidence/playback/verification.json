@@ -98,5 +98,9 @@
     "02-playback-320.png",
     "03-playback-dark.png"
   ],
+  "browser": {
+    "name": "chromium",
+    "version": "148.0.7778.0"
+  },
   "verdict": "ALL PASS"
 }

@@ -11,6 +11,9 @@ python3 -m unittest discover -s oncue/tests -v
 python3 evidence/playback_check.py --url http://127.0.0.1:8787/ --out evidence/playback
 ```
 
+已有 Chromium/Chrome 时，可在第二条命令中加入 `--executable /absolute/path/to/chromium`，直接复用现有浏览器。
+报告会记录实际浏览器版本；安装依赖或通过语法检查仍不代表 18 项浏览器检查通过。
+
 检查报告、浅色/深色/320px 截图提交到 `evidence/`。视觉截图在有限动画结束状态下取证，避免把对白刚出现时的透明首帧误当成空白；动画与暂停行为仍由交互检查验证。
 
 ## 原生包

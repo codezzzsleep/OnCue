@@ -10,6 +10,7 @@ from playwright.sync_api import sync_playwright, expect
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--url", default="http://127.0.0.1:8787/")
 parser.add_argument("--out", type=Path, default=Path("evidence/playback"))
+parser.add_argument("--executable", type=Path, help="Use an already installed Chromium/Chrome executable.")
 args = parser.parse_args()
 args.out.mkdir(parents=True, exist_ok=True)
 report = {"steps": [], "console_errors": [], "page_errors": [], "screens": []}
@@ -38,7 +39,9 @@ def shot(page, name):
 
 try:
     with sync_playwright() as p:
-        browser = p.chromium.launch(args=["--no-sandbox"])
+        browser = p.chromium.launch(args=["--no-sandbox"],
+                                    executable_path=str(args.executable) if args.executable else None)
+        report["browser"] = {"name": "chromium", "version": browser.version}
         context = browser.new_context(viewport={"width": 1440, "height": 900}, color_scheme="light")
         page = context.new_page()
         watch(page)
