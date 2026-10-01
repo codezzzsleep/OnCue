@@ -1,6 +1,6 @@
 # OnCue hub review answers (recorded 2026-10-01, reviewer: operator of this OctoSense host)
 
-Packet digest: 4da4e0a0e4013de2736f7ce1b1abdf38b737b82766bf2be648790635e7c353e1
+Packet digest: 99424110eeb6f7261d4f01cf01abbf830f70518aca89b7bca231c43975834b8a
 
 ## 1. Does the app do what its name, subtitle and description claim?
 Yes. The source builds the title "OnCue · 群聊试映室" (try-screening room), the subtitle "先试着说，再决定要不要发。" (try it first, then decide whether to send), a sample scene with four messages (cue_show_demo), three rehearsal routes (cue_rehearse -> 顺着这句 / 换个问法 / 换个玩法), a draft box (我的草稿), and local draft save/restore (cue_keep_draft / cue_restore_draft). That is exactly the listing's subtitle and description.

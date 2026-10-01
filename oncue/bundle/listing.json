@@ -23,7 +23,7 @@
     "support": "https://github.com/codezzzsleep/OnCue/issues",
     "privacy_policy_url": "https://github.com/codezzzsleep/OnCue/blob/main/oncue/PRIVACY.md"
   },
-  "release_notes": "0.3.1 原生开发版：输入与操作按钮放在列表之前，Fill滚动区放在栏末；动态内容只更新滚动区内的列表。含逐句播放、暂停、下一句、重播及草稿A/B回读核对。0.3.0已在Rinx Developer启动，但按钮裁切阻断了功能验证；本版仍待固定宿主实测，现有截图为旧版。发布前需同版本截图、扫描与签名。",
+  "release_notes": "0.4.0 原生开发版：草稿编辑框和六个保存/取回按钮始终可见，切换只读对白或A/B预览；缩短操作区，为Rinx矮视口保留消息和对白空间。0.3.1已有样例与播放实测，草稿区最初隐藏后不能接收输入，本版针对该问题修复，仍待固定宿主验证。真实房间读取、共享Octos模型回合及关闭恢复尚待完整证据，现有截图为旧版。发布前需同版本截图、扫描与签名。",
   "age_rating": "all",
   "license": "Apache-2.0"
 }
