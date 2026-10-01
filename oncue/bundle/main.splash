@@ -6,6 +6,10 @@ let cue_revision = 0
 let cue_scene = "样例舞台 · 国庆搭子局"
 
 fn cue_set_status(text){ ui.cue_status.set_text(text) }
+fn cue_set_busy(busy){
+    cue_busy = busy
+    ui.cue_actions.render()
+}
 fn cue_clear_routes(){
     cue_routes = []
     ui.cue_route_list.render()
@@ -14,9 +18,21 @@ fn cue_invalidate(){
     cue_revision += 1
     cue_clear_routes()
     if cue_busy {
-        cue_busy = false
+        cue_set_busy(false)
         host.request("octos.turn.interrupt", {}, fn(r){})
     }
+}
+fn cue_stop_wait(){
+    if !cue_busy { return }
+    cue_invalidate()
+    cue_set_status("已停止等待，可以重新载入或改一句再试。已经开始的模型回合仍可能完成。")
+}
+fn cue_deadline(revision, subject){
+    start_timeout(90.0, fn(){
+        if revision != cue_revision || !cue_busy { return }
+        cue_invalidate()
+        cue_set_status(subject + "等待超过 90 秒，已结束等待。可以重新载入或改一句再试。")
+    })
 }
 fn cue_edit_trial(text){
     cue_invalidate()
@@ -44,13 +60,14 @@ fn cue_import_room(){
     ui.cue_sources_list.render()
     cue_scene = "正在读取你选择并授权的群聊"
     ui.cue_scene_label.set_text(cue_scene)
-    cue_busy = true
+    cue_set_busy(true)
     let reading_revision = cue_revision
+    cue_deadline(reading_revision, "消息读取")
     cue_set_status("读取本次附加群聊的最近 12 条文本消息…")
     host.request("matrix.room_info", {}, fn(room){
         if reading_revision != cue_revision { return }
         if !room.is_ok {
-            cue_busy = false
+            cue_set_busy(false)
             cue_set_status("没有读到群聊：" + room.error)
             return
         }
@@ -59,7 +76,7 @@ fn cue_import_room(){
         ui.cue_scene_label.set_text(cue_scene)
         host.request("matrix.read_messages", {limit: 12}, fn(result){
             if reading_revision != cue_revision { return }
-            cue_busy = false
+            cue_set_busy(false)
             if !result.is_ok {
                 cue_set_status("消息读取失败：" + result.error)
                 return
@@ -118,22 +135,23 @@ fn cue_rehearse(){
     if trial == "" { cue_set_status("先写一句想接的话。") return }
     if trial.len() > 240 { cue_set_status("先把台词缩到 240 字以内。") return }
     if cue_sources.len() == 0 { cue_set_status("先载入一个群聊，或打开样例舞台。") return }
-    cue_clear_routes()
+    cue_invalidate()
     if cue_demo { cue_demo_routes() return }
-    cue_busy = true
+    cue_set_busy(true)
     let request_revision = cue_revision
+    cue_deadline(request_revision, "Agent 试映")
     let prompt_text = cue_prompt(trial)
     cue_set_status("Agent 正在排练三个可能的下一幕…")
     host.request("octos.session.open", {}, fn(session){
         if request_revision != cue_revision { return }
         if !session.is_ok {
-            cue_busy = false
+            cue_set_busy(false)
             cue_set_status("Agent 暂时不可用：" + session.error)
             return
         }
         host.request("octos.turn.start", {text: prompt_text}, fn(reply){
             if request_revision != cue_revision { return }
-            cue_busy = false
+            cue_set_busy(false)
             if !reply.is_ok { cue_set_status("这次试映没有完成：" + reply.error) return }
             let blocks = reply.data.text.split("\n@@@\n")
             if blocks.len() != 7 {
@@ -211,10 +229,13 @@ SolidView{width: Fill height: Fill flow: Down padding: 16 spacing: 12 new_batch:
             draw_bg +: {color: #xffffff color_hover: #xffffff color_focus: #xffffff color_empty: #xffffff border_radius: 10.0}
             draw_text +: {color: cue_ink color_hover: cue_ink color_focus: cue_ink color_empty: cue_muted color_empty_hover: cue_muted}
         }
-        CueButton{text: "试映下一幕" on_click: || cue_rehearse()
-            draw_bg +: {color: cue_green color_hover: cue_green color_down: #x0b5536}
-            draw_text +: {color: #xffffff color_hover: #xffffff color_down: #xffffff}
-        }
+        cue_actions := View{width: Fill height: Fit flow: Right spacing: 8 on_render: || {
+            CueButton{text: "试映下一幕" on_click: || cue_rehearse()
+                draw_bg +: {color: cue_green color_hover: cue_green color_down: #x0b5536}
+                draw_text +: {color: #xffffff color_hover: #xffffff color_down: #xffffff}
+            }
+            if cue_busy { CueButton{text: "停止等待" on_click: || cue_stop_wait()} }
+        }}
         cue_status := CueText{text: "样例消息与对白均为虚构。"}
         cue_route_list := View{width: Fill height: Fit flow: Down spacing: 10 on_render: || {
             for i in cue_routes.len() {
