@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "subtitle": "先试着说，再决定要不要发",
+  "description": "把一句还没发出去的话放进群聊试映室：三个下一幕（顺着这句 / 换个问法 / 换个玩法）各出一段匿名假设对白，逐句播放、暂停、回看。选好的路线放进草稿，随时和改写前的原版对照。不换回话对象、不公开发言、不新增真实消息。",
+  "category": "productivity",
+  "keywords": [
+    "群聊",
+    "试映",
+    "排练",
+    "草稿",
+    "隐私",
+    "假设对白"
+  ],
+  "screenshots": [
+    "screenshots/01-native-rinx.png"
+  ],
+  "icon": "assets/icon.svg",
+  "platforms": [
+    "linux"
+  ],
+  "publisher": {
+    "name": "OnCue / YCOROY",
+    "support": "https://github.com/codezzzsleep/OnCue/issues",
+    "privacy_policy_url": "https://github.com/codezzzsleep/OnCue/blob/main/oncue/PRIVACY.md"
+  },
+  "release_notes": "首个版本：三幕试映、逐句播放与暂停、台词改写后旧播放失效、存档恢复、开场提醒与路线提醒分离。",
+  "age_rating": "all",
+  "license": "Apache-2.0"
+}

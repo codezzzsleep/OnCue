@@ -1,8 +1,5 @@
 {
-  "schema": 1,
-  "id": "oncue-screening-room",
-  "name": "OnCue · 群聊试映室",
-  "version": "0.1.0",
+  "agent": null,
   "capabilities": [
     "storage",
     "matrix.room_info",
@@ -11,14 +8,25 @@
     "octos.turn.start",
     "octos.turn.interrupt"
   ],
-  "storage": {
-    "max_bytes": 65536
-  },
   "compute": {
     "instruction_budget": 8000000,
     "memory_bytes": 33554432
   },
+  "id": "oncue-screening-room",
   "integrity": {
-    "bundle_blake3": "5523be607437bdfa5a813fc8bcbb4129ca5f3717b4c9548091336d4abfcaafb4"
-  }
+    "bundle_blake3": "a0889990e95452b77736031a0eab4d27077b46e7ec18c0cdf8eb84298e943b01",
+    "signature": {
+      "key_id": "oncue.local",
+      "value": "5ed4fe3eee37eaec823b5ef3e03d53e9ee4f5b17bcf6e8af055d98c59c836ff6c4c34ade67698fd40e34eb1851b155a09e9fb4f842a56f030a24523d73a4a40b"
+    }
+  },
+  "name": "OnCue · 群聊试映室",
+  "network": {
+    "hosts": []
+  },
+  "schema": 1,
+  "storage": {
+    "max_bytes": 65536
+  },
+  "version": "0.1.1"
 }

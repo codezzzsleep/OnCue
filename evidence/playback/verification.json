@@ -1,0 +1,102 @@
+{
+  "steps": [
+    {
+      "step": "Origin shows the actual unsent trial",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "Hypothetical dialogue stays labelled",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "Autoplay reveals replies",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "Show all reveals the current route",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "Completed controls have clear states",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "Pause freezes playback",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "Next cue reveals exactly one reply",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "Keyboard play resumes to completion",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "Rapid route changes cancel old cues",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "Editing the trial invalidates old playback",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "Saved take restores the scene and dialogue",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "Playback and restore add no model/API calls",
+      "ok": true,
+      "detail": "1"
+    },
+    {
+      "step": "320px playback has no horizontal overflow",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "Reduced motion shows every reply immediately",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "Reduced motion has no cue animation",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "Reduced motion replay stays immediate",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "Opening warnings are separate from corrected routes",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "step": "Rewriting the opening clears the old warning",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "console_errors": [],
+  "page_errors": [],
+  "screens": [
+    "01-playback-light.png",
+    "02-playback-320.png",
+    "03-playback-dark.png"
+  ],
+  "verdict": "ALL PASS"
+}

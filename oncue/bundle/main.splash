@@ -229,13 +229,13 @@ SolidView{width: Fill height: Fill flow: Down padding: 16 spacing: 12 new_batch:
             draw_bg +: {color: #xffffff color_hover: #xffffff color_focus: #xffffff color_empty: #xffffff border_radius: 10.0}
             draw_text +: {color: cue_ink color_hover: cue_ink color_focus: cue_ink color_empty: cue_muted color_empty_hover: cue_muted}
         }
-        cue_actions := View{width: Fill height: Fit flow: Right spacing: 8 on_render: || {
+        cue_actions := View{width: Fill height: Fit flow: Right spacing: 8
             CueButton{text: "试映下一幕" on_click: || cue_rehearse()
                 draw_bg +: {color: cue_green color_hover: cue_green color_down: #x0b5536}
                 draw_text +: {color: #xffffff color_hover: #xffffff color_down: #xffffff}
             }
             if cue_busy { CueButton{text: "停止等待" on_click: || cue_stop_wait()} }
-        }}
+        }
         cue_status := CueText{text: "样例消息与对白均为虚构。"}
         cue_route_list := View{width: Fill height: Fit flow: Down spacing: 10 on_render: || {
             for i in cue_routes.len() {
