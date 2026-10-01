@@ -188,7 +188,18 @@ Rinx 的 Mini apps 面板里那块审批视图是**另一块 UI**，别混：`ri
 **10.1 打开导入表单**
 - 操作：Rinx 底部导航「Mini apps」（`rinx:src/home/navigation_tab_bar.rs:290-293`）或「发现 → Mini apps」（`rinx:src/home/mobile.rs:168`）→ 面板里点「Import an app」（`rinx:src/miniapps/ui.rs:49`）。
 - 预期：出现两个文本框 + Review/Run 两个按钮（`rinx:src/miniapps/ui.rs:51-75`）。第一个 `empty_text` 是 `OctoSense bundle folder`（`ui.rs:53`），第二个是 `Room ID to allow (optional)`（`ui.rs:55`）。
-- grep：本步无宿主日志。可观察文件系统副作用：`/root/oncue-runtime/state/octosense/apps/rinx/data/miniapps/imports/`（`ui.rs:319`、`ui.rs:324` 传入的 snapshots；`app_data_dir` 见日志 `App::handle_startup(): app_data_dir: "/root/oncue-runtime/state/octosense/apps/rinx/data"`）。该目录当前是**空的**，说明导入路径从未成功过一次。
+- grep：本步无宿主日志。可观察文件系统副作用：`/root/oncue-runtime/state/octosense/apps/rinx/data/miniapps/imports/`（`ui.rs:319`、`ui.rs:324` 传入的 snapshots；`app_data_dir` 见日志 `App::handle_startup(): app_data_dir: "/root/oncue-runtime/state/octosense/apps/rinx/data"`）。
+  **注意（AI1 #94 纠正）**：该目录当前为空**不能**推出"导入路径从未成功过一次"——`Snapshot` 的 `Drop` 会自动 `remove_dir_all`（`rinx:crates/miniapp-core/src/package.rs:48-52`），Review 失败、返回或关闭之后目录都会被清掉。因此第 10 步的快照证据必须在 **Review/Run 仍然存活时**抓取，并在关闭前后各记一次（关闭前应能看到 `rinx-miniapp-<uuid>/`，关闭后消失）。
+
+**10.1b 开发者签名的真实语义（AI1 #94 补充）**
+
+- 本地 Developer 的 `Package::load_in` 使用 **`RefuseAllSignatures`**；manifest 里的 `require_signature:false` 只表示"**允许 unsigned**"，**并不保证任意 signed 包都能通过**。
+- 因此必须对当前 **signed 0.4 包**做一次**实际 Review**并核对错误信息；若出现签名拒绝，则用**仓库之外的临时开发副本**，**只移除 `manifest.integrity.signature`**（保留 `bundle_blake3` 与全部内容）走官方 unsigned developer 路径，并记录该副本与签名包的**源码/资源摘要相同**（例如 `hub stamp` 结果一致、`diff -r` 仅 manifest 差异）。
+- **正式 bundle 始终保持签名**；不为此更换宿主、不改公钥校验、不改正式包。
+
+**10.1c 关于 prompt 里的编号**
+
+- 样例 preset 的对白里写死 `#2`/`#3` 只是样例文本；**真实 `cue_prompt` 的编号是按当前所有来源动态生成的**，不能把样例里的编号当成模型链路的硬编码。
 
 **10.2 填 bundle 绝对路径**
 - 操作：在「OctoSense bundle folder」填 `/root/oncue-runtime/dev/OnCue/oncue/bundle`。
@@ -297,7 +308,7 @@ Rinx 的 Mini apps 面板里那块审批视图是**另一块 UI**，别混：`ri
 | 用环境变量跳过问询 | **有（部分路径）** | `OCTOSENSE_CONTAINED_APPS=1`（`octo:crates/ai-host/src/lib.rs:213-219` → `ContainedGate::Everyone`，"Every app, without asking"）。**只盖住 contained/Card 路径（3.4 节的路径 A）**，不盖住 `agents::ask`（路径 B）。本机当前未设置该变量 |
 | 用设置项预先授予 | **有** | Setup → Assistant → Approvals 页面里该 app 行的 `Allow`（`octo:crates/shell/src/approvals/settings_page.rs:320-324`、`settings_page.rs:380`；页面打开 `octo:crates/shell/src/approvals/mod.rs:304-312`，菜单行 `octo:crates/shell/src/shell/menu.rs:789` + `octo:crates/shell/src/lib.rs:3364-3368`）。**但这一页同样是自绘画布 + 指针**，所以它是"另一处鼠标入口"，不是"非鼠标入口" |
 | 开开发者模式全放行 | **有（副作用大）** | `octo:crates/shell/src/dev_mode.rs:537-539` `grants_all()` → `consent.rs:140-142`；入口 `octo:crates/shell/src/lib.rs:3369-3373` `setup.developer.on`。它同时让所有审批自动通过（`dev_mode.rs:540-542` `auto_approve`、`octo:crates/shell/src/approvals/dev_hooks.rs`），不适合只放行 OnCue |
-| **直接写 consent 文件（推荐，且确实是"非鼠标"）** | **有** | 文件：`$OCTOSENSE_HOME/approvals/consent.json`（`octo:crates/shell/src/approvals/consent.rs:18`；本机 `OCTOSENSE_HOME=/root/oncue-runtime/state/octosense`，已从运行进程环境实测）。格式：`{"schema":1,"apps":{"<app id>":{"allowed":true,"at":<unix 秒>}}}`（`consent.rs:92-101` 的 `Record` / `ConsentFile`）。app id = `oncue-screening-room`。**约束：只在 `approvals::init`（`octo:crates/shell/src/approvals/mod.rs:142-148`，由 `octo:crates/shell/src/lib.rs:5182` 启动时调用）读一次，所以必须写在宿主启动前**；文件权限会被写成 0600/目录 0700（`mod.rs:404-434`）。删除某条记录 = 下次会重新弹面板 |
+| 直接写 consent 文件 | **技术上可行，但不得当作正常授权流程或授权验证** | 文件：`$OCTOSENSE_HOME/approvals/consent.json`（`octo:crates/shell/src/approvals/consent.rs:18`；本机 `OCTOSENSE_HOME=/root/oncue-runtime/state/octosense`，已从运行进程环境实测）。格式：`{"schema":1,"apps":{"<app id>":{"allowed":true,"at":<unix 秒>}}}`（`consent.rs:92-101` 的 `Record` / `ConsentFile`）。app id = `oncue-screening-room`。**约束：只在 `approvals::init`（`octo:crates/shell/src/approvals/mod.rs:142-148`，由 `octo:crates/shell/src/lib.rs:5182` 启动时调用）读一次，所以必须写在宿主启动前**；文件权限会被写成 0600/目录 0700（`mod.rs:404-434`）。删除某条记录 = 下次会重新弹面板。 **AI1 #94 明确要求**：不得把手写 `consent.json`、`Everyone`/`grants_all` 当作正常授权流程或授权验证；本机 `oncue-screening-room` 的同意已由**真实操作**授予（`allowed:true`，17:17:39），无需重放。第 11 步只保留普通的真实 Allow / Settings 操作路径。 |
 
 **给第 11 步的实操建议**：既然面板确实是纯鼠标，且 `oncue-screening-room` 的同意**已经授予过**（`consent.json`，17:17:39），第 11 步真正待解决的不是"怎么点 Allow"，而是 11.4 的 `profile_unresolved`——`/root/oncue-runtime/state/octos-core/profiles/_main.json` 缺失。把 provider profile 配上（Settings → AI providers，或放好 `_main.json`）之后再跑「试映下一幕」，`octos.turn.start` 才能真的出三条路线。
 
