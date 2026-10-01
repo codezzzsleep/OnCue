@@ -62,15 +62,51 @@ OnCue 自身经真实 UI 授权读到 **12** 条；与 API 侧「现有 13 条�
   **没有任何观测表明 app 收到了 `event_id` / `origin_server_ts`**。故表中那两列标注为「仅 API 侧」。
 - **未发送消息**：整个过程只有读取。
 
-## 4. 复现命令（骨架）
+## 4. 复现（版本化脚本 + 精确命令）
+
+**凭据纪律**：脚本只**读**600 会话文件，**不打印 token、不打印正文、不打印完整 room id**
+（输出里 room id 只出现 SHA256 前 16 位）。会话文件与 room id 文件**只作参数**传入。
 
 ```bash
-# 1) 生成/更新探针包（仓库外），并重新 stamp 以计算摘要
-deploy/tools/make_probe_bundle.py <fixture> <out_dir> <app_id>   # 若复用现成包可跳过
-hub stamp /root/oncue-runtime/dev/probe-044/RoomMap
+# 0) 前置：仓库根，且已 source 过 deploy/env.sh（取默认路径）
+cd <repo>
 
-# 2) 在 Rinx 里 Review + Run 该包（真实 UI 授权，room = 精确值）
+# 1) 造探针包（仓库外；会移除旧摘要，必须重新 stamp 才有 bundle_blake3）
+python3 deploy/tools/make_probe_bundle.py \
+    evidence/native/044-pagination/fixtures/08-minimal.txt \
+    /srv/oncue-runtime/dev/probe-044/RoomMap ai2-probe-roommap
+hub stamp /srv/oncue-runtime/dev/probe-044/RoomMap
 
-# 3) 读回落盘，宿主侧算哈希并出对照表
-#    （脚本见本仓库提交信息；输出即 ROOM-MAPPING-OUTPUT.txt）
+# 2) 在 Rinx 里对该包做 Review + Run（真实 UI 授权，room = 精确值）
+#    探针会在 t=3s 调 cue_import_room()，t=16s 把每条正文写成本机文件：
+#    body-1.txt … body-N.txt + bodies-index.txt
+
+# 3) 出对照表（**这一步就是版本化脚本**，不再是"见提交信息"）
+python3 deploy/tools/room_mapping.py \
+    --app-dir /srv/oncue-rinx-data/miniapps/<账号hex>/ai2-probe-roommap \
+    --session /srv/oncue-runtime/state/matrix-session.json \
+    --room-file /srv/oncue-runtime/state/test-room-id.txt \
+    --limit 30 --take 12
 ```
+
+脚本内部**固定**了这几件事（改哪一步都要改脚本本身，不能在命令行随手指派）：
+
+| 步骤 | 固定规则 |
+| --- | --- |
+| 筛选 | `type == "m.room.message"` 且 `body` 含 `"[OnCue"` |
+| 排序 | `/messages?dir=b&limit=<limit>` 取回后 **reverse 成时间正序** |
+| 取样 | 取**最新 `--take` 条**（与产品 `limit: 12` 对齐） |
+| event_id 哈希 | `sha256(event_id)` 前 16 位（原始 id 不出现） |
+| 正文哈希 | `sha256(body.encode("utf-8"))` 前 16 位，**两侧同法** |
+| app 侧顺序 | 按 `body-1.txt … body-N.txt` 的**文件名序号**（即探针写入顺序＝app 读取顺序） |
+| 判据 | 逐条相等计数，**全等才退出码 0** |
+
+**本次实测输出**（与 §2 的表一致，脚本重跑可复现同样的 12/12）：
+- 命令输出 sha256：以 `deploy/tools/room_mapping.py` 当前版本运行，得到
+  `# 取样: 最新 12 条；API 侧共 13 条，app 侧 12 条` 与 `有序正文指纹逐条一致: 12/12`，退出码 `0`
+- 脚本本体 sha256 见仓库提交 `f94194f` 之后那一次提交；`ROOM-MAPPING-OUTPUT.txt`
+  的 sha256 为 `bbb83698f343191498dad8feb2175fea5aa20278f2d1c71a86a59b69b485af04`
+
+**为什么之前不算可复现**：上一版这里只写了骨架，并说"脚本见提交信息"——
+提交信息不是版本化源码，别人无法据此重跑。现在脚本已在 `deploy/tools/` 里。
+
