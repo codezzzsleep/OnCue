@@ -8,6 +8,8 @@ let cue_summary = ""
 let cue_take_a = ""
 let cue_take_b = ""
 let cue_play_index = 0
+let cue_play_lines = []
+let cue_play_count = 0
 let cue_playing = false
 let cue_play_epoch = 0
 let cue_take_read = 0
@@ -156,6 +158,8 @@ fn cue_sync_reader(){
 fn cue_clear_routes(){
     cue_pause_playback()
     cue_routes = []
+    cue_play_lines = []
+    cue_play_count = 0
     cue_rebuild_ws()
     cue_sync_reader()
 }
@@ -355,7 +359,18 @@ fn cue_ws_text(){
         return cue_take_a
     }
     if cue_routes.len() == 0 { return "" }
-    cue_routes[cue_play_index].body + "\n" + cue_routes[cue_play_index].draft
+    if cue_play_count == 0 {
+        return "点击“播放”或“下一句”，私下展开这条假设路线。"
+    }
+    let text = ""
+    for i in cue_play_count {
+        if i > 0 { text += "\n" }
+        text += cue_play_lines[i]
+    }
+    if cue_play_count >= cue_play_lines.len() {
+        text += "\n建议台词：" + cue_routes[cue_play_index].draft
+    }
+    text
 }
 fn cue_rebuild_ws(){
     cue_ws_pages = cue_paginate(cue_ws_text(), cue_page_rows)
@@ -391,37 +406,56 @@ fn cue_select_preview(index){
     }
     cue_pause_playback()
     cue_play_index = index
+    cue_play_lines = cue_routes[index].body.split("\n")
+    cue_play_count = 0
     cue_ws_page = 0
     cue_read_mode = 0
     cue_rebuild_ws()
     cue_sync_reader()
-    cue_set_status("已选“" + cue_routes[index].title + "”；翻到最后一页看完整假设路线。")
+    cue_set_status("已选“" + cue_routes[index].title + "”；点播放或下一句，逐句展开假设对白。")
+}
+fn cue_advance_playback(){
+    if cue_play_count < cue_play_lines.len() { cue_play_count += 1 }
+    cue_rebuild_ws()
+    cue_ws_page = cue_ws_pages.len() - 1
+    if cue_ws_page < 0 { cue_ws_page = 0 }
+    cue_sync_reader()
 }
 fn cue_play_pulse(epoch){
     if epoch != cue_play_epoch || !cue_playing { return }
-    if cue_ws_page + 1 < cue_ws_pages.len() {
-        cue_ws_page += 1
-        cue_sync_reader()
-        start_timeout(1.4, fn(){ cue_play_pulse(epoch) })
+    cue_advance_playback()
+    if cue_play_count >= cue_play_lines.len() {
+        cue_pause_playback()
+        cue_set_status("这条假设路线已逐句播完。可以改台词、换路线，或把建议放进草稿。")
         return
     }
-    cue_playing = false
-    ui.cue_play_button.set_text("播放")
-    cue_set_status("这条假设路线已翻到最后一页。可以改台词、换路线，或把建议放进草稿。")
+    start_timeout(1.4, fn(){ cue_play_pulse(epoch) })
 }
 fn cue_toggle_playback(){
     if cue_playing {
         cue_pause_playback()
-        cue_set_status("已暂停在第 " + (cue_ws_page + 1) + " 页；可继续播放或手动翻页。")
+        cue_set_status("已暂停在 " + cue_play_count + " / " + cue_play_lines.len() + " 句；可继续播放、只看下一句或手动翻页。")
         return
     }
     if cue_routes.len() == 0 { cue_set_status("先试映下一幕，再播放假设对白。") return }
+    if cue_play_count >= cue_play_lines.len() { cue_play_count = 0 }
     if cue_read_mode != 0 { cue_set_mode(0) }
     cue_playing = true
     cue_play_epoch += 1
     ui.cue_play_button.set_text("暂停")
-    cue_set_status("正在逐页播放“" + cue_routes[cue_play_index].title + "”的假设对白。")
+    cue_set_status("正在逐句播放“" + cue_routes[cue_play_index].title + "”的假设对白。")
     cue_play_pulse(cue_play_epoch)
+}
+fn cue_next_line(){
+    cue_pause_playback()
+    if cue_routes.len() == 0 { cue_set_status("先展开三条路线。") return }
+    if cue_read_mode != 0 { cue_set_mode(0) }
+    cue_advance_playback()
+    if cue_play_count >= cue_play_lines.len() {
+        cue_set_status("这条假设路线已展开全部 " + cue_play_count + " 句；仍是未发送的排练。")
+    } else {
+        cue_set_status("已展开 " + cue_play_count + " / " + cue_play_lines.len() + " 句；播放保持暂停。")
+    }
 }
 fn cue_page_prev(){
     cue_pause_playback()
@@ -449,10 +483,11 @@ fn cue_page_next(){
 }
 fn cue_restart_playback(){
     cue_pause_playback()
+    cue_play_count = 0
     cue_ws_page = 0
     cue_rebuild_ws()
     cue_sync_reader()
-    if cue_routes.len() > 0 { cue_set_status("已回到第 1 页 / 共 " + cue_ws_pages.len() + " 页；点击播放逐页播放。") }
+    if cue_routes.len() > 0 { cue_set_status("已回到 0 / " + cue_play_lines.len() + " 句；点击播放从第一句开始。") }
 }
 fn cue_save_text(path, text, label){
     let saved = try {
@@ -616,11 +651,12 @@ SolidView{width: Fill height: Fill flow: Down padding: 12 spacing: 8 new_batch: 
                 CueButton{text: "对白" on_click: || cue_show_dialogue()}
                 CueButton{text: "摘要" on_click: || cue_show_summary()}
                 cue_play_button := CueButton{text: "播放" on_click: || cue_toggle_playback()}
+                CueButton{text: "重播" on_click: || cue_restart_playback()}
             }
             View{width: Fill height: Fit flow: Right spacing: 5
                 CueButton{text: "上一页" on_click: || cue_page_prev()}
                 CueButton{text: "下一页" on_click: || cue_page_next()}
-                CueButton{text: "重播" on_click: || cue_restart_playback()}
+                CueButton{text: "下一句" on_click: || cue_next_line()}
             }
             View{width: Fill height: Fit flow: Right spacing: 5
                 CueButton{text: "A/B 对照" on_click: || { cue_refresh_takes() cue_show_takes() }}
