@@ -18,3 +18,27 @@ captures are scrolled views of that one instance.
   the description line, 保存为 A / 保存为 B and the empty state. The
   save buttons did not react to clicks in this instance; no take-a.txt /
   take-b.txt was written (see the report to the team).
+
+## 0.3.0 module window (990x613), 2026-10-01 16:2x
+
+Same shell restarted with the published 0.3.0 artifact in
+state/apps/oncue-screening-room/bundle, the app opened as a module
+window (990x613, not maximized). Steps follow oncue/docs/NATIVE-WORKFLOW.md.
+
+- 06-030-module-layout.png — the two-column layout: left 样例舞台/载入群聊,
+  现场原消息 (scrolls, #1/#2 visible), 我想接一句, the trial input and the
+  试映下一幕 / 停止等待 row; right 三条路线/草稿与 A/B, A/B/C, 播放/下一句/重播;
+  the fixed status at the bottom.
+- 07/08 — B 换个问法 and C 换个玩法 with their 假设剧本 counters and 建议台词.
+- 09 — after 播放: 假设剧本 · 1 / 3 行 and the button has become 暂停.
+- 10 — after 暂停 plus five seconds (more than two intervals): still 1 / 3 行.
+- 11 — A playing, switched to B, six seconds later B is still 0 / 2 行:
+  the old A timer did not advance B.
+- 12 — playing B, switched to the 草稿与 A/B workspace and back: still
+  1 / 2 行, i.e. the workspace switch paused playback.
+- 13 — typing one character into the left trial line clears the routes:
+  status 台词已改变，可以重新试映。
+- 14 — 存 A pressed with a non-empty draft: no file, no status change, the
+  take list still shows the empty state. 保留这句 / 取回草稿 / 存 B / 取 A /
+  取 B behave the same, while the draft input itself accepts typing, so the
+  workspace is live but its buttons do not receive clicks.
