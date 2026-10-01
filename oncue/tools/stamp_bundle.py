@@ -1,4 +1,8 @@
-"""Check a bundle digest or refresh an unsigned development bundle."""
+"""Check a bundle digest or refresh an unsigned development bundle.
+
+Requires the blake3 Python module (pip install blake3); without it the
+script exits with ModuleNotFoundError before doing anything.
+"""
 from __future__ import annotations
 
 import argparse
