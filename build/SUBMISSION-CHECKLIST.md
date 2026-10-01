@@ -1,5 +1,7 @@
 # SUBMISSION-CHECKLIST — PUBLISHING §3.8 逐项对照（S3）
 
+> **当前纠正，优先于下方起草时快照**：`6681bd2`已恢复精确签名包，资源摘要错误不再是当前阻断；公开main读取、push和只读摘要检查已有证据。0.4.2仍因全文裁切未被接受，全文查看修复正在执行，不是等待HUMAN决定是否修。push、tag、SHA及文档/检查整理属于用户已授权的开发交付工作，AI继续完成；外部Submit保持草稿，发布者身份/密钥最终确认另行处理。旧profile报错是历史观察，不能代替当前回合诊断。正式材料须替换为最终版本的同一工件、截图与检查结果；不得直接使用本快照的0.4.2标题与待办状态。
+
 - 起草时间：2026-10-01T22:06–22:15+08:00；依据官方 `docs/PUBLISHING.md`（OctoScript App Design Flow）§3.8，其权威为 App Hub `docs/PUBLISHING.md` "Submitting"（截至 `79a2c4f`）
 - 状态图例：**已有** = 本仓库/本机已有可核验证据；**待 HUMAN** = 只能由人做（密钥/账号/法律声明/打 tag/开 issue）；**待补** = 需要新的执行或改写（不含 HUMAN 专属动作）
 - 配套草稿：`build/SUBMISSION.md`（issue 正文）

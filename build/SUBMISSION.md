@@ -1,5 +1,16 @@
 # 草稿：OctoSense App Hub 提交材料（**待 HUMAN 开 issue，Agent 不代发**）
 
+## 当前状态（2026-10-01，优先于下方起草时快照）
+
+- `241a7f5` 的资源摘要错误已在 `6681bd2` 修复，恢复了 `79a018e` 的精确签名字节；`6715dca` 增加只读摘要检查，AI1与AI2均实际得到匹配。下文“HEAD 被拒绝”“未 push”等为当时观察，不是当前状态。
+- 0.4.2 是未通过完整阅读体验评审的历史演练候选，不是待提交的最终版本。全文查看修复已经由AI1安排、AI2正在执行，不需要用户再次批准这一开发选择。最终标题应为 `Submit oncue-screening-room <最终版本>`，并替换所有版本、tag、SHA、截图、检查输出和七问答案。
+- 用户已授权 main 开发与交付；push、最终版本的tag与SHA记录、文档修正和可复现检查由两位AI继续完成。正式外部Submit仍只准备草稿，不代发；发布者身份与密钥的最终确认留到具体材料齐备时。
+- AI1已通过公开HTTPS仓库的普通Git读取核对main及具体文件。下文“本容器未核实公开性”仅指当时执行体环境的请求超时，不是仓库不存在或尚未push的结论。
+- 原生房间读取与真实共享Octos回合仍没有成功证据。旧 `profile_unresolved` 是历史观察，后来已有私有宿主配置与Agent prepared报告；尚未运行的新回合不能被断言仍然卡在同一错误。
+- 最终发布顺序：全文可读与准确说明/截图 → stamp → sign → check → 提交签名工件 → push并核对远端精确字节 → scan/publish/verify。保留sequence 8与旧候选历史，不重发相同版本，也不回滚镜像来掩盖顺序偏差。
+
+以下起草记录保留作溯源，**不可直接复制到正式issue**。
+
 - 起草：S3（`build/SUBMISSION.md`），起草时间 2026-10-01T22:06–22:15+08:00，本机 aarch64 / Linux
 - 依据：官方 OctoScript App Design Flow `docs/PUBLISHING.md` §3.8（其权威指向 App Hub `docs/PUBLISHING.md` "Submitting"，截至 `79a2c4f`）
 - 受众：将来用**本人 GitHub 账号**在
