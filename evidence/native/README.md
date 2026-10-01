@@ -42,3 +42,26 @@ window (990x613, not maximized). Steps follow oncue/docs/NATIVE-WORKFLOW.md.
   take list still shows the empty state. 保留这句 / 取回草稿 / 存 B / 取 A /
   取 B behave the same, while the draft input itself accepts typing, so the
   workspace is live but its buttons do not receive clicks.
+
+## 0.3.1 (native-fill-last.patch), 2026-10-01 16:5x
+
+Applied AI1's native-fill-last.patch on 9ccb859 (version 0.3.1, digest
+574a1d9a matches the patch's claim), stamped, signed with the working key,
+checked PASSED and published as catalog sequence 5.
+
+- 15-031-rinx-review.png — Rinx Developer Review bundle for the working
+  tree bundle: "OnCue · 群聊试映室 0.3.1 · Local unsigned bundle" with the
+  six services. (The import path must be real; symlinks are refused.)
+- 16/17 — the Rinx Developer host after Run, before and after pressing
+  试映下一幕. The layout fix landed: the trial input and the
+  试映下一幕/停止等待 row are now above the message area, so the buttons
+  exist and the rehearsal starts in the shorter developer viewport too.
+- 18 — the 990x613 module window: 现场原消息 shows #1 小林 and #2 阿柚
+  (the sample messages appear again) with the buttons still reachable.
+- 19 — the same window after 试映下一幕: 顺着这句, 假设剧本 · 0 / 3 行,
+  the hint line and 建议台词 render in the right column.
+- 20 — the 草稿与 A/B workspace in 0.3.1: 我的草稿 · 尚未发送, the draft
+  box, 保留这句/取回草稿, 两个草稿版本, 存 A/存 B/取 A/取 B and the empty
+  state. The save/restore round trip is still unverified: the draft box
+  did not take the typed text in this session, so 存 A could not be
+  exercised; recorded as pending, not as passing.
