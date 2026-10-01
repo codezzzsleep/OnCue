@@ -40,6 +40,40 @@ export XAUTHORITY="$ONCUE_XAUTHORITY"
 : "${ONCUE_LAUNCH_ACTION:=launch-hub:oncue-screening-room}"
 export OCTOSENSE_HUB OCTOSENSE_HUB_ANCHOR
 
+# ---- octos 内核与 core dir（无密钥；AI1 评审 #258 + #267）---------------------
+# 桌面宿主用 ai-host 的 KernelSource::Env 找内核：**只认 OCTOS_APP_CORE_BIN**，
+# 不会接管"任意一个已在跑的 octos serve"。没有它，宿主日志只会是：
+#   octos: no octos kernel: no kernel binary configured (OCTOS_APP_CORE_BIN)
+#
+# core dir 的解析顺序（crates/kernel/src/dirs.rs:18-45，first match wins）：
+#   1) shell 显式传入的 Options::core_dir
+#   2) **$OCTOS_APP_CORE_DIR**（非空）      ← 变量名就是它，没有别的
+#   3) <app data dir>/octos-home/.octos
+#   4) $HOME/octos-home/.octos
+# **重要**：dirs.rs 的 shared_profile_source 只在 ①② 都没设时，才从
+# $HOME/octos-home/.octos 继承旧 profile。所以一旦显式设置 $OCTOS_APP_CORE_DIR，
+# **不会自动迁移**——必须自己把 provider profile 放到
+#     <effective core dir>/profiles/_main.json
+# 本文件只放**路径**，不放任何取值/密钥；profile 内容由用户私有配置（600/700）。
+: "${OCTOS_APP_CORE_BIN:=$ONCUE_RUNTIME_ROOT/octos/octos}"
+: "${OCTOS_APP_CORE_DIR:=$ONCUE_STATE_DIR/octos-core}"
+export OCTOS_APP_CORE_BIN OCTOS_APP_CORE_DIR
+mkdir -p "$OCTOS_APP_CORE_DIR/profiles" 2>/dev/null || true
+
+# ---- 宿主出网代理（可选；AI1 #266 实测需要）----------------------------------
+# 本机直连 matrix.org **超时**（curl 6.2s connection timed out），
+# 但走本地 mixed 代理 200/0.83s，`.well-known/matrix/client` 也 200。
+# Rinx 的客户端若读系统代理环境变量，就需要把这三个变量一起给宿主。
+# NO_PROXY 必须带 127.0.0.1：宿主自己要连本地服务（如 App Hub 的 8765）。
+: "${ONCUE_HOST_PROXY:=}"
+if [ -n "$ONCUE_HOST_PROXY" ]; then
+  export HTTPS_PROXY="$ONCUE_HOST_PROXY" HTTP_PROXY="$ONCUE_HOST_PROXY"
+  : "${ONCUE_HOST_PROXY_SOCKS:=}"
+  [ -n "$ONCUE_HOST_PROXY_SOCKS" ] && export ALL_PROXY="$ONCUE_HOST_PROXY_SOCKS"
+  export NO_PROXY="${NO_PROXY:-localhost,127.0.0.1,::1}"
+  export no_proxy="$NO_PROXY"
+fi
+
 # ---- Rust 工具链 -------------------------------------------------------------
 export PATH="$HOME/.cargo/bin:$PATH"
 
