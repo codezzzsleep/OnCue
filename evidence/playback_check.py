@@ -5,7 +5,7 @@ import json
 import sys
 from pathlib import Path
 
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, expect
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--url", default="http://127.0.0.1:8787/")
@@ -55,7 +55,7 @@ try:
               "不如每人带一个线索，中午出发、当天回来？")
         check("Hypothetical dialogue stays labelled", page.locator(".fiction-tag").inner_text() == "假设对白")
         count = len(result["routes"][0]["replies"])
-        page.wait_for_function("document.querySelectorAll('#replies .reply:not([hidden])').length > 0")
+        page.wait_for_selector("#replies .reply:not([hidden])")
         check("Autoplay reveals replies", visible_count(page) > 0)
         page.locator("#show-scene").click()
         check("Show all reveals the current route", visible_count(page) == count)
@@ -71,7 +71,7 @@ try:
         check("Next cue reveals exactly one reply", visible_count(page) == frozen + 1)
         page.locator("#play-scene").focus()
         page.keyboard.press("Enter")
-        page.wait_for_function("document.querySelector('#play-scene').textContent === '重新播放'")
+        expect(page.locator("#play-scene")).to_have_text("重新播放", timeout=10_000)
         check("Keyboard play resumes to completion", visible_count(page) == count)
         shot(page, "01-playback-light.png")
 
