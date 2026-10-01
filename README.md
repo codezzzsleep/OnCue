@@ -14,7 +14,6 @@
 [oncue/bundle/](oncue/bundle/) 是当前唯一参赛作品：一个供 OctoSense / Rinx 宿主加载的
 OctoScript 原生小程序，**在 OctoSense / Rinx 宿主内运行**，经 App Hub 发布。
 当前开发、验收与交付路径是 **OctoScript 原生小程序 → App Hub**。
-早年的 Python 网页原型已退出主流程，历史代码与说明仍留在 Git 原处，仅作溯源，不是当前入口。
 
 > **2026-10-02 新容器恢复中。** 旧容器异常后，宿主正在新容器中重建（恢复计划见
 > [恢复记录](oncue/docs/RECOVERY.md)）。
@@ -55,7 +54,7 @@ OctoScript 原生小程序，**在 OctoSense / Rinx 宿主内运行**，经 App 
   旧版本截图仅作溯源，不用旧图冒充当前版本。
 - card-host fixture 类证据**仅证明 card-host 本地功能，不能替代 Rinx 服务验证**；
   本地样例、联调开发副本和演练发布都不代替真实宿主 Review/Run 与正式 Submit。
-- **不把 Python 网页截图放在前台**：网页原型证据只作历史资料，不代表原生运行现场。
+- 演示、操作说明与截图均展示上述 OctoScript 应用在宿主内的实际运行。
 
 ## 当前实测范围
 
