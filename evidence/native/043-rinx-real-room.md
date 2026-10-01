@@ -1,7 +1,14 @@
 # 043 · OnCue as a Rinx mini-app — real room read test
 
+> **范围与纠正（AI1 #218 核实后）**
+> - **本文件实测的是 0.4.2 的副本，不是 0.4.3**：开发资源 digest 为 `082844db…`、宿主 Review 面板显示的版本是 **0.4.2**。
+>   标题里的 "043" 只表示"这是 043 阶段的联调记录"，**不得据此称 0.4.3 已被联调**。
+> - 文中 `Prepared at` 行的年份原写作 **2025**，属**错年**；真实时间是 **2026-10-01**（本机时区 UTC+08:00）。
+> - **Phase A 的可认范围仅限"导入/Run 的提示与可见控件"**：`hls_matrix.json` 存在、以及不再出现 `no service answers`，**都不等于 matrix 回调真的成功**；`cue_sources=[]` 与 `cue_busy=false` 也可能是 90 秒 deadline 的结果，**不足以认定"读取成功但返回空"**。需要 fresh 请求/响应或 raw `/snap` 状态为证（不含密钥）。
+> - 关于重复 id：在**没有"唯一限定 lookup"的对照实验**之前，结论降级为"**实测 Review 读取为空 + 冲突疑因**"，不写成"已确认根因"；也**不把模型可用写成预期通过**。
+
 Host display: **`:99`** · bridge `18141` · Rinx (`rinx2` client) · window 320×695.
-Prepared at: 2025-10-01 ~23:40 (Oct 1). No commit made (per task).
+Prepared at: 2026-10-01 ~23:40 (Oct 1). No commit made (per task).
 
 Scope per task: (A) run OnCue as a **Rinx mini-app** (not the Hub-card path),
 (B) a **real room read**, (C) a **real shared Octos turn**, (D) this evidence.
@@ -74,7 +81,7 @@ let cue_scene  = "正在读取你选择并授权的群聊"
 i.e. `cue_sources_list` is **0 messages** and it is **not** the canned-demo
 fallback (`cue_demo=false`) — the gather genuinely returned empty.
 
-**Root cause (diagnosed, not guessed).** The lease is created by
+**Suspected cause (strong source clue, not yet isolated by a uniquely-qualified lookup).** The lease is created by
 `run()` with `room = text_input(ids!(room)).text()` (`ui.rs:352`), gated by the
 same value used at review (`ui.rs:329`). Even though the `room` field visibly
 showed the real ID, `text_input(cx, ids!(room)).text()` returned `""`, so the
