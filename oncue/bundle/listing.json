@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "subtitle": "先试着说，再决定要不要发",
-  "description": "把一句还没发出去的话放进群聊试映室：三个下一幕（顺着这句 / 换个问法 / 换个玩法）各出一段匿名假设对白，逐句播放、暂停、回看。选好的路线放进草稿，随时和改写前的原版对照。不换回话对象、不公开发言、不新增真实消息。",
+  "description": "把一句还没发出去的话放进群聊试映室，私下展开顺着这句、换个问法、换个玩法三条假设路线。选一条逐句播放、暂停或重播，再把建议放进自己的编辑框。草稿可以分别保存为 A 和 B，取回修改并上下对照。原消息是事实线索，假设对白与新提议仍需自己判断。",
   "category": "productivity",
   "keywords": [
     "群聊",
@@ -23,7 +23,7 @@
     "support": "https://github.com/codezzzsleep/OnCue/issues",
     "privacy_policy_url": "https://github.com/codezzzsleep/OnCue/blob/main/oncue/PRIVACY.md"
   },
-  "release_notes": "首个版本：三幕试映、逐句播放与暂停、台词改写后旧播放失效、存档恢复、开场提醒与路线提醒分离。",
+  "release_notes": "0.3.0 原生开发版：现场与排练分栏，草稿及 A/B 操作固定在滚动区域外；新增逐句播放、暂停、下一句、重播及过期计时器隔离；保存后回读核对。该版本的固定 Rinx 宿主实测尚未完成，现有截图来自较早版本首帧。发布前需更换同版本截图并重新扫描、签名。",
   "age_rating": "all",
   "license": "Apache-2.0"
 }

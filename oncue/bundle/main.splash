@@ -6,14 +6,26 @@ let cue_revision = 0
 let cue_scene = "样例舞台 · 国庆搭子局"
 let cue_take_a = ""
 let cue_take_b = ""
+let cue_play_index = 0
+let cue_play_lines = []
+let cue_play_count = 0
+let cue_playing = false
+let cue_play_epoch = 0
 
 fn cue_set_status(text){ ui.cue_status.set_text(text) }
 fn cue_set_busy(busy){
     cue_busy = busy
-    ui.cue_actions.render()
+}
+fn cue_pause_playback(){
+    cue_play_epoch += 1
+    cue_playing = false
+    ui.cue_play_button.set_text("播放")
 }
 fn cue_clear_routes(){
+    cue_pause_playback()
     cue_routes = []
+    cue_play_lines = []
+    cue_play_count = 0
     ui.cue_route_list.render()
 }
 fn cue_invalidate(){
@@ -25,7 +37,7 @@ fn cue_invalidate(){
     }
 }
 fn cue_stop_wait(){
-    if !cue_busy { return }
+    if !cue_busy { cue_set_status("当前没有正在等待的请求。") return }
     cue_invalidate()
     cue_set_status("已停止等待，可以重新载入或改一句再试。已经开始的模型回合仍可能完成。")
 }
@@ -117,7 +129,7 @@ fn cue_demo_routes(){
         {title: "换个问法", body: "虚构回应：给两个符合条件的方向，大家更容易作出选择。\n依据：#2、#3；选择结果未知。", draft: "给大家两个方向：A，中午去杭州、当天返回；B，在附近做半日游。两条路线都先核实总费用，大家更想查哪条？"},
         {title: "换个玩法", body: "虚构回应：不先报目的地，每人给一个想做的事，找线索交集。\n依据：#4 的目的地弹性；这项新提议还没有被同意。", draft: "玩个半日旅行盲盒吧：每人给一个想做的事，再一起选 12 点后能出发、当天能回、费用待核实的路线。"}
     ]
-    ui.cue_route_list.render()
+    cue_select_preview(0)
     cue_set_status("样例预设已展开；这些对白不是对真实群友的预测。")
 }
 fn cue_prompt(trial){
@@ -172,20 +184,79 @@ fn cue_rehearse(){
                 {title: "换个问法", body: blocks[3], draft: blocks[4]},
                 {title: "换个玩法", body: blocks[5], draft: blocks[6]}
             ]
-            ui.cue_route_list.render()
+            cue_select_preview(0)
             cue_set_status("现场：" + blocks[0] + "\n以下是 Agent 的假设排练，原消息仍在上方。")
         })
     })
 }
 fn cue_choose_route(index){
+    if index < 0 || index >= cue_routes.len() {
+        cue_set_status("先展开三条路线，再选择一份台词。")
+        return
+    }
     ui.cue_draft.set_text(cue_routes[index].draft)
+    cue_show_workspace(true)
     cue_set_status("台词已放进草稿，可以继续修改；尚未发送。")
+}
+fn cue_show_workspace(drafts){
+    ui.cue_route_workspace.set_visible(!drafts)
+    ui.cue_draft_workspace.set_visible(drafts)
+    if drafts { cue_pause_playback() }
+}
+fn cue_select_preview(index){
+    if index < 0 || index >= cue_routes.len() {
+        cue_set_status("先点试映下一幕，生成三条假设路线。")
+        return
+    }
+    cue_pause_playback()
+    cue_play_index = index
+    cue_play_lines = cue_routes[index].body.split("\n")
+    cue_play_count = 0
+    cue_show_workspace(false)
+    ui.cue_route_list.render()
+}
+fn cue_advance_playback(){
+    if cue_play_count < cue_play_lines.len() { cue_play_count += 1 }
+    ui.cue_route_list.render()
+}
+fn cue_play_pulse(epoch){
+    if epoch != cue_play_epoch || !cue_playing { return }
+    cue_advance_playback()
+    if cue_play_count >= cue_play_lines.len() {
+        cue_pause_playback()
+        cue_set_status("这条假设路线已播完。可以改台词、换路线，或把建议放进草稿。")
+        return
+    }
+    start_timeout(1.4, fn(){ cue_play_pulse(epoch) })
+}
+fn cue_toggle_playback(){
+    if cue_playing { cue_pause_playback() return }
+    if cue_routes.len() == 0 { cue_set_status("先试映下一幕，再播放假设对白。") return }
+    if cue_play_count >= cue_play_lines.len() { cue_play_count = 0 }
+    cue_playing = true
+    cue_play_epoch += 1
+    ui.cue_play_button.set_text("暂停")
+    cue_play_pulse(cue_play_epoch)
+}
+fn cue_next_line(){
+    cue_pause_playback()
+    if cue_routes.len() == 0 { cue_set_status("先展开三条路线。") return }
+    cue_advance_playback()
+}
+fn cue_restart_playback(){
+    cue_pause_playback()
+    cue_play_count = 0
+    ui.cue_route_list.render()
 }
 fn cue_keep_draft(){
     let text = ui.cue_draft.text().trim()
     if text == "" { cue_set_status("先选择或写一份草稿。") return }
     let result = fs.write("draft.txt", text)
-    if result == nil { cue_set_status("草稿已保存在本账号的小程序本地存储中；尚未发送。") }
+    if result == nil {
+        if fs.exists("draft.txt") && fs.read("draft.txt") == text {
+            cue_set_status("草稿已保存并回读确认；尚未发送。")
+        } else { cue_set_status("保存后的草稿回读不一致，请保留编辑框内容再试。") }
+    }
     else { cue_set_status("草稿暂时没有保存成功，请查看运行日志。") }
 }
 fn cue_restore_draft(){
@@ -210,8 +281,10 @@ fn cue_keep_take(slot){
     if slot == 1 { path = "take-b.txt" label = "B" }
     let result = fs.write(path, text)
     if result == nil {
-        cue_refresh_takes()
-        cue_set_status("版本 " + label + " 已保存；两个版本会留在本账号的小程序本地存储中。")
+        if fs.exists(path) && fs.read(path) == text {
+            cue_refresh_takes()
+            cue_set_status("版本 " + label + " 已保存并回读确认；关闭后可以取回。")
+        } else { cue_set_status("版本 " + label + " 保存后回读不一致，请保留编辑框内容再试。") }
     } else { cue_set_status("版本 " + label + " 暂时没有保存成功，请查看运行日志。") }
 }
 fn cue_restore_take(slot){
@@ -240,77 +313,104 @@ let CueText = P{
 SolidView{width: Fill height: Fill flow: Down padding: 16 spacing: 12 new_batch: true draw_bg.color: #xf5f7f3
     Label{text: "OnCue · 群聊试映室" draw_text.color: cue_ink draw_text.text_style: theme.font_bold{font_size: 24}}
     Label{text: "先试着说，再决定要不要发。" draw_text.color: cue_muted draw_text.text_style.font_size: 13}
-    content := ScrollYView{width: Fill height: Fill flow: Down spacing: 12
-        View{width: Fill height: Fit flow: Right spacing: 8
-            CueButton{text: "样例舞台" on_click: || cue_show_demo()}
-            CueButton{text: "载入群聊" on_click: || cue_import_room()}
-        }
-        cue_scene_label := CueText{text: "样例舞台"}
-        cue_sources_list := View{width: Fill height: Fit flow: Down spacing: 6 on_render: || {
-            if cue_sources.len() == 0 { CueText{text: "暂无原消息。导入时请在 Rinx 中选择一个群聊。"} }
-            for i in cue_sources.len() {
-                RoundedView{width: Fill height: Fit flow: Down padding: 12 new_batch: true draw_bg.color: #xffffff
-                    CueText{text: "#" + (i + 1) + " " + cue_sources[i].sender + "：" + cue_sources[i].body}
+    content := View{width: Fill height: Fill flow: Right spacing: 12
+        View{width: Fill height: Fill flow: Down spacing: 8
+            View{width: Fill height: Fit flow: Right spacing: 8
+                CueButton{text: "样例舞台" on_click: || cue_show_demo()}
+                CueButton{text: "载入群聊" on_click: || cue_import_room()}
+            }
+            cue_scene_label := CueText{text: "样例舞台"}
+            Label{text: "现场原消息" draw_text.color: cue_green}
+            cue_sources_list := ScrollYView{width: Fill height: Fill flow: Down spacing: 6 on_render: || {
+                if cue_sources.len() == 0 { CueText{text: "暂无原消息。导入时请在 Rinx 中选择自己的测试群聊。"} }
+                for i in cue_sources.len() {
+                    RoundedView{width: Fill height: Fit flow: Down padding: 10 new_batch: true draw_bg.color: #xffffff
+                        CueText{text: "#" + (i + 1) + " " + cue_sources[i].sender + "：" + cue_sources[i].body}
+                    }
                 }
+            }}
+            Label{text: "我想接一句" draw_text.color: cue_ink}
+            cue_trial := TextInput{width: Fill height: 64 empty_text: "写一句想说的话" on_change: |text| cue_edit_trial(text)
+                draw_bg +: {color: #xffffff color_hover: #xffffff color_focus: #xffffff color_empty: #xffffff border_radius: 10.0}
+                draw_text +: {color: cue_ink color_hover: cue_ink color_focus: cue_ink color_empty: cue_muted color_empty_hover: cue_muted}
             }
-        }}
-        Label{text: "我想接一句" draw_text.color: cue_ink}
-        cue_trial := TextInput{width: Fill height: 64 empty_text: "写一句想说的话" on_change: |text| cue_edit_trial(text)
-            draw_bg +: {color: #xffffff color_hover: #xffffff color_focus: #xffffff color_empty: #xffffff border_radius: 10.0}
-            draw_text +: {color: cue_ink color_hover: cue_ink color_focus: cue_ink color_empty: cue_muted color_empty_hover: cue_muted}
-        }
-        cue_actions := View{width: Fill height: Fit flow: Right spacing: 8
-            CueButton{text: "试映下一幕" on_click: || cue_rehearse()
-                draw_bg +: {color: cue_green color_hover: cue_green color_down: #x0b5536}
-                draw_text +: {color: #xffffff color_hover: #xffffff color_down: #xffffff}
-            }
-            if cue_busy { CueButton{text: "停止等待" on_click: || cue_stop_wait()} }
-        }
-        cue_status := CueText{text: "样例消息与对白均为虚构。"}
-        cue_route_list := View{width: Fill height: Fit flow: Down spacing: 10 on_render: || {
-            for i in cue_routes.len() {
-                RoundedView{width: Fill height: Fit flow: Down spacing: 10 padding: 14 new_batch: true draw_bg.color: #xffffff
-                    Label{text: cue_routes[i].title draw_text.color: cue_green draw_text.text_style.font_size: 18}
-                    CueText{text: cue_routes[i].body}
-                    CueText{text: "建议台词：" + cue_routes[i].draft}
-                    CueButton{text: "把这句放进草稿" on_click: || cue_choose_route(i)}
+            cue_actions := View{width: Fill height: Fit flow: Right spacing: 8
+                CueButton{text: "试映下一幕" on_click: || cue_rehearse()
+                    draw_bg +: {color: cue_green color_hover: cue_green color_down: #x0b5536}
+                    draw_text +: {color: #xffffff color_hover: #xffffff color_down: #xffffff}
                 }
+                CueButton{text: "停止等待" on_click: || cue_stop_wait()}
             }
-        }}
-        Label{text: "我的草稿" draw_text.color: cue_ink}
-        cue_draft := TextInput{width: Fill height: 72 empty_text: "选择路线后，在这里修改"
-            draw_bg +: {color: #xffffff color_hover: #xffffff color_focus: #xffffff color_empty: #xffffff border_radius: 10.0}
-            draw_text +: {color: cue_ink color_hover: cue_ink color_focus: cue_ink color_empty: cue_muted color_empty_hover: cue_muted}
         }
-        View{width: Fill height: Fit flow: Right spacing: 8
-            CueButton{text: "保留这句" on_click: || cue_keep_draft()}
-            CueButton{text: "取回草稿" on_click: || cue_restore_draft()}
-        }
-        Label{text: "两个版本" draw_text.color: cue_ink}
-        CueText{text: "把不同草稿存进 A / B，关闭后仍可取回并排对照。" draw_text.color: cue_muted}
-        View{width: Fill height: Fit flow: Right spacing: 8
-            CueButton{text: "保存为 A" on_click: || cue_keep_take(0)}
-            CueButton{text: "保存为 B" on_click: || cue_keep_take(1)}
-        }
-        cue_take_list := View{width: Fill height: Fit flow: Down spacing: 8 on_render: || {
-            if cue_take_a == "" && cue_take_b == "" {
-                CueText{text: "还没有保存版本。先改好一句，再分别保存为 A 和 B。"}
+        View{width: Fill height: Fill flow: Down spacing: 8
+            View{width: Fill height: Fit flow: Right spacing: 8
+                CueButton{text: "三条路线" on_click: || cue_show_workspace(false)}
+                CueButton{text: "草稿与 A/B" on_click: || { cue_show_workspace(true) cue_refresh_takes() }}
             }
-            if cue_take_a != "" {
-                RoundedView{width: Fill height: Fit flow: Down spacing: 8 padding: 12 new_batch: true draw_bg.color: #xffffff
-                    Label{text: "版本 A" draw_text.color: cue_green}
-                    CueText{text: cue_take_a}
-                    CueButton{text: "把 A 放回编辑框" on_click: || cue_restore_take(0)}
+            cue_route_workspace := View{width: Fill height: Fill flow: Down spacing: 8
+                View{width: Fill height: Fit flow: Right spacing: 6
+                    CueButton{text: "A 顺着说" on_click: || cue_select_preview(0)}
+                    CueButton{text: "B 换问法" on_click: || cue_select_preview(1)}
+                    CueButton{text: "C 换玩法" on_click: || cue_select_preview(2)}
                 }
-            }
-            if cue_take_b != "" {
-                RoundedView{width: Fill height: Fit flow: Down spacing: 8 padding: 12 new_batch: true draw_bg.color: #xffffff
-                    Label{text: "版本 B" draw_text.color: cue_green}
-                    CueText{text: cue_take_b}
-                    CueButton{text: "把 B 放回编辑框" on_click: || cue_restore_take(1)}
+                View{width: Fill height: Fit flow: Right spacing: 6
+                    cue_play_button := CueButton{text: "播放" on_click: || cue_toggle_playback()}
+                    CueButton{text: "下一句" on_click: || cue_next_line()}
+                    CueButton{text: "重播" on_click: || cue_restart_playback()}
                 }
+                cue_route_list := ScrollYView{width: Fill height: Fill flow: Down spacing: 8 on_render: || {
+                    if cue_routes.len() == 0 {
+                        CueText{text: "先在左侧写一句，点试映下一幕。再选 A / B / C，逐句看这条假设路线。"}
+                    }
+                    if cue_routes.len() > 0 {
+                        RoundedView{width: Fill height: Fit flow: Down spacing: 10 padding: 12 new_batch: true draw_bg.color: #xffffff
+                            Label{text: cue_routes[cue_play_index].title draw_text.color: cue_green draw_text.text_style.font_size: 18}
+                            CueText{text: "假设剧本 · " + cue_play_count + " / " + cue_play_lines.len() + " 行" draw_text.color: cue_muted}
+                            if cue_play_count == 0 { CueText{text: "按播放或下一句，看看这句话怎么被接住。"} }
+                            for i in cue_play_count { CueText{text: cue_play_lines[i]} }
+                            CueText{text: "建议台词：" + cue_routes[cue_play_index].draft}
+                        }
+                    }
+                }}
+                CueButton{text: "把这句放进草稿" on_click: || cue_choose_route(cue_play_index)}
             }
-        }}
-        CueText{text: "下一幕是私下排练。原消息是事实线索，虚构对白与新提议仍需你判断。" draw_text.color: cue_muted draw_text.text_style.font_size: 12}
+            cue_draft_workspace := View{width: Fill height: Fill visible: false flow: Down spacing: 8
+                Label{text: "我的草稿 · 尚未发送" draw_text.color: cue_ink}
+                cue_draft := TextInput{width: Fill height: 80 empty_text: "选择路线后，在这里修改"
+                    draw_bg +: {color: #xffffff color_hover: #xffffff color_focus: #xffffff color_empty: #xffffff border_radius: 10.0}
+                    draw_text +: {color: cue_ink color_hover: cue_ink color_focus: cue_ink color_empty: cue_muted color_empty_hover: cue_muted}
+                }
+                View{width: Fill height: Fit flow: Right spacing: 8
+                    CueButton{text: "保留这句" on_click: || cue_keep_draft()}
+                    CueButton{text: "取回草稿" on_click: || cue_restore_draft()}
+                }
+                Label{text: "两个草稿版本" draw_text.color: cue_green}
+                View{width: Fill height: Fit flow: Right spacing: 6
+                    CueButton{text: "存 A" on_click: || cue_keep_take(0)}
+                    CueButton{text: "存 B" on_click: || cue_keep_take(1)}
+                    CueButton{text: "取 A" on_click: || cue_restore_take(0)}
+                    CueButton{text: "取 B" on_click: || cue_restore_take(1)}
+                }
+                cue_take_list := ScrollYView{width: Fill height: Fill flow: Down spacing: 8 on_render: || {
+                    if cue_take_a == "" && cue_take_b == "" {
+                        CueText{text: "先改好一句存 A，再改另一句存 B。关闭后仍可取回对照。"}
+                    }
+                    if cue_take_a != "" {
+                        RoundedView{width: Fill height: Fit flow: Down spacing: 6 padding: 10 new_batch: true draw_bg.color: #xffffff
+                            Label{text: "版本 A" draw_text.color: cue_green}
+                            CueText{text: cue_take_a}
+                        }
+                    }
+                    if cue_take_b != "" {
+                        RoundedView{width: Fill height: Fit flow: Down spacing: 6 padding: 10 new_batch: true draw_bg.color: #xffffff
+                            Label{text: "版本 B" draw_text.color: cue_green}
+                            CueText{text: cue_take_b}
+                        }
+                    }
+                }}
+            }
+        }
     }
+    cue_status := CueText{text: "样例消息与对白均为虚构。"}
+    CueText{text: "原消息是事实线索；下一幕是私下假设排练，虚构对白与新提议仍需你判断。" draw_text.color: cue_muted draw_text.text_style.font_size: 12}
 }
