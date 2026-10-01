@@ -57,23 +57,30 @@ X11 约定 `0x20..0x7e` 的可打印 ASCII **其 keysym 值等于字符码**，�
 
 ---
 
-## 4. provider profile：密钥不进 profile（原生文件 secrets 布局）
+## 4. provider profile：密钥不进 profile（区分 host vault 与 octos keychain）
 
 `host-service/src/model.rs:284-300` 的 `save()` 写得明确：
 **vault 写成功 → profile 的 `config.env_vars.<ENV>` 只放 `"keychain:"` 标记**；
 只有 vault 写失败才回退把原文写进 profile。而 `vault.rs:79` 的 vault 目录是
 `<core_dir>/secrets`（0600 文件 / 0700 目录）。
 
-所以正确布局是：
+**灾后恢复实测纠正（2026-10-02）**：上述是 OctoSense `ai-providers` host
+写入侧的 vault；当前固定 octos CLI 在 Linux 解引用 `keychain:` 时读取的是
+`$HOME/.octos/secrets/<ACCOUNT>`（`octos-cli/src/auth/keychain.rs:235-292`），不是
+`<core_dir>/secrets`。把两者混为一处会导致 `MINIMAX_API_KEY not set or empty`。
+
+本项目直接生成 profile 后启动共享 octos kernel，正确运行时布局是：
 
 | 内容 | 位置 | 权限 |
 | --- | --- | --- |
-| 原始 provider 密钥（未加密） | `<core_dir>/secrets/<ENV>`（如 `MINIMAX_API_KEY`） | **0600**，目录 **0700** |
+| 原始 provider 密钥（未加密） | `$HOME/.octos/secrets/<ENV>`（如 `MINIMAX_API_KEY`） | **0600**，目录 **0700** |
 | profile | `<core_dir>/profiles/_main.json`，`env_vars.<ENV> = "keychain:"` | **0600** |
 
-`deploy/tools/make_provider_profile.py` 就按这个布局写，并自检
+`deploy/tools/make_provider_profile.py` 就按这个运行时布局写，并自检
 **profile 里没有原始密钥**（只放 `keychain:` 标记）。这个脚本没有加密 secrets 文件，
 权限隔离与加密是不同的保证；密钥文件留在宿主私有目录，不进应用包或 Git。
+`<core_dir>/secrets` 若由 AI Providers GUI 维护，仍属于另一套 host vault；不要用它
+替代 octos CLI keychain，也不要在两处长期保留同一密钥副本。
 另外：profile 必须是**完整 envelope**（`id/name/created_at/updated_at/config`），
 裸 `{config}` 会被 octos 当作"没有 profile"。core dir 的权威变量是 **`$OCTOS_APP_CORE_DIR`**，
 而且**显式设置它会关闭**从 `$HOME/octos-home/.octos` 的自动 profile 迁移

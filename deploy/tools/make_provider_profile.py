@@ -5,10 +5,10 @@
   - 文件位置 `<core_dir>/profiles/_main.json`，权限 0600（原子替换）
   - 必须有完整 envelope：id/name/enabled/created_at/updated_at/config
     （**裸 `{config}` 会被 octos 当作"没有 profile"**，见 profile.rs 注释）
-  - profile 只放原生 keychain 标记；600 secrets 文件存放原始密钥
+  - profile 只放原生 keychain 标记；Linux octos keychain 的 0600 文件存放原始密钥
 
 用法:
-  make_provider_profile.py [--creds PATH] [--core-dir DIR] [--dry-run]
+  make_provider_profile.py [--creds PATH] [--core-dir DIR] [--octos-home DIR] [--dry-run]
 """
 import argparse
 import json
@@ -20,6 +20,7 @@ from pathlib import Path
 
 DEFAULT_CREDS = "/root/oncue-runtime/state/ai2-credentials.json"
 DEFAULT_CORE = os.environ.get("OCTOS_APP_CORE_DIR", "/root/oncue-runtime/state/octos-core")
+DEFAULT_OCTOS_HOME = str(Path.home() / ".octos")
 
 
 def mask(v):
@@ -42,6 +43,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--creds", default=DEFAULT_CREDS)
     ap.add_argument("--core-dir", default=DEFAULT_CORE)
+    ap.add_argument(
+        "--octos-home",
+        default=DEFAULT_OCTOS_HOME,
+        help="octos CLI keychain home；固定 Linux 实现默认是 $HOME/.octos",
+    )
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
 
@@ -79,14 +85,15 @@ def main():
                     },
                 }
             },
-            # 原生文件 secrets 路径：profile 只放 keychain 标记；
-            # 原始值放 <core_dir>/secrets/<ENV>，0600 / 目录 0700。
-            # 依据：host-service/src/model.rs:284-300 的 save()（vault 成功→标记；失败才回退原文）
-            #      与 vault.rs:79 SecretsDir::new(core_dir.join("secrets"))。
+            # profile 只放 keychain 标记。注意存在两个不同实现：
+            # - OctoSense ai-providers host vault: <core_dir>/secrets
+            # - octos CLI Linux keychain:         <octos_home>/secrets
+            # ProfileRuntime 最终由 octos CLI 的 resolve_env_vars 解引用，
+            # 所以本脚本必须写后者；固定源码默认 octos_home=$HOME/.octos。
             "env_vars": {key_env: "keychain:"},
         },
     }
-    secret_path = Path(a.core_dir) / "secrets" / key_env
+    secret_path = Path(a.octos_home).expanduser().resolve() / "secrets" / key_env
     dest = Path(a.core_dir) / "profiles" / "_main.json"
     if dest.exists():
         existing = json.loads(dest.read_text(encoding="utf-8"))
@@ -122,7 +129,7 @@ def main():
     dest.parent.mkdir(parents=True, exist_ok=True)
     os.chmod(dest.parent, 0o700)
 
-    # 1) SecretsDir::put 写原始字节，不额外加换行；原子替换并保持 0600。
+    # 1) octos CLI Linux keychain 写原始字节，不额外加换行；原子替换并保持 0600。
     secret_path.parent.mkdir(parents=True, exist_ok=True)
     os.chmod(secret_path.parent, 0o700)
     sfd, stmp = tempfile.mkstemp(dir=str(secret_path.parent), prefix=".key.", suffix=".tmp")

@@ -122,7 +122,12 @@
 - 同族第二个路由会拿到独立槽位 `<FAMILY>_<n>_API_KEY`（n=2,3,…）：`host-service/README.md:186-196`。
 - 特例：`VERTEX_SA_JSON` 是 service-account JSON（同走 keychain）：`registry.rs:59-60`。
 
-**落点（Linux）**：`host-service/src/vault.rs:66-80` —— vault 用 `SecretsDir`（`<core_dir>/secrets/<ENV>`，0600；README.md:211-213 表格），profile 里只写 `keychain:` 标记；vault 拒绝时才把原文写进 profile：`host-service/src/model.rs:286-299`。octos 侧解析器：`$OCT/crates/octos-cli/src/auth/keychain.rs`（Linux secrets 目录、macOS `security` generic-password；`README.md:203-218`）。
+**落点（Linux，必须区分两层）**：`host-service/src/vault.rs:66-80` 的写入侧 vault 是
+`<core_dir>/secrets/<ENV>`；但固定 octos CLI 的运行时解析器
+`$OCT/crates/octos-cli/src/auth/keychain.rs:235-292` 读取的是
+`$HOME/.octos/secrets/<ACCOUNT>`。灾后恢复实测把密钥只放前者会报
+`MINIMAX_API_KEY not set or empty`。本项目的无界面恢复脚本因此写后者；profile 仍只写
+`keychain:` 标记。两处同名目录不是同一个 keychain。
 
 ### 3.3 如何注入共享 kernel / 子进程
 
@@ -269,9 +274,9 @@ DEEPSEEK_API_KEY=… cargo run --locked -p octosense-llm-service --example model
     `route.base_url` 显式落盘（`profile.rs:256-259`）；否则内核会打到 `.io` 端点（国内 key 会 401）。
 - model：实测 `MiniMax-M2.7` 在目录中存在（`config/data/model_catalog.json`，family `minimax`），
   不是该族 `default: true` 项（默认是 `MiniMax-M3`）——保存时选具体 model id，别依赖默认。
-- key env：`minimax` 族读 `MINIMAX_API_KEY`（`registry.rs:77-78`）。宿主 sheet 输入的 key 会进
-  Linux vault `<core_dir>/secrets/MINIMAX_API_KEY`（0600），profile 里只留 `keychain:` 标记
-  （`vault.rs:66-80`、`README.md:209-214`、`model.rs:292-298`）。
+- key env：`minimax` 族读 `MINIMAX_API_KEY`（`registry.rs:77-78`）。宿主 sheet 的 host vault
+  与 octos CLI 运行时 keychain 路径不同；本项目直接启动 kernel 时，原始 key 必须位于
+  `$HOME/.octos/secrets/MINIMAX_API_KEY`（0600），profile 里只留 `keychain:` 标记。
 - Python 侧成功（`minimax-live-result.json`）**不是**原生回合证据，不能互相代替
   （原生验收清单第 11 项：`$ON/dev/OnCue/oncue/docs/NATIVE-WORKFLOW.md:29`）。
 
@@ -311,7 +316,8 @@ DEEPSEEK_API_KEY=… cargo run --locked -p octosense-llm-service --example model
 
 - `enabled: true` 会被宿主强制（`profile.rs:193`）；`route.api_key_env` 仅在非默认键名时出现，
   这里用默认 `MINIMAX_API_KEY` 故省略（`profile.rs:264-269`）；
-- `"keychain:"` 表示真值在 vault `secrets/MINIMAX_API_KEY`（`vault.rs:45-51, 66-80`）——**占位符，不是凭据**；
+- `"keychain:"` 表示真值由 octos CLI keychain 的 `$HOME/.octos/secrets/MINIMAX_API_KEY`
+  解引用——**占位符，不是凭据**；不要误指向 `<core_dir>/secrets` 的 host vault；
 - 若选 `minimax-cn` 族 + `MiniMax-M3`，则 `family_id: "minimax-cn"`、`model_id: "MiniMax-M3"`，
   路由可省 `base_url`（用默认 `https://api.minimaxi.com/v1`），键名 `MINIMAX_CN_API_KEY`。
   **两者不要混搭**：国内 `.cn` 端点 + `minimax`（国际族）组合必须显式写 `base_url`，否则不生效。
@@ -388,13 +394,14 @@ PY
 `primary.family_id` 为 `minimax`、`model_id` 为 `MiniMax-M2.7`、`route.base_url` 为 `https://api.minimax.cn/v1`；
 `env_vars` 的键为 `MINIMAX_API_KEY`，值为 `keychain:` 标记（或原值——**不要在输出里回显**）。
 
-### 9.3 vault（Linux secrets 目录）
+### 9.3 octos CLI keychain（Linux secrets 目录）
 
 ```bash
-ls -l /root/oncue-runtime/state/octos-core/secrets/ 2>/dev/null
+ls -l "$HOME/.octos/secrets/" 2>/dev/null
 ```
 
-预期：存在 `MINIMAX_API_KEY` 文件、权限 0600（`vault.rs:66-80`、`README.md:209-214`）。只列文件名，不读内容。
+预期：存在 `MINIMAX_API_KEY` 文件、权限 0600，父目录 0700。只列文件名，不读内容。
+`<core_dir>/secrets` 是 OctoSense host vault，不能用它证明 octos CLI 已能解引用。
 
 ### 9.4 共享 kernel 重启的日志特征
 
