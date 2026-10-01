@@ -18,9 +18,15 @@ import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
-DEFAULT_CREDS = "/root/oncue-runtime/state/ai2-credentials.json"
-DEFAULT_CORE = os.environ.get("OCTOS_APP_CORE_DIR", "/root/oncue-runtime/state/octos-core")
-DEFAULT_OCTOS_HOME = str(Path.home() / ".octos")
+DEFAULT_RUNTIME = os.environ.get("ONCUE_RUNTIME_ROOT", "/srv/oncue-runtime")
+DEFAULT_HOST_HOME = os.environ.get("ONCUE_HOST_HOME", "/srv/oncue-home")
+DEFAULT_CREDS = str(Path(DEFAULT_RUNTIME) / "state" / "ai2-credentials.json")
+DEFAULT_CORE = os.environ.get(
+    "OCTOS_APP_CORE_DIR", str(Path(DEFAULT_RUNTIME) / "state" / "octos-core")
+)
+DEFAULT_OCTOS_HOME = os.environ.get(
+    "ONCUE_OCTOS_HOME", str(Path(DEFAULT_HOST_HOME) / ".octos")
+)
 
 
 def mask(v):

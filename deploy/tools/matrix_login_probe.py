@@ -15,9 +15,10 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-DEFAULT_CREDS = "/root/oncue-runtime/state/ai2-credentials.json"
+DEFAULT_RUNTIME = os.environ.get("ONCUE_RUNTIME_ROOT", "/srv/oncue-runtime")
+DEFAULT_CREDS = str(Path(DEFAULT_RUNTIME) / "state" / "ai2-credentials.json")
 DEFAULT_HS = "matrix-client.matrix.org"          # 由 Rinx 的发现流程得到
-DEFAULT_TOKEN_OUT = "/root/oncue-runtime/state/matrix-session.json"
+DEFAULT_TOKEN_OUT = str(Path(DEFAULT_RUNTIME) / "state" / "matrix-session.json")
 PROXY = "http://127.0.0.1:17888"
 TIMEOUT = 30
 

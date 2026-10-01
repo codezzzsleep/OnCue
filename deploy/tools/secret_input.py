@@ -9,13 +9,15 @@
 """
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-DEFAULT_CREDS = "/root/oncue-runtime/state/ai2-credentials.json"
-DEFAULT_VNC_PW = "/root/oncue-runtime/state/vnc/vnc.password.txt"
+DEFAULT_RUNTIME = os.environ.get("ONCUE_RUNTIME_ROOT", "/srv/oncue-runtime")
+DEFAULT_CREDS = str(Path(DEFAULT_RUNTIME) / "state" / "ai2-credentials.json")
+DEFAULT_VNC_PW = str(Path(DEFAULT_RUNTIME) / "state" / "vnc" / "vnc.password.txt")
 
 
 def get_field(path, dotted):

@@ -15,6 +15,7 @@ x0vncserver 把 RFB 事件经 XTest 送进 X server —— 走的是**真实事�
 密码从私有文件读，不在命令行暴露。
 """
 import argparse
+import os
 import socket
 import struct
 import sys
@@ -24,6 +25,8 @@ from pathlib import Path
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 DES = algorithms.TripleDES
+DEFAULT_RUNTIME = os.environ.get("ONCUE_RUNTIME_ROOT", "/srv/oncue-runtime")
+DEFAULT_VNC_PW = str(Path(DEFAULT_RUNTIME) / "state" / "vnc" / "vnc.password.txt")
 
 # RFB key codes: printable ASCII 的 keysym 就等于字符码
 KEYNAMES = {
@@ -147,7 +150,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--host", default="127.0.0.1")
     ap.add_argument("--port", type=int, default=5901)
-    ap.add_argument("--password-file", default="/root/oncue-runtime/state/vnc/vnc.password.txt")
+    ap.add_argument("--password-file", default=DEFAULT_VNC_PW)
     ap.add_argument("action", choices=["click", "move", "drag", "type", "key", "keyname"])
     ap.add_argument("args", nargs="*")
     a = ap.parse_args()
