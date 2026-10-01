@@ -261,16 +261,24 @@ fn cue_restart_playback(){
     cue_show_workspace(false)
     if cue_routes.len() > 0 { cue_set_status("已回到 0 / " + cue_play_lines.len() + " 行；点击播放从第一句开始。") }
 }
+fn cue_save_text(path, text, label){
+    let saved = try {
+        fs.write(path, text)
+        fs.exists(path) && fs.read(path) == text
+    } catch {
+        false
+    }
+    if !saved {
+        cue_set_status(label + "没有保存完成；编辑框内容仍在。请检查应用存储空间，再重试。")
+    }
+    saved
+}
 fn cue_keep_draft(){
     let text = ui.cue_draft.text().trim()
-    if text == "" { cue_set_status("先选择或写一份草稿。") return }
-    let result = fs.write("draft.txt", text)
-    if result == nil {
-        if fs.exists("draft.txt") && fs.read("draft.txt") == text {
-            cue_set_status("草稿已保存并回读确认；尚未发送。")
-        } else { cue_set_status("保存后的草稿回读不一致，请保留编辑框内容再试。") }
+    if text == "" { cue_set_status("先点用这句，或在草稿框写一句，再保存。") return }
+    if cue_save_text("draft.txt", text, "草稿") {
+        cue_set_status("草稿已保存并回读确认；尚未发送。")
     }
-    else { cue_set_status("草稿暂时没有保存成功，请查看运行日志。") }
 }
 fn cue_restore_draft(){
     if fs.exists("draft.txt") {
@@ -288,18 +296,15 @@ fn cue_refresh_takes(){
 }
 fn cue_keep_take(slot){
     let text = ui.cue_draft.text().trim()
-    if text == "" { cue_set_status("先选择或写一份草稿，再保存版本。") return }
+    if text == "" { cue_set_status("先点用这句，或在草稿框写一句，再保存版本。") return }
     let path = "take-a.txt"
     let label = "A"
     if slot == 1 { path = "take-b.txt" label = "B" }
-    let result = fs.write(path, text)
-    if result == nil {
-        if fs.exists(path) && fs.read(path) == text {
-            cue_show_workspace(true)
-            cue_refresh_takes()
-            cue_set_status("版本 " + label + " 已保存并回读确认；关闭后可以取回。")
-        } else { cue_set_status("版本 " + label + " 保存后回读不一致，请保留编辑框内容再试。") }
-    } else { cue_set_status("版本 " + label + " 暂时没有保存成功，请查看运行日志。") }
+    if cue_save_text(path, text, "版本 " + label) {
+        cue_show_workspace(true)
+        cue_refresh_takes()
+        cue_set_status("版本 " + label + " 已保存并回读确认；关闭后可以取回。")
+    }
 }
 fn cue_restore_take(slot){
     let text = cue_take_a
