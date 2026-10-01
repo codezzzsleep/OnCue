@@ -5,10 +5,10 @@
 （本机是 `:99`）。`card-host` 在 `:97`/`:98` 这类**没有 VNC** 的 display 上渲染时，
 必须直接用 XTest 把指针事件送进那个 X server。
 
-用法:
-  xclick.py click X Y            # 移动 + 按下 + 抬起（左键）
-  xclick.py move X Y
-  xclick.py press X Y [button]   # button: 1=左 2=中 3=右
+用法（调用方须显式设置正确的 DISPLAY/XAUTHORITY）:
+  python3 xclick.py click X Y            # 移动 + 按下 + 抬起（左键）
+  python3 xclick.py move X Y
+  python3 xclick.py press X Y [button]   # button: 1=左 2=中 3=右
 """
 import ctypes
 import ctypes.util
@@ -35,6 +35,19 @@ def main():
         print(__doc__, file=sys.stderr)
         return 2
     what = sys.argv[1]
+    expected = {"move": (4, 4), "click": (4, 4), "press": (4, 5)}
+    if what not in expected or not expected[what][0] <= len(sys.argv) <= expected[what][1]:
+        print(__doc__, file=sys.stderr)
+        return 2
+    try:
+        x, y = int(sys.argv[2]), int(sys.argv[3])
+        btn = int(sys.argv[4]) if len(sys.argv) > 4 else 1
+    except ValueError:
+        print("X、Y 和 button 必须是整数", file=sys.stderr)
+        return 2
+    if x < 0 or y < 0 or not 1 <= btn <= 5:
+        print("X/Y 必须非负，button 必须在 1..5", file=sys.stderr)
+        return 2
     x11, xtst = load()
     dpy = x11.XOpenDisplay(None)
     if not dpy:
@@ -42,35 +55,34 @@ def main():
         return 1
 
     def motion(x, y):
-        xtst.XTestFakeMotionEvent(dpy, -1, x, y, 0)   # -1 = 当前 screen
+        if not xtst.XTestFakeMotionEvent(dpy, -1, x, y, 0):   # -1 = 当前 screen
+            raise RuntimeError("XTestFakeMotionEvent 失败")
         x11.XFlush(dpy)
         time.sleep(0.08)
 
     if what == "move":
-        motion(int(sys.argv[2]), int(sys.argv[3]))
-        print(f"moved ({sys.argv[2]},{sys.argv[3]})")
-    elif what == "click":
-        x, y = int(sys.argv[2]), int(sys.argv[3])
         motion(x, y)
-        xtst.XTestFakeButtonEvent(dpy, 1, 1, 0)
+        print(f"moved ({x},{y})")
+    elif what == "click":
+        motion(x, y)
+        if not xtst.XTestFakeButtonEvent(dpy, 1, 1, 0):
+            raise RuntimeError("XTest 左键按下失败")
         x11.XFlush(dpy)
         time.sleep(0.06)
-        xtst.XTestFakeButtonEvent(dpy, 1, 0, 0)
+        if not xtst.XTestFakeButtonEvent(dpy, 1, 0, 0):
+            raise RuntimeError("XTest 左键抬起失败")
         x11.XFlush(dpy)
         print(f"clicked ({x},{y}) via XTest")
     elif what == "press":
-        x, y = int(sys.argv[2]), int(sys.argv[3])
-        btn = int(sys.argv[4]) if len(sys.argv) > 4 else 1
         motion(x, y)
-        xtst.XTestFakeButtonEvent(dpy, btn, 1, 0)
+        if not xtst.XTestFakeButtonEvent(dpy, btn, 1, 0):
+            raise RuntimeError(f"XTest button {btn} 按下失败")
         x11.XFlush(dpy)
         time.sleep(0.06)
-        xtst.XTestFakeButtonEvent(dpy, btn, 0, 0)
+        if not xtst.XTestFakeButtonEvent(dpy, btn, 0, 0):
+            raise RuntimeError(f"XTest button {btn} 抬起失败")
         x11.XFlush(dpy)
         print(f"pressed ({x},{y}) button={btn} via XTest")
-    else:
-        print(f"未知动作 {what}", file=sys.stderr)
-        return 2
     x11.XSync(dpy, 0)
     return 0
 

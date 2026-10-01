@@ -5,31 +5,59 @@
 为什么不 prepend：main.splash 第 1 行就是 `let cue_sources = []`，
 在它前面赋值会与 `let` 冲突（且可能触发 TDZ），所以直接**替换第 1 行**。
 
-用法: make_probe_bundle.py <fixture.txt> <out_dir> [app_id]
+用法: python3 make_probe_bundle.py <fixture.txt> <out_dir> [app_id]
+
+生成后必须使用官方 card-host 的 ``--stamp`` 重新计算开发探针摘要；
+本工具会主动移除复制来的旧摘要，避免把不一致的产物误当成已校验包。
 """
 import json
-import re
 import shutil
 import sys
 from pathlib import Path
 
-SRC_BUNDLE = Path("/root/hackthon/OnCue/oncue/bundle")
+REPO_ROOT = Path(__file__).resolve().parents[2]
+SRC_BUNDLE = REPO_ROOT / "oncue" / "bundle"
 
 
 def esc(s: str) -> str:
     """转成 Splash 字符串字面量内容：反斜杠、双引号、换行。"""
-    return s.replace("\\", "\\\\").replace('"', '\\"').replace("\r\n", "\n").replace("\n", "\\n")
+    return s.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
+
+
+def validate_out(out: Path) -> Path:
+    """拒绝会删除仓库、源码、当前目录或广泛父目录的输出路径。"""
+    resolved = out.expanduser().resolve()
+    protected = (Path("/"), Path.cwd().resolve(), REPO_ROOT, SRC_BUNDLE)
+    if resolved in protected:
+        raise ValueError(f"拒绝危险输出目录: {resolved}")
+    if REPO_ROOT.is_relative_to(resolved):
+        raise ValueError(f"输出目录不能包含仓库: {resolved}")
+    if resolved.is_relative_to(SRC_BUNDLE):
+        raise ValueError(f"输出目录不能位于源 bundle 内: {resolved}")
+    if not resolved.name:
+        raise ValueError(f"无效输出目录: {resolved}")
+    return resolved
 
 
 def main():
     if len(sys.argv) < 3:
         print(__doc__, file=sys.stderr)
         return 2
-    fixture = Path(sys.argv[1])
-    out = Path(sys.argv[2])
+    fixture = Path(sys.argv[1]).expanduser().resolve()
+    try:
+        out = validate_out(Path(sys.argv[2]))
+    except ValueError as error:
+        print(error, file=sys.stderr)
+        return 2
     app_id = sys.argv[3] if len(sys.argv) > 3 else "ai2-probe-" + fixture.stem
 
-    text = fixture.read_text(encoding="utf-8")
+    if not fixture.is_file():
+        print(f"夹具不存在或不是文件: {fixture}", file=sys.stderr)
+        return 2
+    text = fixture.read_text(encoding="utf-8").replace("\r\n", "\n")
+    if "\r" in text or "\x00" in text:
+        print("夹具含不受支持的孤立 CR 或 NUL", file=sys.stderr)
+        return 2
     if out.exists():
         shutil.rmtree(out)
     shutil.copytree(SRC_BUNDLE, out)
@@ -63,6 +91,7 @@ def main():
     m["name"] = f"分页探针 {fixture.stem}"
     m["capabilities"] = ["storage"]
     integ = m.setdefault("integrity", {})
+    integ.pop("bundle_blake3", None)
     integ.pop("signature", None)
     integ.pop("publisher", None)
     mf.write_text(json.dumps(m, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -73,6 +102,7 @@ def main():
     print(f"探针包    : {out}")
     print(f"  app_id={app_id}  main.splash={splash.stat().st_size} B")
     print(f"  第1行已内联夹具（转义后 {len(esc(text))} 字符）")
+    print("  摘要已移除；运行前必须用 card-host --stamp 重新计算")
     return 0
 
 
