@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""从私有凭据生成 octos 内核的 provider profile —— **不打印任何密文**。
+"""从私有凭据合并 octos 内核的 provider profile，不打印任何密钥片段。
 
 权威格式：`apps/ai-providers/config/src/profile.rs:1-30`
   - 文件位置 `<core_dir>/profiles/_main.json`，权限 0600（原子替换）
   - 必须有完整 envelope：id/name/enabled/created_at/updated_at/config
     （**裸 `{config}` 会被 octos 当作"没有 profile"**，见 profile.rs 注释）
-  - `config.env_vars.<NAME>` 放密文；`config.llm.primary.route.api_key_env` 指定变量名
+  - profile 只放原生 keychain 标记；600 secrets 文件存放原始密钥
 
 用法:
   make_provider_profile.py [--creds PATH] [--core-dir DIR] [--dry-run]
@@ -79,41 +79,61 @@ def main():
                     },
                 }
             },
-            # 原生优先路径：密文**不写进 profile**，profile 只放 keychain 标记；
-            # 真值放 <core_dir>/secrets/<ENV>，0600 / 目录 0700。
+            # 原生文件 secrets 路径：profile 只放 keychain 标记；
+            # 原始值放 <core_dir>/secrets/<ENV>，0600 / 目录 0700。
             # 依据：host-service/src/model.rs:284-300 的 save()（vault 成功→标记；失败才回退原文）
             #      与 vault.rs:79 SecretsDir::new(core_dir.join("secrets"))。
             "env_vars": {key_env: "keychain:"},
         },
     }
     secret_path = Path(a.core_dir) / "secrets" / key_env
+    dest = Path(a.core_dir) / "profiles" / "_main.json"
+    if dest.exists():
+        existing = json.loads(dest.read_text(encoding="utf-8"))
+        if not isinstance(existing, dict) or not isinstance(existing.get("config", {}), dict):
+            raise SystemExit("现有 profile 格式错误；未写入")
+        for field in ("id", "name", "created_at"):
+            profile[field] = existing.get(field, profile[field])
+        config = existing.setdefault("config", {})
+        llm = config.setdefault("llm", {})
+        env_vars = config.setdefault("env_vars", {})
+        if not isinstance(llm, dict) or not isinstance(env_vars, dict):
+            raise SystemExit("现有 profile llm/env_vars 格式错误；未写入")
+        llm["primary"] = profile["config"]["llm"]["primary"]
+        env_vars[key_env] = "keychain:"
+        existing.update({k: profile[k] for k in ("id", "name", "created_at", "updated_at", "enabled")})
+        profile = existing
 
     print("写入计划（脱敏）:")
     print(f"  profile  : {Path(a.core_dir) / 'profiles' / '_main.json'}")
-    print(f"  secret   : {secret_path}  ← 密文放这里（0600，目录 0700）")
-    print(f"  env_vars : {key_env} = 'keychain:'  ← profile 里只放标记，不放密文")
+    print(f"  secret   : {secret_path}  ← 原始密钥，仅本机私有文件（0600，目录 0700）")
+    print(f"  env_vars : {key_env} = 'keychain:'  ← profile 里只放标记")
     print(f"  id/name  : {profile['id']} / {profile['name']}  enabled={profile['enabled']}")
     print(f"  family_id: {family_id}")
     print(f"  model_id : {model_id}")
     print(f"  base_url : {mask(base_url)}")
     print(f"  api_type : {api_type}")
-    print(f"  api_key  : {mask(api_key)}（只在 secrets 文件里，不进 profile）")
+    print(f"  api_key  : len={len(api_key)} ***（只在 secrets 文件里，不进 profile）")
 
     if a.dry_run:
         print("--dry-run：未写盘")
         return 0
 
-    dest = Path(a.core_dir) / "profiles" / "_main.json"
     dest.parent.mkdir(parents=True, exist_ok=True)
     os.chmod(dest.parent, 0o700)
 
-    # 1) 原生 secrets 文件：<core_dir>/secrets/<ENV>，0600 / 目录 0700
+    # 1) SecretsDir::put 写原始字节，不额外加换行；原子替换并保持 0600。
     secret_path.parent.mkdir(parents=True, exist_ok=True)
     os.chmod(secret_path.parent, 0o700)
-    sfd = os.open(secret_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
-    with os.fdopen(sfd, "w", encoding="utf-8") as fh:
-        fh.write(api_key + "\n")
-    os.chmod(secret_path, 0o600)
+    sfd, stmp = tempfile.mkstemp(dir=str(secret_path.parent), prefix=".key.", suffix=".tmp")
+    try:
+        with os.fdopen(sfd, "w", encoding="utf-8") as fh:
+            fh.write(api_key)
+        os.chmod(stmp, 0o600)
+        os.replace(stmp, secret_path)
+    finally:
+        if os.path.exists(stmp):
+            os.unlink(stmp)
 
     # 2) profile：原子替换 + 0600（与 profile.rs 的写盘约定一致）
     fd, tmp = tempfile.mkstemp(dir=str(dest.parent), prefix="._main.", suffix=".tmp")
@@ -133,14 +153,14 @@ def main():
     ok_envelope = all(k in back for k in ("id", "name", "created_at", "updated_at", "config"))
     ok_llm = bool(back["config"]["llm"]["primary"].get("family_id")
                   and back["config"]["llm"]["primary"].get("model_id"))
-    # 关键自检：profile 里**不能**出现密文本身，只能是 keychain 标记
+    # 关键自检：profile 里不能出现原始密钥，只能是 keychain 标记
     env_vals = back["config"].get("env_vars", {})
     profile_has_marker = env_vals.get(key_env) == "keychain:"
     profile_leaks_secret = any(isinstance(v, str) and api_key in v for v in env_vals.values())
     print(f"已写入 profile : {dest}  权限={oct(st.st_mode & 0o777)}  字节={st.st_size}")
     print(f"已写入 secret  : {secret_path}  权限={oct(sst.st_mode & 0o777)}  字节={sst.st_size}")
     print(f"自检：envelope 完整={ok_envelope}  有 llm.primary={ok_llm}")
-    print(f"自检：profile 里是 keychain 标记={profile_has_marker}  密文未泄漏进 profile={not profile_leaks_secret}")
+    print(f"自检：profile 里是 keychain 标记={profile_has_marker}  原始密钥未进入 profile={not profile_leaks_secret}")
     return 0 if (ok_envelope and ok_llm and profile_has_marker and not profile_leaks_secret) else 1
 
 

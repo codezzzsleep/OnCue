@@ -12,7 +12,8 @@
   level 1 → 按下 Shift_L；然后 XTestFakeKeyEvent 按下/抬起
 因此不依赖 US 布局假设，也不依赖 RFB 的映射实现。
 
-用法: xtype.py <text>      # 用法同 rfb_input.py type，但只做键盘
+用法: xtype.py <text>      # 仅非秘密文本
+      xtype.py --stdin    # 私有文本从 stdin 读取，不进入命令行
 """
 import ctypes
 import ctypes.util
@@ -37,6 +38,7 @@ def load():
     x11.XkbKeycodeToKeysym.restype = ctypes.c_ulong
     x11.XkbKeycodeToKeysym.argtypes = [ctypes.c_void_p, ctypes.c_ubyte, ctypes.c_int, ctypes.c_int]
     x11.XFlush.argtypes = [ctypes.c_void_p]
+    x11.XCloseDisplay.argtypes = [ctypes.c_void_p]
     xtst.XTestFakeKeyEvent.restype = ctypes.c_int
     xtst.XTestFakeKeyEvent.argtypes = [ctypes.c_void_p, ctypes.c_uint, ctypes.c_int, ctypes.c_ulong]
     return x11, xtst
@@ -59,7 +61,7 @@ def plan(x11, dpy, ch):
     for level in range(4):
         if x11.XkbKeycodeToKeysym(dpy, kc, 0, level) == keysym:
             return kc, level
-    return kc, 0
+    return None
 
 
 def tap(xtst, dpy, keycode, delay=8):
@@ -69,9 +71,9 @@ def tap(xtst, dpy, keycode, delay=8):
 
 def main():
     if len(sys.argv) < 2:
-        print("usage: xtype.py <text>", file=sys.stderr)
+        print("usage: xtype.py <text> | --stdin", file=sys.stderr)
         return 2
-    text = sys.argv[1]
+    text = sys.stdin.read() if sys.argv[1] == "--stdin" else sys.argv[1]
     x11, xtst = load()
     dpy = x11.XOpenDisplay(None)
     if not dpy:
@@ -79,13 +81,14 @@ def main():
         return 1
     shift_kc = x11.XKeysymToKeycode(dpy, XK_SHIFT_L)
 
+    plans = [plan(x11, dpy, ch) for ch in text]
+    unmapped = sum(p is None or p[1] not in (0, 1) for p in plans)
+    if unmapped or (any(p[1] == 1 for p in plans) and not shift_kc):
+        print(f"无法映射 {unmapped} 个字符或 Shift 键不可用；未输入任何字符", file=sys.stderr)
+        x11.XCloseDisplay(dpy)
+        return 1
     sent = 0
-    skipped = []
-    for ch in text:
-        p = plan(x11, dpy, ch)
-        if p is None:
-            skipped.append(ch)
-            continue
+    for p in plans:
         kc, level = p
         need_shift = level == 1
         if need_shift:
@@ -97,10 +100,8 @@ def main():
         time.sleep(0.03)
         sent += 1
     x11.XFlush(dpy)
-    print(f"typed {sent} 字符；无法映射 {len(skipped)} 个")
-    if skipped:
-        # 只报字符类别，避免把内容写进日志
-        print(f"  无法映射的字符: {skipped}")
+    x11.XCloseDisplay(dpy)
+    print(f"typed {sent} 字符；无法映射 0 个")
     return 0
 
 

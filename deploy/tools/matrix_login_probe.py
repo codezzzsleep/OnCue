@@ -51,7 +51,7 @@ def main():
 
     print(f"POST {url}")
     print(f"identifier(user_id) = @{mask(user_id.lstrip('@'))}")
-    print(f"password            = {mask(password)}")
+    print(f"password            = len={len(password)} ***")
     print(f"proxy               = {'(直连)' if a.no_proxy else PROXY}")
 
     handlers = []
