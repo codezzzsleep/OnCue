@@ -1,0 +1,13 @@
+wrote the review packet to evidence/native/041-hub-scan.packet.json
+{
+  "route": "pass",
+  "reasons": [
+    "Source-level check: the listing claims match the source (same title, subtitle, sample scene, three rehearsal routes and draft box). This is not a runtime-verified pass; see the reviewer answers for the items still pending at run time.",
+    "Category productivity and the single platform linux reflect what was actually exercised.",
+    "All six granted capabilities have a visible use: storage for the draft file, matrix.room_info/read_messages for room import, octos.session.open/octos.turn.start for the rehearsal, octos.turn.interrupt for stopping; none is unused.",
+    "No deceptive UI: no system prompt, payment sheet, login or brand imitation; sample content is labelled fictional.",
+    "The prompt text is the app's function sent through octos.turn.start, with explicit anti-injection wording; nothing in the source executes as a local instruction.",
+    "No abusive wording and no private individuals; all sample senders are fictional.",
+    "Publisher note: the bundle is signed with the local working key oncue.local and stamped; the local anchor cert is the only trust root in this dev mirror, there is no external CA."
+  ]
+}
