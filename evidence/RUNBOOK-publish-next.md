@@ -152,8 +152,8 @@ cd "$REPO"
 # 0.1 若发新版：改 manifest.json 的 "version": "0.4.0" -> "0.5.0"（其余字段不动）
 # 0.2 换同版本截图：替换 oncue/bundle/screenshots/*.png，并保证 listing.json 的
 #     "screenshots"/"icon" 名字与包内文件一致（gate 强制：至少 1 张截图 + 图标，gate.rs:188-198）
-git add -A && git commit -m "0.5.0 ..."        # ★ 先提交，再发布：让 source.commit 真的包含这些字节（见 §6）
-git rev-parse HEAD > /tmp/publish-head.txt     # 记录发布时 HEAD
+# 此时不记录发布用的commit；stamp与sign还会修改manifest。
+# 完成步骤3后，先提交最终签名工件，再记录发布用的commit。
 ```
 
 ### 步骤 1 — stamp（digest 写回 manifest）
@@ -182,6 +182,20 @@ git rev-parse HEAD > /tmp/publish-head.txt     # 记录发布时 HEAD
 # 若还是 0.4.0：REFUSED [version] "version 0.4.0 ... already published; publish a new version"，exit 1
 ```
 
+### 步骤 3.1 — 提交最终签名工件并记录 commit
+
+```bash
+cd "$REPO"
+git add oncue/bundle
+git commit -m "Freeze the signed native release"
+git push origin main
+git rev-parse HEAD > /tmp/publish-head.txt
+# 核对bundle与该提交里的字节一致；这之后不再修改bundle。
+git diff --exit-code HEAD -- oncue/bundle
+```
+
+只把已核对的工件加入提交。私钥、账号和运行配置留在仓库外；不能用 `git add -A` 将未知运行文件混入发布。
+
 ### 步骤 4 — publish
 
 ```bash
@@ -206,7 +220,7 @@ oncue-screening-room 0.5.0 — PASSED
 published oncue-screening-room 0.5.0 (catalog sequence 7)
 ```
 
-> 也可以直接用 `/root/oncue-runtime/deploy/publish-local-hub.sh`（它内含等价序列，L26-47），但它把 `--commit` 固定为 `$(cd "$REPO" && git rev-parse HEAD)`（L42）。用脚本前先 `git commit`，否则记录的 commit 不含 bundle（见 §6 的 0.4.0 实例）。脚本 `set -euo pipefail`，任一步失败整体中止。
+> 现有 `/root/oncue-runtime/deploy/publish-local-hub.sh` 会先签名再以当时HEAD发布，不能直接假定HEAD包含签名后的manifest。建议按上方显式步骤执行；若复用脚本，须先修成签名与检查后提交精确工件、再记录该提交并发布的顺序，并核对最终字节。脚本失败即中止，不跳过签名或gate。
 
 ### 步骤 5 — verify --anchor
 
@@ -268,7 +282,7 @@ OCTOSENSE_HUB=$MIRROR OCTOSENSE_HUB_ANCHOR=$(cat "$KEYS/anchor.pub")   # publish
 
 ## 6. 如何确认新条目 `source.commit` 等于当时 HEAD
 
-1. 发布前：`git -C "$REPO" rev-parse HEAD` 存证（步骤 0.2）。
+1. 发布前：stamp/sign/check完成并将最终签名工件提交main后，记录 `git -C "$REPO" rev-parse HEAD`（步骤 3.1）。
 2. 发布后：步骤 6 打印 `source.commit`，与存证字符串比对。
 3. **hub 不校验 `--commit`**（`hub.rs:99` 原样传入，`gate.rs:406` 原样写入）——写错也发布成功，只能靠事后核对。`--commit ""` 同样合法。
 4. **真实反面教材（实测）**：本镜像 0.4.0 条目的 `source.commit = 47cbbd5...`（0.3.1 提交），而 0.4.0 的提交是 `4e47c4d...`——即发布时 bundle 已是 0.4.0 但尚未提交，`git rev-parse HEAD` 拿到的是父提交。结论：**先把签名后的工件提交并 push，再 `publish --commit` 那个提交**。任何"先 commit 再签"或"先发布后提交"的做法，都会让 catalog 的 `source.commit` 无法定位到可复现的字节（0.4.1 条目就是这个情形：它记的是签名前的 `c1485ba`，签名后的精确字节在同仓库的后续提交里）。
