@@ -9,6 +9,23 @@
 > 本记录所有登录、保存、截图与模型回合证据都是历史版本，**不代表当前运行现场**；
 > 恢复完成后，会替换为本次容器实际产出的证据。
 
+**2026-10-02 恢复进展（本次容器实际结果）**：宿主 OctoSense 已在固定提交 `6c4746f0` 于本容器
+重新构建成功（`CARGO_BUILD_JOBS=2 cargo build --release --locked -p octosense`，exit 0，
+产物 sha256 `6ee5eb1565bafbe53c38e972a916ce546d928c0d54ac238b100d542971e25fc3`），并在
+Xvfb `:99`（llvmpipe、真实 X 认证）上实际启动，日志 `wm: modules linked: ["rinx","terminal","apphub","card"]`；
+`--test-action launch-rinx` 的首帧是真实 Rinx 授权面板。**这不等于 OnCue 小程序已在宿主内运行**：
+把 0.4.3 包装入本地演练 hub 后 `--test-action launch-hub:oncue-screening-room` 当前**没有开出窗口**，
+原因仍在定位（已排除「不在 registry」）。旧登录/账号/截图证据仍是历史版本。
+
+**0.4.4 未签名开发候选（分页修复，尚未宿主验证）**：`main.splash` 依据固定 makepad `1f3b1ded`
+的字符 API（`string.len()` 是 UTF-8 字节、`to_chars()` 是逐字符 `u32` 数组）重做分页，新增
+`cue_paginate`/`cue_is_wide` 以及消息、对白、现场摘要、A/B 各自的翻页与"第 N 页 / 共 M 页"；
+`manifest.json` 版本升为 `0.4.4` 并**移除旧签名**（`hub check --allow-unsigned` = **PASSED**，
+资源摘要 `b7c95e1661b73e84e6efced0752ebe3c02f17ebdfaa4c077b39784e707db5d77`）。
+证据见 [044-pagination](../evidence/native/044-pagination/)。**仅逻辑自检通过（Python 对照 11 个用例），
+不代表 OctoScript 实际执行、不代表像素可读、不是宿主验收**；`probe-plan.md` 与 `test-plan.md`
+都明确标注为未运行。
+
 截至2026-10-01，main 中 **0.4.3为开发候选，整体项目未验收**。
 当前验收只以 OctoScript 原生应用、实际 Rinx／共享 Octos 和 App Hub 交付为准。
 AI1已读取 `0478dfb` 的源码与报告并逐张查看全部12张0.4.3真实截图。

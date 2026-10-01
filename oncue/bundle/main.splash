@@ -4,16 +4,22 @@ let cue_demo = true
 let cue_busy = false
 let cue_revision = 0
 let cue_scene = "样例舞台 · 国庆搭子局"
+let cue_summary = ""
 let cue_take_a = ""
 let cue_take_b = ""
 let cue_play_index = 0
 let cue_playing = false
 let cue_play_epoch = 0
-let cue_show_takes = false
 let cue_take_read = 0
+let cue_read_mode = 0
 let cue_msg_index = 0
-let cue_dialogue_page = 0
-let cue_page_lines = 2
+let cue_msg_page = 0
+let cue_ws_page = 0
+let cue_page_cols = 11
+let cue_page_rows = 5
+let cue_msg_rows = 4
+let cue_msg_pages = [""]
+let cue_ws_pages = [""]
 
 fn cue_set_status(text){ ui.cue_status.set_text(text) }
 fn cue_set_busy(busy){
@@ -24,27 +30,122 @@ fn cue_pause_playback(){
     cue_playing = false
     ui.cue_play_button.set_text("播放")
 }
-fn cue_dialogue_total(){
-    if cue_routes.len() == 0 { return 0 }
-    let combined = cue_routes[cue_play_index].body + "\n" + cue_routes[cue_play_index].draft
-    combined.split("\n").len()
+
+// ---- 字符级分页 ----
+// 依据（makepad revision 1f3b1dedfbb81424eb8dbf69e5e2c634fa73dc54）：
+//   string.to_chars()  -> heap.string_to_chars_array，str.chars() 逐个转 u32，
+//                         结果存为 ScriptArrayStorage::U32（string_heap.rs:580-618）
+//   array.to_string()   -> U32 存储逐元素 char::from_u32 还原字符（array.rs:459-482）
+//   array.push()        -> U32 存储把值转 u32 后追加，存储类型不变（array.rs:327-333）
+//   array.len()         -> 元素个数（不是字节数）
+// 因此页缓冲必须从 "".to_chars() 起、只 push 码点、最后 .to_string()；
+// 绝不能把码点 push 进普通 [] 再 to_string()（那会走 cast_to_string 输出十进制文本）。
+// 宽度启发式只用于"预估视觉行数"，偏多算（安全）不会丢字符，
+// 偏少算只会让渲染器多折一行，仍在每页行数预算内。
+fn cue_is_wide(c){
+    if c >= 9472 { return true }
+    if c >= 126976 && c <= 129791 { return true }
+    false
 }
+// 宽度启发式只用于"预估视觉行数"：偏多算安全，偏少算只会让渲染器多折一行。
+// 每页最多 page_rows 条视觉行（末行可不满），因此阅读区高度有确定上界。
+fn cue_paginate(text, page_rows){
+    // 视觉行模型与 makepad 文本排版一致（draw/src/text/layouter.rs:375-400）：
+    // 文本按 "\n" 切段，段内按列数折行，收尾的空段也算一行。
+    // 因此本函数保证：每个中间页占用的视觉行数 <= page_rows，
+    // 且除最后一页外都不会以 "\n" 收尾（否则会多出一条空行）。
+    let chars = text.to_chars()
+    let total = chars.len()
+    let pages = []
+    if total == 0 {
+        pages.push("")
+        return pages
+    }
+    let page = "".to_chars()
+    let cols = 0
+    let rows = 1
+    for i in total {
+        let c = chars[i]
+        if c == 10 {
+            if rows >= page_rows {
+                // 本页已满：不带这个换行符结算，换行符进新页
+                pages.push(page.to_string())
+                page = "".to_chars()
+                rows = 1
+                cols = 0
+            }
+            page.push(c)
+            cols = 0
+            if rows >= page_rows {
+                pages.push(page.to_string())
+                page = "".to_chars()
+                rows = 1
+                cols = 0
+            } else {
+                rows += 1
+            }
+        } else {
+            let w = 1
+            if cue_is_wide(c) { w = 2 }
+            if cols + w > cue_page_cols {
+                if rows >= page_rows {
+                    pages.push(page.to_string())
+                    page = "".to_chars()
+                    rows = 1
+                    cols = 0
+                } else {
+                    rows += 1
+                    cols = 0
+                }
+            }
+            page.push(c)
+            cols += w
+        }
+    }
+    if page.len() > 0 { pages.push(page.to_string()) }
+    pages
+}
+
+// ---- 现场原消息：整条可分页 ----
 fn cue_sync_message(){
     if cue_sources.len() == 0 {
-        ui.cue_msg_label.set_text("暂无原消息。请打开样例舞台，或在已授权的宿主里选择群聊读取。")
+        ui.cue_msg_head.set_text("")
         ui.cue_msg_counter.set_text("0 / 0")
+        cue_msg_pages = ["暂无原消息。请打开样例舞台，或在已授权的宿主里选择群聊读取。"]
+        cue_msg_page = 0
+        ui.cue_msg_page_label.set_text("第 1 页 / 共 1 页")
+        ui.cue_msg_pager.render()
         return
     }
     let s = cue_sources[cue_msg_index]
-    ui.cue_msg_label.set_text("#" + (cue_msg_index + 1) + " " + s.sender + "：" + s.body)
+    ui.cue_msg_head.set_text("#" + (cue_msg_index + 1) + " " + s.sender)
     ui.cue_msg_counter.set_text((cue_msg_index + 1) + " / " + cue_sources.len())
+    cue_msg_pages = cue_paginate(s.body, cue_msg_rows)
+    if cue_msg_page >= cue_msg_pages.len() { cue_msg_page = cue_msg_pages.len() - 1 }
+    if cue_msg_page < 0 { cue_msg_page = 0 }
+    ui.cue_msg_page_label.set_text("第 " + (cue_msg_page + 1) + " 页 / 共 " + cue_msg_pages.len() + " 页")
+    ui.cue_msg_pager.render()
 }
 fn cue_message_prev(){
-    if cue_msg_index > 0 { cue_msg_index -= 1 }
+    if cue_msg_index > 0 {
+        cue_msg_index -= 1
+        cue_msg_page = 0
+    }
     cue_sync_message()
 }
 fn cue_message_next(){
-    if cue_msg_index < cue_sources.len() - 1 { cue_msg_index += 1 }
+    if cue_msg_index < cue_sources.len() - 1 {
+        cue_msg_index += 1
+        cue_msg_page = 0
+    }
+    cue_sync_message()
+}
+fn cue_msg_page_prev(){
+    if cue_msg_page > 0 { cue_msg_page -= 1 }
+    cue_sync_message()
+}
+fn cue_msg_page_next(){
+    if cue_msg_page + 1 < cue_msg_pages.len() { cue_msg_page += 1 }
     cue_sync_message()
 }
 fn cue_sync_reader(){
@@ -55,11 +156,12 @@ fn cue_sync_reader(){
 fn cue_clear_routes(){
     cue_pause_playback()
     cue_routes = []
-    cue_dialogue_page = 0
+    cue_rebuild_ws()
     cue_sync_reader()
 }
 fn cue_invalidate(){
     cue_revision += 1
+    cue_summary = ""
     cue_clear_routes()
     if cue_busy {
         cue_set_busy(false)
@@ -101,9 +203,11 @@ fn cue_show_demo(){
         {sender: "七喜", body: "行，那先按 300 排一版看看。"}
     ]
     cue_msg_index = 0
+    cue_msg_page = 0
+    cue_summary = "虚构现场摘要：三位群友都在中午 12 点以后有空，预算 300 左右，倾向当天往返；返程车次、是否住宿仍未确认，先按此排一版。"
     ui.cue_scene_label.set_text(cue_scene)
     ui.cue_trial.set_text("那我们明早 9 点出发，在杭州住一晚？")
-    cue_sync_reader()
+    cue_set_mode(0)
     cue_set_status("虚构群聊与预设路线，仅供体验玩法。")
 }
 fn cue_import_room(){
@@ -111,6 +215,7 @@ fn cue_import_room(){
     cue_demo = false
     cue_sources = []
     cue_msg_index = 0
+    cue_msg_page = 0
     cue_sync_reader()
     cue_scene = "正在读取你选择并授权的群聊"
     ui.cue_scene_label.set_text(cue_scene)
@@ -137,11 +242,12 @@ fn cue_import_room(){
             }
             cue_sources = result.data.messages
             cue_msg_index = 0
+            cue_msg_page = 0
             cue_sync_reader()
             if cue_sources.len() == 0 {
                 cue_set_status("这个群聊暂时没有可读取的文本消息。")
             } else {
-                cue_set_status("原消息已载入，可逐条翻看。")
+                cue_set_status("原消息已载入，可逐条翻看；长消息可用“上翻 / 下翻”逐页读完。")
             }
         })
     })
@@ -188,7 +294,7 @@ fn cue_rehearse(){
     if cue_busy { cue_set_status("这一幕正在展开，请稍等。") return }
     let trial = ui.cue_trial.text().trim()
     if trial == "" { cue_set_status("先写一句想接的话。") return }
-    if trial.len() > 240 { cue_set_status("先把台词缩到 240 字以内。") return }
+    if trial.to_chars().len() > 240 { cue_set_status("先把台词缩到 240 字以内。") return }
     if cue_sources.len() == 0 { cue_set_status("先载入一个群聊，或打开样例舞台。") return }
     cue_invalidate()
     if cue_demo { cue_demo_routes() return }
@@ -226,7 +332,8 @@ fn cue_rehearse(){
                 {title: "换个玩法", body: blocks[5], draft: blocks[6]}
             ]
             cue_select_preview(0)
-            cue_set_status("现场：" + blocks[0] + "\n以下是 Agent 的假设排练，原消息仍在上方。")
+            cue_summary = blocks[0]
+            cue_set_status("现场摘要已就绪，点“摘要”可逐页读完；以下是 Agent 的假设排练，原消息仍在上方。")
         })
     })
 }
@@ -239,11 +346,43 @@ fn cue_choose_route(index){
     cue_pause_playback()
     cue_set_status("台词已放进草稿，可以继续修改；尚未发送。")
 }
-fn cue_show_workspace(drafts){
-    cue_show_takes = drafts
-    cue_dialogue_page = 0
-    if drafts { cue_pause_playback() }
+
+// ---- 阅读区（右侧）：对白/建议、现场摘要、A/B 对照 三条独立阅读路径 ----
+fn cue_ws_text(){
+    if cue_read_mode == 1 { return cue_summary }
+    if cue_read_mode == 2 {
+        if cue_take_read == 1 { return cue_take_b }
+        return cue_take_a
+    }
+    if cue_routes.len() == 0 { return "" }
+    cue_routes[cue_play_index].body + "\n" + cue_routes[cue_play_index].draft
+}
+fn cue_rebuild_ws(){
+    cue_ws_pages = cue_paginate(cue_ws_text(), cue_page_rows)
+    if cue_ws_page >= cue_ws_pages.len() { cue_ws_page = cue_ws_pages.len() - 1 }
+    if cue_ws_page < 0 { cue_ws_page = 0 }
+}
+fn cue_set_mode(mode){
+    cue_read_mode = mode
+    cue_ws_page = 0
+    cue_pause_playback()
+    cue_rebuild_ws()
     cue_sync_reader()
+}
+fn cue_show_dialogue(){
+    cue_set_mode(0)
+}
+fn cue_show_summary(){
+    if cue_summary == "" { cue_set_status("还没有现场摘要：先点“试映下一幕”。") return }
+    cue_set_status("正在阅读现场摘要，第 1 页起逐页读完。")
+    cue_set_mode(1)
+}
+fn cue_show_takes(){
+    if cue_take_a == "" && cue_take_b == "" {
+        cue_set_status("先改好一句存 A，再改另一句存 B。关闭后仍可取回对照。")
+        return
+    }
+    cue_set_mode(2)
 }
 fn cue_select_preview(index){
     if index < 0 || index >= cue_routes.len() {
@@ -252,14 +391,16 @@ fn cue_select_preview(index){
     }
     cue_pause_playback()
     cue_play_index = index
-    cue_dialogue_page = 0
-    cue_show_workspace(false)
+    cue_ws_page = 0
+    cue_read_mode = 0
+    cue_rebuild_ws()
+    cue_sync_reader()
     cue_set_status("已选“" + cue_routes[index].title + "”；翻到最后一页看完整假设路线。")
 }
 fn cue_play_pulse(epoch){
     if epoch != cue_play_epoch || !cue_playing { return }
-    if (cue_dialogue_page + 1) * cue_page_lines < cue_dialogue_total() {
-        cue_dialogue_page += 1
+    if cue_ws_page + 1 < cue_ws_pages.len() {
+        cue_ws_page += 1
         cue_sync_reader()
         start_timeout(1.4, fn(){ cue_play_pulse(epoch) })
         return
@@ -271,11 +412,11 @@ fn cue_play_pulse(epoch){
 fn cue_toggle_playback(){
     if cue_playing {
         cue_pause_playback()
-        cue_set_status("已暂停在第 " + (cue_dialogue_page + 1) + " 页；可继续播放或手动翻页。")
+        cue_set_status("已暂停在第 " + (cue_ws_page + 1) + " 页；可继续播放或手动翻页。")
         return
     }
     if cue_routes.len() == 0 { cue_set_status("先试映下一幕，再播放假设对白。") return }
-    cue_show_workspace(false)
+    if cue_read_mode != 0 { cue_set_mode(0) }
     cue_playing = true
     cue_play_epoch += 1
     ui.cue_play_button.set_text("暂停")
@@ -283,28 +424,35 @@ fn cue_toggle_playback(){
     cue_play_pulse(cue_play_epoch)
 }
 fn cue_page_prev(){
-    if cue_routes.len() == 0 { cue_set_status("先试映下一幕，再翻页。") return }
     cue_pause_playback()
-    if cue_dialogue_page > 0 { cue_dialogue_page -= 1 }
-    cue_set_status("已翻到第 " + (cue_dialogue_page + 1) + " 页；仍是未发送的排练。")
+    if cue_ws_pages.len() == 0 {
+        cue_set_status("这一路还没有可读内容。")
+        return
+    }
+    if cue_ws_page > 0 { cue_ws_page -= 1 }
+    cue_set_status("已翻到第 " + (cue_ws_page + 1) + " 页 / 共 " + cue_ws_pages.len() + " 页；仍是未发送的排练。")
     cue_sync_reader()
 }
 fn cue_page_next(){
-    if cue_routes.len() == 0 { cue_set_status("先试映下一幕，再翻页。") return }
     cue_pause_playback()
-    if (cue_dialogue_page + 1) * cue_page_lines < cue_dialogue_total() {
-        cue_dialogue_page += 1
-        cue_set_status("已翻到第 " + (cue_dialogue_page + 1) + " 页；仍是未发送的排练。")
+    if cue_ws_pages.len() == 0 {
+        cue_set_status("这一路还没有可读内容。")
+        return
+    }
+    if cue_ws_page + 1 < cue_ws_pages.len() {
+        cue_ws_page += 1
+        cue_set_status("已翻到第 " + (cue_ws_page + 1) + " 页 / 共 " + cue_ws_pages.len() + " 页；仍是未发送的排练。")
     } else {
-        cue_set_status("已到最后一页；仍是未发送的排练。")
+        cue_set_status("已到最后一页 / 共 " + cue_ws_pages.len() + " 页；仍是未发送的排练。")
     }
     cue_sync_reader()
 }
 fn cue_restart_playback(){
     cue_pause_playback()
-    cue_dialogue_page = 0
-    cue_show_workspace(false)
-    if cue_routes.len() > 0 { cue_set_status("已回到第 1 页；点击播放逐页播放。") }
+    cue_ws_page = 0
+    cue_rebuild_ws()
+    cue_sync_reader()
+    if cue_routes.len() > 0 { cue_set_status("已回到第 1 页 / 共 " + cue_ws_pages.len() + " 页；点击播放逐页播放。") }
 }
 fn cue_save_text(path, text, label){
     let saved = try {
@@ -331,13 +479,11 @@ fn cue_restore_draft(){
         cue_set_status("上次草稿已取回；请对照当前群聊再修改。")
     } else { cue_set_status("还没有保存过草稿。") }
 }
-
 fn cue_refresh_takes(){
     cue_take_a = ""
     cue_take_b = ""
     if fs.exists("take-a.txt") { cue_take_a = fs.read("take-a.txt") }
     if fs.exists("take-b.txt") { cue_take_b = fs.read("take-b.txt") }
-    cue_sync_reader()
 }
 fn cue_keep_take(slot){
     let text = ui.cue_draft.text().trim()
@@ -347,8 +493,12 @@ fn cue_keep_take(slot){
     if slot == 1 { path = "take-b.txt" label = "B" }
     if cue_save_text(path, text, "版本 " + label) {
         cue_take_read = slot
-        cue_show_workspace(true)
         cue_refresh_takes()
+        cue_read_mode = 2
+        cue_ws_page = 0
+        cue_pause_playback()
+        cue_rebuild_ws()
+        cue_sync_reader()
         cue_set_status("版本 " + label + " 已保存并回读确认；关闭后可以取回。")
     }
 }
@@ -361,9 +511,22 @@ fn cue_restore_take(slot){
     cue_set_status("版本 " + label + " 已放回编辑框；尚未发送。")
 }
 fn cue_read_take(slot){
-    cue_show_workspace(true)
-    cue_take_read = slot
     cue_refresh_takes()
+    let text = cue_take_a
+    if slot == 1 { text = cue_take_b }
+    if text == "" {
+        if slot == 1 { cue_set_status("版本 B 还没有内容；先写一版再存 B。") }
+        else { cue_set_status("版本 A 还没有内容；先写一版再存 A。") }
+        return
+    }
+    cue_read_mode = 2
+    cue_take_read = slot
+    cue_ws_page = 0
+    cue_pause_playback()
+    cue_rebuild_ws()
+    cue_sync_reader()
+    if slot == 1 { cue_set_status("正在阅读版本 B，第 1 页 / 共 " + cue_ws_pages.len() + " 页；仍是未发送的排练。") }
+    else { cue_set_status("正在阅读版本 A，第 1 页 / 共 " + cue_ws_pages.len() + " 页；仍是未发送的排练。") }
 }
 
 start_timeout(0.05, fn(){ cue_show_demo() cue_refresh_takes() })
@@ -372,7 +535,7 @@ let cue_ink = #x193629
 let cue_muted = #x53675a
 let cue_green = #x136c47
 let CueButton = ButtonFlat{
-    height: 32 padding: Inset{left: 8 right: 8}
+    height: 28 padding: Inset{left: 8 right: 8}
     draw_bg +: {border_radius: 10.0 color: #xe5eee7 color_hover: #xd7e7db color_down: #xc7dccd border_size: 0.0}
     draw_text +: {color: cue_ink color_hover: cue_ink color_down: cue_ink}
 }
@@ -415,8 +578,20 @@ SolidView{width: Fill height: Fill flow: Down padding: 12 spacing: 8 new_batch: 
                 CueButton{text: "下一条" on_click: || cue_message_next()}
                 cue_msg_counter := Label{text: "0 / 0" width: Fill draw_text.color: cue_muted draw_text.text_style.font_size: 12}
             }
+            View{width: Fill height: Fit flow: Right spacing: 6 align: Align{y: 0.5}
+                CueButton{text: "上翻" on_click: || cue_msg_page_prev()}
+                CueButton{text: "下翻" on_click: || cue_msg_page_next()}
+                cue_msg_page_label := Label{text: "第 1 页 / 共 1 页" width: Fill draw_text.color: cue_muted draw_text.text_style.font_size: 12}
+            }
             RoundedView{width: Fill height: Fill flow: Down padding: 12 new_batch: true draw_bg.color: #xffffff
-                cue_msg_label := CueText{text: "暂无原消息。请打开样例舞台，或在已授权的宿主里选择群聊读取。"}
+                cue_msg_head := CueText{text: "" draw_text.color: cue_muted draw_text.text_style.font_size: 13}
+                cue_msg_pager := View{width: Fill height: Fit flow: Down spacing: 6 on_render: || {
+                    let idx = cue_msg_page
+                    if idx >= cue_msg_pages.len() { idx = 0 }
+                    for i in cue_msg_pages.len() {
+                        if i == idx { CueText{text: cue_msg_pages[i]} }
+                    }
+                }}
             }
         }
         View{width: Fill height: Fill flow: Down spacing: 6
@@ -435,8 +610,8 @@ SolidView{width: Fill height: Fill flow: Down padding: 12 spacing: 8 new_batch: 
                 CueButton{text: "取 B" on_click: || cue_restore_take(1)}
             }
             View{width: Fill height: Fit flow: Right spacing: 5
-                CueButton{text: "对白" on_click: || cue_show_workspace(false)}
-                CueButton{text: "A/B 对照" on_click: || { cue_show_workspace(true) cue_refresh_takes() }}
+                CueButton{text: "对白" on_click: || cue_show_dialogue()}
+                CueButton{text: "摘要" on_click: || cue_show_summary()}
                 cue_play_button := CueButton{text: "播放" on_click: || cue_toggle_playback()}
             }
             View{width: Fill height: Fit flow: Right spacing: 5
@@ -445,69 +620,59 @@ SolidView{width: Fill height: Fill flow: Down padding: 12 spacing: 8 new_batch: 
                 CueButton{text: "重播" on_click: || cue_restart_playback()}
             }
             View{width: Fill height: Fit flow: Right spacing: 5
+                CueButton{text: "A/B 对照" on_click: || { cue_refresh_takes() cue_show_takes() }}
                 CueButton{text: "显示 A" on_click: || cue_read_take(0)}
                 CueButton{text: "显示 B" on_click: || cue_read_take(1)}
             }
             header := View{width: Fill height: Fit flow: Right spacing: 8 align: Align{y: 0.5} on_render: || {
-                if !cue_show_takes {
-                    if cue_routes.len() > 0 {
-                        Label{text: cue_routes[cue_play_index].title draw_text.color: cue_green draw_text.text_style.font_size: 18}
-                        let combined = cue_routes[cue_play_index].body + "\n" + cue_routes[cue_play_index].draft
-                        let total = combined.split("\n").len()
-                        let total_pages = 1
-                        let pc = 0
-                        for i in total {
-                            if pc == cue_page_lines { total_pages += 1; pc = 0 }
-                            pc += 1
-                        }
-                        Label{text: "第 " + (cue_dialogue_page + 1) + " 页 / 共 " + total_pages + " 页" width: Fill draw_text.color: cue_muted draw_text.text_style.font_size: 12}
-                    }
+                if cue_read_mode == 1 {
+                    Label{text: "现场摘要" draw_text.color: cue_green draw_text.text_style.font_size: 18}
                 } else {
-                    if cue_take_a != "" || cue_take_b != "" {
+                    if cue_read_mode == 2 {
                         let name = "版本 A"
                         if cue_take_read == 1 { name = "版本 B" }
                         Label{text: name draw_text.color: cue_green draw_text.text_style.font_size: 18}
-                        let txt = cue_take_a
-                        if cue_take_read == 1 { txt = cue_take_b }
-                        let total = txt.split("\n").len()
-                        let total_pages = 1
-                        let pc = 0
-                        for i in total {
-                            if pc == cue_page_lines { total_pages += 1; pc = 0 }
-                            pc += 1
+                    } else {
+                        if cue_routes.len() > 0 {
+                            Label{text: cue_routes[cue_play_index].title draw_text.color: cue_green draw_text.text_style.font_size: 18}
+                        } else {
+                            Label{text: "假设对白" draw_text.color: cue_green draw_text.text_style.font_size: 18}
                         }
-                        Label{text: "第 " + (cue_dialogue_page + 1) + " 页 / 共 " + total_pages + " 页" width: Fill draw_text.color: cue_muted draw_text.text_style.font_size: 12}
                     }
                 }
+                let total = cue_ws_pages.len()
+                if total < 1 { total = 1 }
+                let shown = cue_ws_page + 1
+                if shown > total { shown = total }
+                Label{text: "第 " + shown + " 页 / 共 " + total + " 页" width: Fill draw_text.color: cue_muted draw_text.text_style.font_size: 12}
             }}
             RoundedView{width: Fill height: Fill flow: Down padding: 12 new_batch: true draw_bg.color: #xffffff
                 readout := View{width: Fill height: Fit flow: Down spacing: 6 on_render: || {
-                    if !cue_show_takes {
+                    let idx = cue_ws_page
+                    if idx >= cue_ws_pages.len() { idx = 0 }
+                    if cue_read_mode == 0 {
                         if cue_routes.len() == 0 {
                             CueText{text: "先写一句想接的话，点试映下一幕。再选 A / B / C，翻到最后一页看完整假设路线。"}
                         } else {
-                            let combined = cue_routes[cue_play_index].body + "\n" + cue_routes[cue_play_index].draft
-                            let lines = combined.split("\n")
-                            let total = lines.len()
-                            let start = cue_dialogue_page * cue_page_lines
-                            for i in total {
-                                if i >= start && i < start + cue_page_lines {
-                                    CueText{text: lines[i]}
-                                }
-                            }
+                            CueText{text: cue_ws_pages[idx]}
                         }
                     } else {
-                        if cue_take_a == "" && cue_take_b == "" {
-                            CueText{text: "先改好一句存 A，再改另一句存 B。关闭后仍可取回对照。"}
+                        if cue_read_mode == 1 {
+                            if cue_summary == "" {
+                                CueText{text: "还没有现场摘要。点试映下一幕后，可在这里逐页读完。"}
+                            } else {
+                                CueText{text: cue_ws_pages[idx]}
+                            }
                         } else {
-                            let txt = cue_take_a
-                            if cue_take_read == 1 { txt = cue_take_b }
-                            let lines = txt.split("\n")
-                            let total = lines.len()
-                            let start = cue_dialogue_page * cue_page_lines
-                            for i in total {
-                                if i >= start && i < start + cue_page_lines {
-                                    CueText{text: lines[i]}
+                            if cue_take_a == "" && cue_take_b == "" {
+                                CueText{text: "先改好一句存 A，再改另一句存 B。关闭后仍可取回对照。"}
+                            } else {
+                                let cur = cue_take_a
+                                if cue_take_read == 1 { cur = cue_take_b }
+                                if cur == "" {
+                                    CueText{text: "这一版还没有内容；点另一版，或先在草稿框写好再存一版。"}
+                                } else {
+                                    CueText{text: cue_ws_pages[idx]}
                                 }
                             }
                         }
@@ -517,5 +682,5 @@ SolidView{width: Fill height: Fill flow: Down padding: 12 spacing: 8 new_batch: 
         }
     }
     cue_status := CueText{text: "样例消息与对白均为虚构。"}
-    CueText{text: "原消息是事实线索；对白与建议为逐页阅读的私下排练，仍需你判断。尚未发送。" draw_text.color: cue_muted draw_text.text_style.font_size: 12}
+    CueText{text: "原消息是事实线索；对白、摘要与 A/B 为逐页阅读的私下排练，仍需你判断。尚未发送。" draw_text.color: cue_muted draw_text.text_style.font_size: 12}
 }

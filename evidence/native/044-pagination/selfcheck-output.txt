@@ -1,0 +1,12 @@
+[01-long-single-line-zh.txt] 字符数=263 字节数=783 页数=14 逐字符相等=PASS 每页行数<= 4=PASS(max=4) 中间页非空=PASS => PASS
+[02-continuous-ascii.txt] 字符数=311 字节数=311 页数=8 逐字符相等=PASS 每页行数<= 4=PASS(max=4) 中间页非空=PASS => PASS
+[03-continuous-spaces.txt] 字符数=303 字节数=501 页数=10 逐字符相等=PASS 每页行数<= 4=PASS(max=4) 中间页非空=PASS => PASS
+[04-multiline-ab.txt] 字符数=259 字节数=739 页数=14 逐字符相等=PASS 每页行数<= 4=PASS(max=4) 中间页非空=PASS => PASS
+[05-long-dialogue.txt] 字符数=336 字节数=968 页数=18 逐字符相等=PASS 每页行数<= 4=PASS(max=4) 中间页非空=PASS => PASS
+[06-emoji-combining.txt] 字符数=309 字节数=646 页数=11 逐字符相等=PASS 每页行数<= 4=PASS(max=4) 中间页非空=PASS => PASS
+[07-space-boundary.txt] 字符数=276 字节数=428 页数=9 逐字符相等=PASS 每页行数<= 4=PASS(max=4) 中间页非空=PASS => PASS
+[08-minimal.txt] 字符数=307 字节数=912 页数=17 逐字符相等=PASS 每页行数<= 4=PASS(max=4) 中间页非空=PASS => PASS
+[组合: 多行 A/B 作为 body + 换行 + draft] 字符数=287 字节数=821 页数=13 逐字符相等=PASS 每页行数<= 5=PASS(max=5) 中间页非空=PASS => PASS
+[组合: 长对白 body + 换行 + 建议 draft] 字符数=336 字节数=968 页数=15 逐字符相等=PASS 每页行数<= 5=PASS(max=5) 中间页非空=PASS => PASS
+[组合: 场摘要 + 换行 + 说明] 字符数=263 字节数=783 页数=11 逐字符相等=PASS 每页行数<= 5=PASS(max=5) 中间页非空=PASS => PASS
+总体： PASS

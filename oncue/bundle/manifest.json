@@ -14,11 +14,7 @@
   },
   "id": "oncue-screening-room",
   "integrity": {
-    "bundle_blake3": "ec7773d51f2078e618d1711bb9b2840629e272858b040abf0af19c1c492e9619",
-    "signature": {
-      "key_id": "oncue.local",
-      "value": "9b85f875b2b2df1b7a5807b09dc13a9776741bf49ac862c0f269ae472664a583a3da3982aca35483a1934b4fb54eab38c4f03116b6bf4452a43a24d23be3640f"
-    }
+    "bundle_blake3": "b7c95e1661b73e84e6efced0752ebe3c02f17ebdfaa4c077b39784e707db5d77"
   },
   "name": "OnCue · 群聊试映室",
   "network": {
@@ -28,5 +24,5 @@
   "storage": {
     "max_bytes": 4194304
   },
-  "version": "0.4.3"
+  "version": "0.4.4"
 }
