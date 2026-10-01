@@ -3,10 +3,28 @@
 # 这个文件**不含任何密钥**：凭据、VNC 密码、hub 演练私钥都在仓库外的私有目录。
 # 用 `source deploy/env.sh` 载入；所有路径都可以用同名环境变量覆盖。
 
-# ---- 运行目录（仓库外，含私有 state）----------------------------------------
-: "${ONCUE_RUNTIME_ROOT:=/root/oncue-runtime}"
+# ---- 运行目录（仓库外，含私有 state；**持久非系统路径**）--------------------
+# 为什么不是 /tmp：/tmp 只算过渡诊断，重启即失，不能作为可重启交付。
+# 为什么不是 /root：octos 的 `session/open` 禁止 workspace 落在系统根
+#   （禁用根清单 etc,sbin,bin,boot,dev,proc,sys,usr,var,root；见
+#    octos-cli/src/api/ui_protocol_transport.rs:23267-23280）。
+# /srv 两者都避开，且是持久盘。父目录 0700。
+: "${ONCUE_RUNTIME_ROOT:=/srv/oncue-runtime}"
 : "${ONCUE_STATE_DIR:=$ONCUE_RUNTIME_ROOT/state}"
 : "${ONCUE_LOG_DIR:=$ONCUE_RUNTIME_ROOT/logs}"
+
+# ---- 宿主进程的三个作用域变量（**只给 OctoSense 子进程**）--------------------
+# 这三个**不能导出到构建/git shell**：export 会污染 cargo 的 HOME（拉错缓存）、
+# 也会改掉 git 的全局配置位置。所以 env.sh 只声明它们，真正生效点是 start.sh 里
+# 对宿主的一次 `cd <cwd> && env HOME=… RINX_DATA_DIR=… <bin>`。
+#   ONCUE_HOST_HOME      ：宿主 HOME；octos CLI keychain 读 $HOME/.octos/secrets，
+#                          OctoSense 的 app storage 读 ~/.octosense（cx.get_data_dir()）。
+#   ONCUE_RINX_DATA_DIR  ：Rinx 数据根（rinx/src/lib.rs:131-143 支持该覆盖）；
+#                          mini app 的 agent workspace 由它派生，必须在非系统根下。
+#   ONCUE_HOST_CWD       ：宿主工作目录（同上，禁止落在系统根）。
+: "${ONCUE_HOST_HOME:=/srv/oncue-home}"
+: "${ONCUE_RINX_DATA_DIR:=/srv/oncue-rinx-data}"
+: "${ONCUE_HOST_CWD:=/srv/oncue-host-cwd}"
 
 # ---- 宿主二进制 --------------------------------------------------------------
 # 由固定源码 OctoSense 6c4746f0854b74446f854fdcd32eeb87b5192a81 构建：
@@ -90,6 +108,16 @@ proc_cmdline()   { tr '\0' ' ' < "/proc/$1/cmdline" 2>/dev/null; }
 proc_has_display() {
   [ -r "/proc/$1/environ" ] || return 1
   tr '\0' '\n' < "/proc/$1/environ" 2>/dev/null | grep -qx "DISPLAY=$ONCUE_DISPLAY"
+}
+proc_cwd() { readlink -f "/proc/$1/cwd" 2>/dev/null; }
+
+# proc_environ_has <pid> <KEY=value>：environ 里**精确**含该赋值。
+# 用途：宿主现在有 HOME / RINX_DATA_DIR / OCTOS_APP_CORE_DIR 三个作用域变量，
+# 只比 exe+display 会把"旧路径起来的同一个二进制"误判成迁移后的宿主（假绿）。
+# 这三个值都只是**路径**，不含秘密。
+proc_environ_has() {
+  [ -r "/proc/$1/environ" ] || return 1
+  tr '\0' '\n' < "/proc/$1/environ" 2>/dev/null | grep -qxF "$2"
 }
 
 # record <name> <pid> <exe> [display_required(yes|"")] [extra_match]

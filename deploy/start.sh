@@ -43,7 +43,19 @@ find_first() {
   return 1
 }
 m_xvfb()  { proc_cmdline "$1" | grep -q -- "Xvfb $ONCUE_DISPLAY "; }
-m_host()  { [ "$(proc_exe "$1")" = "$(readlink -f "$OCTOSENSE_BIN")" ] && proc_has_display "$1"; }
+# m_host：**防假绿**的身份校验。只比 exe+DISPLAY 是不够的——
+# 迁移到 /srv 时，若旧 /tmp（或旧 /root）起来的同一个二进制还在跑，
+# ensure 会把它当成"已经在跑"而复用，于是"重启通过"其实从未迁移。
+# 所以这里同时核对 cwd 与三个作用域变量（都只是路径，不含秘密）。
+m_host() {
+  [ "$(proc_exe "$1")" = "$(readlink -f "$OCTOSENSE_BIN")" ] || return 1
+  proc_has_display "$1" || return 1
+  [ "$(proc_cwd "$1")" = "$ONCUE_HOST_CWD" ] || return 1
+  proc_environ_has "$1" "HOME=$ONCUE_HOST_HOME" || return 1
+  proc_environ_has "$1" "RINX_DATA_DIR=$ONCUE_RINX_DATA_DIR" || return 1
+  proc_environ_has "$1" "OCTOS_APP_CORE_DIR=$OCTOS_APP_CORE_DIR" || return 1
+  return 0
+}
 m_x0vnc() { proc_cmdline "$1" | grep -q -- "-display $ONCUE_DISPLAY" && proc_cmdline "$1" | grep -q -- "-rfbport $ONCUE_VNC_PORT"; }
 m_novnc() { proc_cmdline "$1" | grep -q -- "$ONCUE_NOVNC_PORT"; }
 
@@ -96,8 +108,15 @@ if [ -z "$OCTOSENSE_HUB" ] || [ -z "$OCTOSENSE_HUB_ANCHOR" ]; then
   echo "    若应用来自本地演练镜像，必须两个都设置（见 deploy/DEPENDENCIES.md §5）。" >&2
 fi
 host_start() {
+  # 三个作用域变量**只在这一条命令上生效**（cd + env 只影响宿主进程）：
+  #   · 不改本脚本所在 shell 的 HOME，也不 export，故不污染 cargo/git
+  #   · `env` 直接 exec 宿主二进制，所以 /proc/<pid>/exe 仍等于 OCTOSENSE_BIN，
+  #     m_host 的身份复核（exe + display）照旧成立
+  mkdir -p "$ONCUE_HOST_HOME" "$ONCUE_RINX_DATA_DIR" "$ONCUE_HOST_CWD" 2>/dev/null || true
+  chmod 700 "$ONCUE_HOST_HOME" "$ONCUE_RINX_DATA_DIR" "$ONCUE_HOST_CWD" 2>/dev/null || true
   launch_and_record octosense octosense m_host "$(readlink -f "$OCTOSENSE_BIN")" yes "" -- \
-    "$OCTOSENSE_BIN" --module rinx --test-action "$LAUNCH"
+    bash -c 'cd "$1" && exec env HOME="$2" RINX_DATA_DIR="$3" "$4" --module rinx --test-action "$5"' _ \
+      "$ONCUE_HOST_CWD" "$ONCUE_HOST_HOME" "$ONCUE_RINX_DATA_DIR" "$OCTOSENSE_BIN" "$LAUNCH"
 }
 ensure octosense octosense m_host host_start yes ""
 

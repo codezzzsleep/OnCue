@@ -1,0 +1,63 @@
+# 持久化迁移证据（/srv）—— 2026-10-02
+
+限定：**fixed Rinx 0879548 + local lookup patch**；官方原版未通过。
+
+## 1. 目的
+把宿主运行态从过渡路径（/tmp/oncue-*、/root/oncue-runtime）迁到**持久非系统路径**，
+并让身份校验能**识破假绿**（旧路径起来的同一个二进制不算迁移成功）。
+
+## 2. 迁移前后（逐项布尔/哈希，不含任何秘密）
+```
+迁移前宿主: pid=70385  starttime=49477168
+stop 后旧 pid 70385 是否仍存在 : 否
+迁移后宿主: pid=71551  starttime=49514448
+新 pid 与旧不同                : True
+```
+
+## 3. 新路径与权限
+```
+/srv                         700
+/srv/oncue-runtime           700
+/srv/oncue-home              700
+/srv/oncue-rinx-data         700
+/srv/oncue-host-cwd          700
+/srv/oncue-home/.octos/secrets/MINIMAX_API_KEY 600
+/srv/oncue-runtime/state/octos-core/profiles/_main.json 600
+```
+
+## 4. health.sh 的防假绿检查（新增）
+```
+== 2. 宿主进程与本次启动日志 ==
+  ✓ 宿主身份复核通过 (pid 71551)
+  ✓ 宿主 cwd == /srv/oncue-host-cwd
+  ✓ 宿主 environ 含 HOME
+  ✓ 宿主 environ 含 RINX_DATA_DIR
+  ✓ 宿主 environ 含 OCTOS_APP_CORE_DIR
+  ✓ 日志 mtime(1790898150) ≥ 本次启动时刻(1790898095)：内容属于本次运行
+  ✓ modules linked: ["rinx", "terminal", "apphub", "card"]
+  ✓ 本次预期窗口 rinx 已有启动记录
+== 3. VNC / noVNC ==
+```
+
+## 5. 反向测试（证明守卫不是空转）
+把 ONCUE_HOST_CWD 指向错误值后跑 health：
+```
+  ✓ 宿主身份复核通过 (pid 71551)
+  ✗ 宿主 cwd(/srv/oncue-host-cwd) ≠ /srv/WRONG-CWD（可能是旧路径起来的宿主，不是本次迁移的）
+```
+
+## 6. 迁移后三条验真（只记布尔）
+```
+① Rinx 登录恢复      : True   （日志 Received LoginAction::LoginSuccess）
+② OnCue 仍读到 12 条 : True   （探针 count=12，body 文件 12 个）
+③ 七块 turn 成功     : True   （状态：现场摘要已就绪，点"摘要"可逐页读完…）
+④ keychain 生效      : True   （日志 octos: Model: MiniMax-M2.7）
+```
+
+## 7. 只给宿主子进程设变量（不污染构建/git shell）
+```
+host_start() 里：
+  bash -c 'cd "$1" && exec env HOME="$2" RINX_DATA_DIR="$3" "$4" --module rinx --test-action "$5"' \
+      _ "$ONCUE_HOST_CWD" "$ONCUE_HOST_HOME" "$ONCUE_RINX_DATA_DIR" "$OCTOSENSE_BIN" "$LAUNCH"
+env.sh 只**声明**三个变量、不 export；实测 source env.sh 后本 shell 的 HOME 未被改动。
+```

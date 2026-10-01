@@ -39,6 +39,21 @@ echo "== 2. 宿主进程与本次启动日志 =="
 if verify octosense; then
   hpid="$(run_pid octosense)"
   ok "宿主身份复核通过 (pid $hpid)"
+  # 防假绿（AI1 #328）：只比 exe+display 会把"旧路径起来的同一个二进制"当成迁移后的宿主。
+  # 这里补 cwd 与三个作用域变量；三者都只是**路径**，不打印任何私密值。
+  hcwd="$(proc_cwd "$hpid")"
+  if [ "$hcwd" = "$ONCUE_HOST_CWD" ]; then
+    ok "宿主 cwd == $ONCUE_HOST_CWD"
+  else
+    bad "宿主 cwd($hcwd) ≠ $ONCUE_HOST_CWD（可能是旧路径起来的宿主，不是本次迁移的）"
+  fi
+  for kv in "HOME=$ONCUE_HOST_HOME" "RINX_DATA_DIR=$ONCUE_RINX_DATA_DIR" "OCTOS_APP_CORE_DIR=$OCTOS_APP_CORE_DIR"; do
+    if proc_environ_has "$hpid" "$kv"; then
+      ok "宿主 environ 含 ${kv%%=*}"
+    else
+      bad "宿主 environ 缺 ${kv%%=*}（值应为 ${kv#*=}）"
+    fi
+  done
   LOG="$ONCUE_LOG_DIR/octosense.log"
   started_at="$(sed -n 5p "$ONCUE_STATE_DIR/octosense.run" 2>/dev/null)"
   if [ -f "$LOG" ]; then
