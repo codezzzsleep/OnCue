@@ -1,0 +1,2 @@
+[patch."https://github.com/hagency-org/Rinx.git"]
+rinx = { path = "/tmp/rinx-0879548-fixed" }
