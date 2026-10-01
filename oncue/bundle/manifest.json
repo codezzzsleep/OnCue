@@ -14,7 +14,11 @@
   },
   "id": "oncue-screening-room",
   "integrity": {
-    "bundle_blake3": "8d00e9861335dac70d5474f9a4c15477e8d7ef352ce7bafd947e0d9dd479d8d6"
+    "bundle_blake3": "8d00e9861335dac70d5474f9a4c15477e8d7ef352ce7bafd947e0d9dd479d8d6",
+    "signature": {
+      "key_id": "oncue.local",
+      "value": "d17fa5e37028a1619e8f207d78ac9be6b52f67b14afd936268ba1ac5402c195919daf19868d3ea1765405b241b760fcb0a36d40d5a1c8b7a2dc14b383c5d500d"
+    }
   },
   "name": "OnCue · 群聊试映室",
   "network": {

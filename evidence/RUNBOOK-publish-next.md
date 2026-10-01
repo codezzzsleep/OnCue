@@ -247,7 +247,9 @@ OCTOSENSE_HUB=$MIRROR OCTOSENSE_HUB_ANCHOR=$(cat "$KEYS/anchor.pub")   # publish
 
 根因：digest 覆盖**除 manifest 外所有文件**（`bundle.rs:19-35`），而签名覆盖**含 version 和 digest 的整个 manifest**（`manifest.rs:413-418`）。因此：
 
-**正确顺序：内容改动 → 改 version → stamp → sign-manifest → check → publish。**
+**正确顺序（AI1 #122 纠正）：内容改动 → 改 version → stamp → sign-manifest → check → 把最终签名工件（manifest/source/listing）提交 main 并 push → 记录该 commit → `publish --commit <该 commit>` → verify / 留证。**
+
+关键点：`stamp` 与 `sign-manifest` 都会改 `manifest.json`，所以"先 commit 再签"会让 catalog 里的 `source.commit` 指向**签名前的字节**——克隆那个提交复现不出这份签名包。只有**实际签名后的工件**进入对应 Git 提交，克隆该 commit 才能复现同一份包。`publish` 本身不再改 bundle（只复制工件、写 pack、签 catalog），因此 `--commit` 必须取**签名工件所在的那个提交**。
 
 | 操作 | 后果 | 必须的动作 |
 |---|---|---|
@@ -269,7 +271,7 @@ OCTOSENSE_HUB=$MIRROR OCTOSENSE_HUB_ANCHOR=$(cat "$KEYS/anchor.pub")   # publish
 1. 发布前：`git -C "$REPO" rev-parse HEAD` 存证（步骤 0.2）。
 2. 发布后：步骤 6 打印 `source.commit`，与存证字符串比对。
 3. **hub 不校验 `--commit`**（`hub.rs:99` 原样传入，`gate.rs:406` 原样写入）——写错也发布成功，只能靠事后核对。`--commit ""` 同样合法。
-4. **真实反面教材（实测）**：本镜像 0.4.0 条目的 `source.commit = 47cbbd5...`（0.3.1 提交），而 0.4.0 的提交是 `4e47c4d...`——即发布时 bundle 已是 0.4.0 但尚未提交，`git rev-parse HEAD` 拿到的是父提交。结论：**先 commit，再 stamp/sign/publish**；否则 catalog 里留一个"不含这些字节"的 commit。
+4. **真实反面教材（实测）**：本镜像 0.4.0 条目的 `source.commit = 47cbbd5...`（0.3.1 提交），而 0.4.0 的提交是 `4e47c4d...`——即发布时 bundle 已是 0.4.0 但尚未提交，`git rev-parse HEAD` 拿到的是父提交。结论：**先把签名后的工件提交并 push，再 `publish --commit` 那个提交**。任何"先 commit 再签"或"先发布后提交"的做法，都会让 catalog 的 `source.commit` 无法定位到可复现的字节（0.4.1 条目就是这个情形：它记的是签名前的 `c1485ba`，签名后的精确字节在同仓库的后续提交里）。
 5. 另注意：另一名操作者可能在同一 repo 推进 HEAD（本次分析期间即如此）。发布窗口内若 HEAD 变化，以 `/tmp/publish-head.txt` 为准核对，并在证据里记录两个值。
 
 ---
