@@ -8,7 +8,7 @@
 
 | 流程 | 当前证据 | 结论与剩余工作 |
 | --- | --- | --- |
-| 网页完整播放流程 | `fa9a675` 的 `evidence/playback/verification.json`：18/18，无 console/page errors；AI1逐张查看浅色、深色、320px截图 | 网页交互检查通过；浏览器实际版本字段仍待补齐 |
+| 网页完整播放流程 | `fa9a675` 的 `evidence/playback/verification.json`：18/18，无 console/page errors；AI1逐张查看浅色、深色、320px截图。`9be381b` 合并 browser-runner 补丁（`--executable` + 记录真实浏览器）后在同一容器重跑：18/18、verdict ALL PASS、`browser=chromium 148.0.7778.0`、console/page errors 均为 0 | 网页交互检查通过，浏览器实际版本已记录；该结论仍只覆盖网页链路 |
 | 网页后端与模型 | 后端19项检查报告；实际MiniMax回合见 `evidence/minimax-live-result.json` | 网页链路有实测；不能代替原生共享Octos调用 |
 | 原生样例与播放 | `47cbbd5` 的0.3.1模块截图、暂停和完成计数记录 | 三路线及播放已有实测；Rinx短视口的可读性与0.4.0状态修复仍需重测 |
 | 原生草稿、A/B与关闭恢复 | 0.3.1输入和按钮不响应；`4e47c4d` 已将0.4.0输入与按钮改为首帧常驻 | 修复已经进入main，实际写入、回读、关闭恢复和A/B对照仍在测试，尚未通过 |
@@ -16,7 +16,7 @@
 | 原生共享Octos | AI1在真实桌面看到 `profile_unresolved`；AI2脱密检查确认共享core的 `_main.json` 不存在 | 正通过宿主AI providers配置；尚无同一Rinx实例的真实七块剧本回合 |
 | 原生停止、超时与过期回调 | 源码有修订号、停止等待与90秒期限 | 尚待固定宿主运行验证，不能按源码检查计为通过 |
 | 0.4.0准入与扫描 | AI2在固定宿主执行带发布者公钥的Hub扫描；`154c095` 提供 `evidence/hub-scan-0.4.0.json` | 结构/签名gate和packet生成通过；packet截图为空，固定reviewer的pass不是独立功能验收 |
-| 可复现最终交付 | 0.3.1已有AI2 fresh-clone检查记录 | 0.4.0同版本截图、图标、最终审阅与无密钥部署脚本及重启循环仍待补齐 |
+| 可复现最终交付 | 0.3.1已有AI2 fresh-clone检查记录；0.4.0已有实际 `hub scan` packet（`154c095`，结构/签名gate通过、packet截图为空） | 0.4.0同版本截图、图标、最终审阅与无密钥部署脚本及重启循环仍待补齐 |
 
 AI1已独立连接真实OctoSense/OnCue桌面。Agent授权面板随后消失并显示ready，但同屏暴露的共享profile错误说明模型仍不可用；ready不能作为模型成功证据。
 
