@@ -6,6 +6,3 @@
 - [原生导入与运行流程](docs/NATIVE-WORKFLOW.md)
 - [App Hub提交草稿与清单](../build/SUBMISSION-CHECKLIST.md)
 - [数据说明](PRIVACY.md)
-
-Python 网页是已退出主流程的早期原型，代码和历史保留，说明移至 [历史文档](docs/WEB-PREVIEW-LEGACY.md)。
-不需要启动它来运行或验收 OctoScript 应用。
