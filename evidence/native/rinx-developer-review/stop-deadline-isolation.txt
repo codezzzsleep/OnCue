@@ -1,0 +1,5 @@
+A1_rehearse busy=true rev=3 routes=0
+A2_stop rev_before=3 rev_after=4 busy=false
+B_check_after_late_reply busy=false rev=4 routes=0 summary_empty=true
+C1_deadline_armed rev=4 busy=true
+D1_after_91s busy=false rev=5

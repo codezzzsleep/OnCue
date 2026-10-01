@@ -1,0 +1,10 @@
+# 七块回合结构（**正文不在此文件**；仅长度/哈希，供复核）
+原始回复: chars=617 bytes=1679 blocks=7
+整段 sha256: be76f8515afceea861eb716036ad2f75edf58e87943010c6f7518211c5f2a2c7
+block1: chars=38 lines=1 sha256=20f9016686213cf5
+block2: chars=125 lines=5 sha256=3ca7692cc5a13521
+block3: chars=30 lines=1 sha256=5a837bc807e0f323
+block4: chars=120 lines=5 sha256=59e279814c6aa37b
+block5: chars=48 lines=1 sha256=4175a3fe6e154849
+block6: chars=158 lines=5 sha256=005c6eabd43f3b91
+block7: chars=62 lines=1 sha256=e38ed1a2c3336138
