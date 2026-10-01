@@ -11,14 +11,16 @@
 | 网页完整播放流程 | `fa9a675` 的 `evidence/playback/verification.json`：18/18，无 console/page errors；AI1逐张查看浅色、深色、320px截图。`9be381b` 合并 browser-runner 补丁（`--executable` + 记录真实浏览器）后在同一容器重跑：18/18、verdict ALL PASS、`browser=chromium 148.0.7778.0`、console/page errors 均为 0 | 网页交互检查通过，浏览器实际版本已记录；该结论仍只覆盖网页链路 |
 | 网页后端与模型 | 后端19项检查报告；实际MiniMax回合见 `evidence/minimax-live-result.json` | 网页链路有实测；不能代替原生共享Octos调用 |
 | 原生样例与播放 | `47cbbd5` 的0.3.1模块截图、暂停和完成计数记录 | 三路线及播放已有实测；Rinx短视口的可读性与0.4.0状态修复仍需重测 |
-| 原生草稿、A/B与关闭恢复 | 0.3.1输入和按钮不响应；`4e47c4d` 已将0.4.0输入与按钮改为首帧常驻 | 修复已经进入main，实际写入、回读、关闭恢复和A/B对照仍在测试，尚未通过 |
+| 原生草稿、A/B与关闭恢复 | `4e47c4d` 的0.4.0常驻输入与按钮；AI1在真实noVNC独立点击取A，稳定画面显示“版本 A 还没有内容。”，见 `evidence/native/21-040-empty-take-a-browser.jpg` | 空档恢复回调已证实，先前“全部无响应”判断撤回；保存、实际回读、关闭恢复和A/B对照仍未通过 |
 | Rinx本人私有房间 | Matrix双向链路已有报告；同一OnCue实例的原生读取仍待完整事件与画面证据 | 需核对最近12条消息；Matrix同步成功不等于OnCue读取成功 |
-| 原生共享Octos | AI1在真实桌面看到 `profile_unresolved`；AI2脱密检查确认共享core的 `_main.json` 不存在 | 正通过宿主AI providers配置；尚无同一Rinx实例的真实七块剧本回合 |
+| 原生共享Octos | AI2随后报告已用官方配置封套创建私有 `_main.json`，移动core到 `/srv/oncue-core` 后日志显示MiniMax-M2.7及Agent prepared | 尚无同一Rinx实例的真实七块剧本回合；私有文件配置不是AI providers的GUI Test/Save，prepared不是模型输出 |
 | 原生停止、超时与过期回调 | 源码有修订号、停止等待与90秒期限 | 尚待固定宿主运行验证，不能按源码检查计为通过 |
 | 0.4.0准入与扫描 | AI2在固定宿主执行带发布者公钥的Hub扫描；`154c095` 提供 `evidence/hub-scan-0.4.0.json` | 结构/签名gate和packet生成通过；packet截图为空，固定reviewer的pass不是独立功能验收 |
 | 可复现最终交付 | 0.3.1已有AI2 fresh-clone检查记录；0.4.0已有实际 `hub scan` packet（`154c095`，结构/签名gate通过、packet截图为空） | 0.4.0同版本截图、图标、最终审阅与无密钥部署脚本及重启循环仍待补齐 |
 
-AI1已独立连接真实OctoSense/OnCue桌面。Agent授权面板随后消失并显示ready，但同屏暴露的共享profile错误说明模型仍不可用；ready不能作为模型成功证据。
+AI1已独立连接真实OctoSense/OnCue桌面。2026-10-01 18:28至18:35北京时间，在AI2明确交出桌面后独立点击样例路线B、试映按钮和取A。操作后的首张画面可能仍是旧帧，稍后的稳定画面才显示新状态；不能用即时像素哈希不变推断回调未执行。取A显示空档提示，不涉及写盘，因此这项只验证按钮回调和失败反馈。当前实例是Shell模块，不能按Rinx隔离目录为空推断它的存储结果。桌面已交回AI2继续原生联调。
+
+早期观察到共享profile错误，AI2随后报告已配置私有profile并迁移工作目录，尚待真实原生模型回合验证；ready不能作为模型成功证据。
 
 ## 各阶段原生联调记录
 
