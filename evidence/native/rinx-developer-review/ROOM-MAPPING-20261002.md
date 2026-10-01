@@ -104,7 +104,7 @@ python3 deploy/tools/room_mapping.py \
 **本次实测输出**（与 §2 的表一致，脚本重跑可复现同样的 12/12）：
 - 命令输出 sha256：以 `deploy/tools/room_mapping.py` 当前版本运行，得到
   `# 取样: 最新 12 条；API 侧共 13 条，app 侧 12 条` 与 `有序正文指纹逐条一致: 12/12`，退出码 `0`
-- 脚本本体 sha256 见仓库提交 `f94194f` 之后那一次提交；`ROOM-MAPPING-OUTPUT.txt`
+- 脚本本体 sha256 `fe69f093e1ee91a9a2c404a0b2f15ec05ebaf85a0f1704f81cbfb543430a5496`；`ROOM-MAPPING-OUTPUT.txt`
   的 sha256 为 `bbb83698f343191498dad8feb2175fea5aa20278f2d1c71a86a59b69b485af04`
 
 **为什么之前不算可复现**：上一版这里只写了骨架，并说"脚本见提交信息"——
