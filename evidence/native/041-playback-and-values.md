@@ -198,4 +198,4 @@
 - 每次点击前重新 `/snap` 并使用当次坐标；点击后 sleep 3s（A2 播放态按任务要求 1.0s / 5.0s）再读。
 - 未 git commit / push；未改 bundle；未重启宿主；未写 consent/profile；未点 `存 A` / `存 B` / `保留这句` / `用这句`（避免写盘），磁盘三个 txt 的 mtime 与本次会话开始时一致。
 - 报告中未出现密码/token/私钥；聊天正文未抄全文，只记录长度与首尾 6 字。
-- 截图（辅助，**未入库**）：本报告初稿曾引用 `041-playback-and-values.png`，该文件**未提交到 main**（`git ls-files` 无匹配）。判定依据全部是只读 `/snap` 的 `val` 文本与文件长度/首尾/sha256，不依赖该图；若需配图，应另行用本机真实 X 捕获并在报告中注明方法。
+- 截图（辅助）：`evidence/native/041-playback-and-values.png` — **已入库**，1440×900 真实 X 捕获（`import -window root`，`DISPLAY=:99`），768200 B，sha256 `54e0d6761d4080bc…`。判定依据仍是只读 `/snap` 的 `val` 与文件哈希，截图仅作辅助，不用于判定。
