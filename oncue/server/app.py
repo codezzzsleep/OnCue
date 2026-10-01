@@ -19,7 +19,8 @@ from engine import AppError, MiniMaxProvider, local_rehearsal, normalize_request
 STATIC = Path(__file__).resolve().parent / "static"
 ASSETS = {"/": ("index.html", "text/html; charset=utf-8"),
           "/app.js": ("app.js", "text/javascript; charset=utf-8"),
-          "/style.css": ("style.css", "text/css; charset=utf-8")}
+          "/style.css": ("style.css", "text/css; charset=utf-8"),
+          "/icon.svg": ("icon.svg", "image/svg+xml")}
 
 
 class OnCueServer(ThreadingHTTPServer):

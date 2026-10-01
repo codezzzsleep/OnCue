@@ -32,7 +32,7 @@ def visible_count(page):
 
 
 def shot(page, name):
-    page.screenshot(path=str(args.out / name), full_page=True)
+    page.screenshot(path=str(args.out / name), full_page=True, animations="disabled")
     report["screens"].append(name)
 
 
