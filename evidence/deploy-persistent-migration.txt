@@ -6,6 +6,35 @@
 把宿主运行态从过渡路径（/tmp/oncue-*、/root/oncue-runtime）迁到**持久非系统路径**，
 并让身份校验能**识破假绿**（旧路径起来的同一个二进制不算迁移成功）。
 
+## 1.1 正式恢复步骤（AI1 #332 第 4 项修正）
+
+**不要**照最早那版写的"先复制 → stop"来做——那等于**在活数据库上做最终拷贝**。
+正式步骤必须是"**停写之后再做最终同步**"：
+
+```
+1) （可选）预拷贝：宿主仍在跑时先 rsync 一次，缩短停机时间；
+   这一步的结果**不作为最终数据**，只当缓存。
+2) 旧宿主安全停止（这是"停写点"）：
+      deploy/stop.sh --keep-x          # 按旧 runtime 身份核验后停止
+      确认旧 pid 真的不存在（不要只看到"已停止"就往下走）
+3) 最终同步 + 校验（此时源已不再变化）：
+      rsync -a --delete <旧runtime>/ <新runtime>/
+      rsync -a --delete <旧HOME>/.octosense <旧HOME>/.octos <新HOME>/
+      rsync -a --delete <旧rinx-data>/ <新rinx-data>/
+      然后逐个核对关键文件（大小 + sha256）：consent.json、profiles/_main.json、
+      secrets/<ENV>；权限必须是 目录 0700 / 秘密文件 0600。
+4) 以新变量启动：
+      ONCUE_HOST_HOME / ONCUE_RINX_DATA_DIR / ONCUE_HOST_CWD 生效（只作用于宿主子进程）
+5) 验真（三条布尔）：
+      ① Rinx 登录恢复  ② OnCue 仍读到 N 条  ③ 再跑一次七块 turn 成功
+   任一条不满足 → 停新宿主，回退到旧 runtime，**不要**删旧状态。
+6) 清理：三条都通过之后，才删旧状态与过渡目录。
+```
+
+本次实测时（2026-10-02）第 2 步之后已用 `cp -a` 完成第 3 步并核对了关键文件；
+**新实例随后读房间 12 条 + true 回合成功**，足以证明这份副本可用，故不重做。
+但**以后一律按上面 1→6 的顺序执行，禁止在宿主仍写库时做最终拷贝**。
+
 ## 2. 迁移前后（逐项布尔/哈希，不含任何秘密）
 ```
 迁移前宿主: pid=70385  starttime=49477168
@@ -21,6 +50,10 @@ stop 后旧 pid 70385 是否仍存在 : 否
 /srv/oncue-home              700
 /srv/oncue-rinx-data         700
 /srv/oncue-host-cwd          700
+
+注意（AI1 #332 第 1 项）：**只把四个应用目录设为 0700，/srv 本身保持系统默认 0755**。
+我最初误把 /srv 也 chmod 700，已恢复为 0755；未改动 /srv 下其他内容。
+/srv                          755   ← 恢复后的系统默认（不是 700）
 /srv/oncue-home/.octos/secrets/MINIMAX_API_KEY 600
 /srv/oncue-runtime/state/octos-core/profiles/_main.json 600
 ```

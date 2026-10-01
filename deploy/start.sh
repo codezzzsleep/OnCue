@@ -71,6 +71,21 @@ ensure() {
     record "$name" "$pid" "$(proc_exe "$pid")" "$want" "$extra"
     return 0
   fi
+  # 宿主特例（AI1 #332 第 2 项）：对 octosense 而言，"同 exe + 同 DISPLAY 但 cwd/env 不符"
+  # 就是**旧路径起来的同一个二进制还在跑**。此时并行再起第二个宿主会让两个宿主抢同一份
+  # state（DB/锁/session），必须**明确拒绝**，而不是打个警告就继续。
+  if [ "$name" = "octosense" ]; then
+    local cand
+    for cand in $(pgrep -x "$exe_name" 2>/dev/null || true); do
+      [ "$cand" = "$$" ] && continue
+      if [ "$(proc_exe "$cand")" = "$(readlink -f "$OCTOSENSE_BIN")" ] && proc_has_display "$cand"; then
+        echo "  ✗ 发现同 exe + 同 DISPLAY 的 $exe_name (pid $cand)，但 cwd/env 与本次不一致：" >&2
+        echo "      cwd=$(proc_cwd "$cand")  期望=$ONCUE_HOST_CWD" >&2
+        echo "      → **拒绝并行启动第二个宿主**。请先 \`deploy/stop.sh\` 安全停掉它再重试。" >&2
+        exit 4
+      fi
+    done
+  fi
   if pgrep -x "$exe_name" >/dev/null 2>&1; then
     echo "  ! 存在同名但特征不符的 $exe_name（可能是另一个 display / 另一个实例）："
     pgrep -ax "$exe_name" | sed 's/^/      /' || true
