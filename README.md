@@ -12,10 +12,11 @@
 ## 比赛主作品：OctoScript 小程序
 
 [oncue/bundle/](oncue/bundle/) 是供 OctoSense / Rinx 宿主加载的 OctoScript 应用包。
-主要交付路径是 **原生小程序 → App Hub**；下面的 Python 网页版是辅助体验与验证工具。
+当前开发、验收与交付路径是 **OctoScript 原生小程序 → App Hub**。
+早期网页原型已退出主流程，代码与记录保留在 [历史资料](oncue/docs/WEB-PREVIEW-LEGACY.md)。
 
-截至 2026-10-01，main 中的 **0.4.2 是历史演练候选，尚未整体验收**：
-两种窗口下按钮与存取操作有实际通过记录，但原消息和对白仍被裁切，正在补完整阅读路径。
+截至 2026-10-01，main 中的 **0.4.3 是开发候选，尚未整体验收**：
+两种窗口的短样例逐条阅读、对白翻页和 A/B 显示已有真实截图；长单行文本与 A/B 分页仍需修复和实测。
 本地 App Hub 已演练签名、检查和目录发布；**正式 App Hub Submit 尚未完成**。
 [提交草稿](build/SUBMISSION.md) 会在最终版本冻结后替换版本、截图、tag、SHA与检查结果。
 
@@ -49,40 +50,15 @@
 | 原生 0.4.1 草稿与 A/B | 实际保存、回读、重开恢复；当前 draft/A 为103字节、B为136字节。历史149字节的A已明确标注覆盖前时间 |
 | 原生保存失败 | 独立 card-host 的有效64字节配额测试：失败提示可见、输入保留、文件未生成 |
 | 原生播放 | 0.4.1暂停5秒及8秒计数稳定，逐句、重播、切路线有实测；不代表所有内部回调均已覆盖 |
-| 0.4.2候选 | 412×892、990×613各16项操作/读回通过；AI1逐张看图发现全文裁切，整体阅读验收未通过 |
+| 0.4.3阅读候选 | AI1逐张看完412×892、990×613共12张实图，短样例可读；长单行文本与多页A/B仍待修复，不算全文阅读通过 |
 | 服务不可用 | 实际 card-host 显示 Matrix 不可用；可手动回样例继续。没有把它算作真实 Octos 失败分支测试 |
 | Rinx与共享Octos | 登录及本人房间双向消息有AI2报告；OnCue读取十二条、真实七块剧本、停止/90秒超时/迟回调隔离仍待验证 |
-| App Hub | 0.4.2资源摘要两边只读核对一致，实际Hub门禁/本地seq8演练有报告；不等官方收录或完整功能验收 |
-| 辅助网页 | Chromium148.0.7778.0完整18项检查、浅色/深色/320px实际图；后端19项报告与真实MiniMax HTTP结果。不能代替原生共享Octos |
+| App Hub | 0.4.3资源摘要只读核对匹配；AI2报告精确签名提交先push后本地seq9演练。包内商店图仍是0.4.2，需下一版更新；不等官方收录 |
 
-详见 [验证记录](oncue/VERIFICATION.md) 与 [0.4.2独立评审](evidence/native/042-ai1-review.md)。
+详见 [验证记录](oncue/VERIFICATION.md)、[0.4.3独立评审](evidence/native/043-ai1-review.md) 与 [0.4.2历史评审](evidence/native/042-ai1-review.md)。
 可读性通过后，将用新版本、同版本截图和精确签名提交重新冻结；旧候选保留作溯源。
 
-## 辅助网页体验
-
-在仓库根目录运行，无需图形桌面或额外 Python 依赖：
-
-```bash
-python3 oncue/server/app.py
-```
-
-打开 `http://127.0.0.1:8787/`。默认是明确标记的本地规则演示。
-若服务器已有仓库外的模型凭据文件：
-
-```bash
-MINIMAX_API_KEY_FILE=/absolute/path/minimax.key python3 oncue/server/app.py
-```
-
-模型模式需在页面选择并确认取材。网页支持保存和恢复完整排练场景，区别于原生的草稿A/B。
-部署说明见 [服务器运行说明](oncue/README.md)。
-
-![辅助网页的实际播放画面](evidence/playback/01-playback-light.png)
-
-```bash
-python3 -m unittest discover -s oncue/tests -v
-# 需要已有 Playwright + Chromium，对运行中的辅助服务器执行：
-python3 evidence/playback_check.py --url http://127.0.0.1:8787/
-```
+## 原生包摘要检查
 
 资源摘要的只读自检（需 `pip install blake3`）：
 
