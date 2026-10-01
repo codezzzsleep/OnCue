@@ -65,3 +65,22 @@ checked PASSED and published as catalog sequence 5.
   state. The save/restore round trip is still unverified: the draft box
   did not take the typed text in this session, so 存 A could not be
   exercised; recorded as pending, not as passing.
+
+## 0.3.1 playback re-check (#67)
+
+AI1 asked to re-verify the counter against the internal state, because the
+0.3.0 pair (09: 1/3 + 暂停; 10: 1/3 + 播放 with a "播完" status) suggested
+the render might drift from the state. Re-run in 0.3.1, route A (3 lines,
+1.4 s per line), same instance:
+
+- 21 — after 重播: 假设剧本 · 0 / 3 行.
+- 22 — after 播放 (0.5 s later): 1 / 3 行, the button reads 暂停.
+- 23 — after 暂停, and byte-identical five seconds later (more than two
+  intervals): still 1 / 3 行, the button reads 播放. The pause holds.
+- 24 — played to the end: 假设剧本 · 3 / 3 行 together with the status
+  "这条假设路线已播完。可以改台词、换路线，或把建议放进草稿。"
+- 下一句 from the paused 1/3 advanced to exactly 2 / 3.
+
+So in 0.3.1 the counter, the button label and the status agree at every
+step; the 0.3.0 pair was taken across a completion (the play had already
+finished when the "pause" click landed).
