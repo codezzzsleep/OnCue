@@ -96,3 +96,62 @@ Base：`https://raw.githubusercontent.com/OctoSense-org/OctoScript-App-Design-Fl
 未取到的文档：**无**。`000` 均为瞬时网络超时，同一 `master` URL 重试即成功；无需回退 `main`，也未使用 GitHub HTML 页面重试。
 
 本机侧只读取证（未改动）：`/root/oncue-runtime/state/hub-mirror/catalog.json`（sequence 7）、`.../artifacts/oncue-screening-room-0.4.1.bundle/`（与 HEAD 的 `oncue/bundle` 逐字节相同）、`/root/oncue-runtime/state/apps/oncue-screening-room/bundle/manifest.json`（已安装 0.4.0）、`/tmp/oncue-reviewer-packet.json`（0.4.1 scan packet，易失）、`git tag`（0 个）、`git remote -v`（`git@github-dev:codezzzsleep/OnCue.git`）。
+
+
+---
+
+## 7. 纠偏（AI1 #147 逐条核对当前 main 文档与固定源码后）
+
+以下六条**更正并取代上文对应表述**。依据分三类：**(a)** 当前 main 文档
+`OctoSense-org/OctoSense` `docs/ai-services.zh-CN.md`（280 行，2026-10-01 抓取，HTTP 200 / 36838 B，
+本地 `/tmp/octosense-main-ai-services.md`）；**(b)** 固定宿主源码 `6c4746f`；**(c)** 本机运行时观察。
+
+### C1 「商店/App Hub 必然无 octos 服务」不准确；「model 仍未合并」错误
+- (a) `:30`：「隔离运行的脚本应用（系统应用或商店应用）向助手提问 | **在托管了内核的 Shell 中可用**（#106）：`octos` 宿主服务为每个应用分配自己的 peer（`card.<应用 id>`），前提是 `Policy::contained_apps` 为开（**默认关闭**；`OCTOSENSE_CONTAINED_APPS=1`），且用户在首次使用时允许了该应用的 Agent（#120）」。
+- (a) `:31`：「供隔离应用使用的一次性模型调用（`model`，`model.complete`）| **目前可用**（#95）…（App-Hub#24，已在 Shell 锁定的 App Hub 中）」。
+- (a) `:164`：「**Rinx 迷你应用**。Rinx 托管经过审核的 OctoScript 迷你应用，并向它们提供同样的四个 `octos.*` 服务…这不是 App Hub 的安装路径。」
+- (a) `:177` 与 `:186-191`：`octos` 服务的三个前提（Shell 托管内核、`Policy::contained_apps`、用户首次同意）与三种失败返回：开关关闭 → `The assistant is turned off for apps on this device`；**尚未允许 → `Waiting for the person to allow this app's agent (OctoSense asks the first time)`**；不链接内核的构建 → `no service answers "octos" on this device`；**`card-host` 中调用任何服务 → `no service answers "<family>" on this device`**。
+- (a) `:193`：2026-09-28 已在 macOS release 桌面、隐藏窗口下验证：声明 `octos.session.open`/`octos.turn.start` 的系统应用得到来自 peer `card.<应用 id>` 的回复，内核数据里出现其记忆命名空间。
+- (a) `:195`：manifest 的 `agent` 字段会被 App Hub 接受，但 **Shell 中没有任何东西为它运行 Agent**，且 **Rinx 拒绝导入声明了 `agent` 的应用包**（我们 `agent = null`，符合）。
+- (b) 固定 `6c4746f`：`crates/ai-host/src/contained.rs:370-374` 有 `impl HostService for ContainedOctos { fn family() -> "octos" }`；`crates/ai-host/src/lib.rs:174-180` 的 `Policy::shipped()` 读取 `OCTOSENSE_CONTAINED_APPS`（`1`=对所有应用开、`0`=关，未设置=按同意）并 `with_contained_gate(gate)`。
+- (c) 本机运行时：宿主环境**未设置** `OCTOSENSE_CONTAINED_APPS`（`/proc/<pid>/environ` 实测，deploy 脚本亦未设置）；日志有
+  `octos: contained apps' service registered (Consent)` 与
+  `agents: oncue-screening-room's agent is prepared (its peer is listed for the system agent)`；
+  `state/octosense/approvals/consent.json` 中 `oncue-screening-room` 与 `rinx` 均为 `allowed=true`。
+- **更正后的表述**：`card-host` **没有**任何宿主服务；而**托管内核的 Shell**里，隔离脚本应用可在
+  `Policy::contained_apps` 放行（默认=按用户首次同意；`OCTOSENSE_CONTAINED_APPS` 是开发者覆盖）且用户允许其 Agent 后使用四个 `octos.*`；**Rinx 迷你应用宿主**另向导入 Rinx 的包提供同样四个服务。**不应**再写"所有 App Hub/库存设备必然 no service answers"，也不应写"`model` 尚未合并"。**不要**用换版本的方式掩盖此前的错误表述。
+
+### C2 git 远端不是合规差距
+`git@github-dev:codezzzsleep/OnCue.git` 是同 owner/repo 的 **SSH 连接别名**，与 `https://github.com/codezzzsleep/OnCue` 指向同一仓库 → 上文表格第 7 行 ⑤ 不作为差距。
+
+### C3 截图问题的准确性质；捕获方法不唯一
+- 旧截图（`screenshots/01-native-rinx.png`，645×865）**需要更新是因为版本不符**（0.1.x 时代 UI，与 0.4.1 不同代），**不是**"crop from another app"——它是同一 OnCue 的真实像素截图裁剪。
+- **不得把 `/g?raw=1` 写成唯一必需的取证方法**：本机 Linux GL 下 `/g` 超时已有记录；应保留已有的真实捕获手段（远程桥截图 + 控件树/像素证据），并把能取到的形式如实标注。
+
+### C4 Linux 未验证 ≠ 我方不合规
+官方"仅在 Apple silicon macOS 验证"是**官方未测试 Linux**；我们 `platforms: ["linux"]` 只声明**实际跑过的平台**，符合 PUBLISHING §3.2。只需在提交材料与演示中说明"官方验证平台为 macOS，本作为 Linux aarch64 自建环境实测"。
+
+### C5 未成功的模型回合一律 pending
+"计划做"不等于"虚报已实现"。本报告与其余证据中，模型回合始终标注为 **pending（未在设备上验证）**；不得写成"已虚报"。
+
+### C6 密钥不在 bundle；开发期手写配置不等于"应用持有秘密"
+模型服务密钥位于**宿主私有配置**（`state/octos-core` 的 profile，0600）而非 `bundle/`；开发期为解开 `profile_unresolved` 手写 envelope 属于**宿主侧开发诊断**，不能据此判定"应用持有秘密"。正式使用应走 **AI providers 宿主设置流程**（GUI 保存）并重新验证；**配置与回合都仍需验证**。
+
+### 仍然成立的实质差距（保持）
+1. **正式 Hub Submit 未做**（本地镜像只是 PUBLISHING §4 的"本地演练商店路径"）。
+2. 需在冻结时补齐：**本版本截图、listing 说明、最终 `hub check` + `hub scan` 七问答案、发布者公钥、git tag、精确 commit**。
+3. **基础功能先冻结**；Rinx 服务作为**明确列为增强项**的验收内容，**未成功的回合不得阻断基础初赛包**。
+4. **不代替用户在 OctoSense-App-Hub 开 issue**。
+
+## 8. 提交材料清单（按 PUBLISHING §3.8；Agent 只可起草）
+
+| # | 材料 | 来源/命令 | 责任 |
+| --- | --- | --- | --- |
+| 1 | 仓库 URL | `git remote -v`（HTTPS 形式） | Agent 准备 |
+| 2 | tag 与**完整 commit SHA** | 由人对**签名后工件所在提交**打 tag | **HUMAN** |
+| 3 | bundle 在仓库中的路径 | `oncue/bundle` | Agent |
+| 4 | 发布者 id 与公钥（或 "unsigned"） | `hub pubkey`；本机为 `oncue.local` | **HUMAN** 决定用哪把钥 |
+| 5 | 该 commit 上**完整 `hub check` 输出**（签名时带 `--publisher-key`） | `evidence/native/041-hub-check-verify.txt` §1 已有 0.4.1 的 PASSED 样本 | Agent（冻结版本重跑） |
+| 6 | **`hub scan` 七问答案** | `evidence/native/041-hub-scan.txt` + `evidence/native/041-hub-scan.packet.json`；答案另见 `evidence/hub-review-answers.md` | Agent |
+| 7 | 实际测试过的平台与交互、以及**未测试**的部分 | `oncue/docs/NATIVE-WORKFLOW.md`、`oncue/VERIFICATION.md`、本报告 | Agent 起草，**如实** |
+| 8 | issue 本身 | OctoSense-App-Hub，标题 `Submit oncue-screening-room <version>` | **HUMAN 本人账号** |
