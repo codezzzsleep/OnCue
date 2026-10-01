@@ -23,7 +23,7 @@
     "support": "https://github.com/codezzzsleep/OnCue/issues",
     "privacy_policy_url": "https://github.com/codezzzsleep/OnCue/blob/main/oncue/PRIVACY.md"
   },
-  "release_notes": "0.4.1 原生开发版：存储配额调整为4MiB。固定Shell把安装包也计入应用jail，0.4.0实际占用181275字节超过64KiB配额，草稿写入被拒绝；本版为安装资源和草稿保留空间；写入和回读异常现在有明确提示，并保留编辑框内容。空档恢复与样例交互已有实测，扩大配额后的保存、回读、关闭恢复仍需固定宿主验证。真实房间读取、共享Octos模型回合及同版本截图尚待完整证据；发布前须重新签名和扫描。",
+  "release_notes": "0.4.2 原生开发版：修复窄视口（412x892）下右栏草稿六按钮、路线排与播放排被裁切、不可点击的问题——路线按钮移到左栏并改为两行，草稿六按钮与播放按钮改为两行，提示文案去掉方位词；990x613 与 412x892 两个视口下全部控件均可点击触达，已逐项实测通过（试映、三条路线、用这句、存/取 A/B、播放/暂停/下一句/重播）。保存失败的提示补上了缺失的空格。商店截图已换成本版本的真实截图，权限与存储配额不变。宿主服务现状如实说明：card-host 不提供任何宿主服务，matrix.* 与 octos.* 调用都得不到应答，应用转为样例模式并在状态行说明不可用；在托管了内核的 OctoSense Shell 中，这些服务在 Policy::contained_apps 放行（默认按用户首次使用同意，开发者可用 OCTOSENSE_CONTAINED_APPS 覆盖）且用户首次使用时允许本应用 Agent 的前提下可用；Rinx 迷你应用宿主在用户审核导入后提供同样的四个 octos.* 服务。真实房间读取与模型回合尚未在提供这些服务的宿主上完成验证，仍为待办项。",
   "age_rating": "all",
   "license": "Apache-2.0"
 }
