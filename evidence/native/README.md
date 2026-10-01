@@ -71,16 +71,27 @@ checked PASSED and published as catalog sequence 5.
 AI1 asked to re-verify the counter against the internal state, because the
 0.3.0 pair (09: 1/3 + 暂停; 10: 1/3 + 播放 with a "播完" status) suggested
 the render might drift from the state. Re-run in 0.3.1, route A (3 lines,
-1.4 s per line), same instance:
+1.4 s per line), same instance. The four frames were then re-checked
+numerically (region masks, glyph shapes, no OCR) in
+`AI2-recheck-031-playback-report.txt`, which corrects parts of the first
+reading:
 
-- 21 — after 重播: 假设剧本 · 0 / 3 行.
-- 22 — after 播放 (0.5 s later): 1 / 3 行, the button reads 暂停.
-- 23 — after 暂停, and byte-identical five seconds later (more than two
-  intervals): still 1 / 3 行, the button reads 播放. The pause holds.
-- 24 — played to the end: 假设剧本 · 3 / 3 行 together with the status
-  "这条假设路线已播完。可以改台词、换路线，或把建议放进草稿。"
-- 下一句 from the paused 1/3 advanced to exactly 2 / 3.
+- 21 — after 重播: 假设剧本 · 0 / 3 行, the button reads 播放. Supported.
+- 22 — after 播放: 1 / 3 行, the button reads 暂停. Supported; the "0.5 s
+  later" interval itself cannot be confirmed, the frame clock only shows
+  minutes.
+- 23 — after 暂停: 1 / 3 行, the button reads 播放. Supported: 22 to 23
+  differs only in the button row (2084 px), so the pause holds.
+- 24 — 假设剧本 · 3 / 3 行, the button reads 播放. The counter and the
+  button are supported, but **the completion status is not**: the status
+  row is pixel-identical in all four frames (maxdiff 0), so 24 carries no
+  "这条假设路线已播完…" line and reads like the result of two 下一句
+  steps rather than a completed run.
 
-So in 0.3.1 the counter, the button label and the status agree at every
-step; the 0.3.0 pair was taken across a completion (the play had already
-finished when the "pause" click landed).
+Corrections to the earlier wording of this section: there is no
+"byte-identical five seconds later" pair — the four frames have four
+different sha256 values and the second file of that pair was never
+committed — and "下一句 advanced to 2 / 3" has no frame at all, so it is
+unverified. The counter and the button label agree at every recorded
+step; the status dimension does not, and the completion status still has
+to be re-taken with a frame that actually shows it.
