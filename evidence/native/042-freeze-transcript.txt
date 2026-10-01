@@ -1,0 +1,133 @@
+# 042-freeze-transcript — OnCue 群聊试映室 0.4.2 冻结演练（S2，含不可用态取证）
+# 时间: 2026-10-01T21:49:00+08:00  主机: aarch64  平台: Linux
+# 工具: OCTO_HUB=/tmp/hubbuild/app-hub/target/release/hub OCTO_CARD_HOST=/tmp/hubbuild/card-host/target/release/card-host (octo doctor: ok)
+# 显示: 私有 Xvfb :96 (pid 472370, screen 1440x900x24); 桥端口 18171/18172 仅回环
+# 仓库: /root/oncue-runtime/dev/OnCue @ 1905103 (0.4.1 签名 bundle, digest 8d00e986…)
+# 预状态: mirror catalog sequence 7; /srv bundle == HEAD:oncue/bundle; mirror 0.4.1 工件 == git
+# 备份: /tmp/oncue-042-backup/hub-mirror-pre042 (sequence 7), /tmp/oncue-042-backup/bundle-041-pre042
+# S1 前置: /tmp/oncue-042-dev 存在且已双视口验证 (042-clicktest-412.log / 042-clicktest-990.log: 16/16 PASS each)
+# ============================================================
+# 落地改动 (git diff --stat -- oncue/bundle):
+#    oncue/bundle/listing.json                   |   2 +-
+#    oncue/bundle/main.splash                    |  26 ++++++++++++++++----------
+#    oncue/bundle/manifest.json                  |   8 ++------
+#    oncue/bundle/screenshots/01-native-rinx.png | Bin 101180 -> 123622 bytes
+#    4 files changed, 19 insertions(+), 17 deletions(-)
+# ============================================================
+
+## 步骤 1 — hub stamp (写回新 digest；signature 已由落地时移除)
+$ hub stamp oncue/bundle
+082844db52ca4d191bbc3ec5ac30629098eca46c5c16a660f8322670af6b1daa
+exit=0
+
+## 步骤 2 — hub sign-manifest (working key oncue.local)
+$ hub sign-manifest oncue/bundle --key /root/oncue-runtime/state/hub-keys/working.key --key-id oncue.local
+signed oncue-screening-room 0.4.2 with oncue.local
+exit=0
+
+## 步骤 3 — hub check (不带 --catalog: 提交 issue 要用的门禁)
+$ hub check oncue/bundle --publisher-key oncue.local=<working.pub>
+oncue-screening-room 0.4.2 — PASSED
+  grants: capabilities {"matrix.read_messages", "matrix.room_info", "octos.session.open", "octos.turn.interrupt", "octos.turn.start", "storage"}, hosts {}, storage 4194304 bytes, agent none
+exit=0
+
+## 签名后的 manifest.json (hub stamp + sign-manifest 之后)
+#   {
+#     "agent": null,
+#     "capabilities": [
+#       "storage",
+#       "matrix.room_info",
+#       "matrix.read_messages",
+#       "octos.session.open",
+#       "octos.turn.start",
+#       "octos.turn.interrupt"
+#     ],
+#     "compute": {
+#       "instruction_budget": 8000000,
+#       "memory_bytes": 33554432
+#     },
+#     "id": "oncue-screening-room",
+#     "integrity": {
+#       "bundle_blake3": "082844db52ca4d191bbc3ec5ac30629098eca46c5c16a660f8322670af6b1daa",
+#       "signature": {
+#         "key_id": "oncue.local",
+#         "value": "a44ddcbfd7eea3c3c6288062745d678d64113177b2c3d1e2514ee2b0e61168a75947e339a2ad3edd3a1df9b0018c88ddcbe47db85cd964800f7fa1a04ad4e505"
+#       }
+#     },
+#     "name": "OnCue · 群聊试映室",
+#     "network": {
+#       "hosts": []
+#     },
+#     "schema": 1,
+#     "storage": {
+#       "max_bytes": 4194304
+#     },
+#     "version": "0.4.2"
+#   }
+
+## 步骤 4 — git add oncue/bundle && git commit (不 push)
+$ git add oncue/bundle && git -c user.name=OnCue -c user.email=oncue@local commit -m 'Freeze the 0.4.2 candidate bundle with the narrow-viewport reachability fix'
+[main 79a018e] Freeze the 0.4.2 candidate bundle with the narrow-viewport reachability fix
+ 4 files changed, 20 insertions(+), 14 deletions(-)
+ rewrite oncue/bundle/screenshots/01-native-rinx.png (98%)
+exit=0
+$ git rev-parse HEAD
+79a018e3625a54ef81b8dfeedcfa17d82f7d472f
+$ git status --short -- oncue/bundle   (empty = 工作树与提交一致)
+(no output above means clean)
+
+## 步骤 5 — hub check --catalog (发布时门禁 / PUBLISHING §6 第二种 check；0.4.2 是新版本，预期 PASSED)
+$ hub check oncue/bundle --publisher-key oncue.local=<working.pub> --catalog /root/oncue-runtime/state/hub-mirror/catalog.json
+oncue-screening-room 0.4.2 — PASSED
+  grants: capabilities {"matrix.read_messages", "matrix.room_info", "octos.session.open", "octos.turn.interrupt", "octos.turn.start", "storage"}, hosts {}, storage 4194304 bytes, agent none
+exit=0
+
+## 步骤 6 — hub scan (七问审阅包 + reviewer)
+$ hub scan oncue/bundle --publisher-key oncue.local=<working.pub> --reviewer /root/oncue-runtime/deploy/oncue-reviewer.sh --packet evidence/native/042-hub-scan.packet.json
+wrote the review packet to evidence/native/042-hub-scan.packet.json
+{
+  "route": "pass",
+  "reasons": [
+    "Source-level check: the listing claims match the source (same title, subtitle, sample scene, three rehearsal routes and draft box). This is not a runtime-verified pass; see the reviewer answers for the items still pending at run time.",
+    "Category productivity and the single platform linux reflect what was actually exercised.",
+    "All six granted capabilities have a visible use: storage for the draft file, matrix.room_info/read_messages for room import, octos.session.open/octos.turn.start for the rehearsal, octos.turn.interrupt for stopping; none is unused.",
+    "No deceptive UI: no system prompt, payment sheet, login or brand imitation; sample content is labelled fictional.",
+    "The prompt text is the app's function sent through octos.turn.start, with explicit anti-injection wording; nothing in the source executes as a local instruction.",
+    "No abusive wording and no private individuals; all sample senders are fictional.",
+    "Publisher note: the bundle is signed with the local working key oncue.local and stamped; the local anchor cert is the only trust root in this dev mirror, there is no external CA."
+  ]
+}
+exit=0
+
+## 步骤 7 — hub publish (--commit 79a018e3625a54ef81b8dfeedcfa17d82f7d472f, --out /root/oncue-runtime/state/hub-mirror)
+$ hub publish oncue/bundle --catalog /root/oncue-runtime/state/hub-mirror/catalog.json --key /root/oncue-runtime/state/hub-keys/working.key --anchor-cert <anchor-cert.hex> --publisher oncue.local --publisher-key oncue.local=<working.pub> --repo https://github.com/codezzzsleep/OnCue --commit 79a018e3625a54ef81b8dfeedcfa17d82f7d472f --reviewer /root/oncue-runtime/deploy/oncue-reviewer.sh --out /root/oncue-runtime/state/hub-mirror
+oncue-screening-room 0.4.2 — PASSED
+  grants: capabilities {"matrix.read_messages", "matrix.room_info", "octos.session.open", "octos.turn.interrupt", "octos.turn.start", "storage"}, hosts {}, storage 4194304 bytes, agent none
+  scan: Pass — Source-level check: the listing claims match the source (same title, subtitle, sample scene, three rehearsal routes and draft box). This is not a runtime-verified pass; see the reviewer answers for the items still pending at run time.; Category productivity and the single platform linux reflect what was actually exercised.; All six granted capabilities have a visible use: storage for the draft file, matrix.room_info/read_messages for room import, octos.session.open/octos.turn.start for the rehearsal, octos.turn.interrupt for stopping; none is unused.; No deceptive UI: no system prompt, payment sheet, login or brand imitation; sample content is labelled fictional.; The prompt text is the app's function sent through octos.turn.start, with explicit anti-injection wording; nothing in the source executes as a local instruction.; No abusive wording and no private individuals; all sample senders are fictional.; Publisher note: the bundle is signed with the local working key oncue.local and stamped; the local anchor cert is the only trust root in this dev mirror, there is no external CA.
+published oncue-screening-room 0.4.2 (catalog sequence 8)
+exit=0
+
+## 步骤 8 — hub verify (目录验签)
+$ hub verify /root/oncue-runtime/state/hub-mirror/catalog.json --anchor <anchor.pub>
+catalog sequence 8 verified, 8 entries
+exit=0
+
+## 不可用态取证 — 准备：card-host 对签名包的处置（实测）
+$ DISPLAY=:96 MAKEPAD_REMOTE=18171 card-host --bundle oncue/bundle --app-data /tmp/oncue-042-frozen --size 990x613
+#   [I] /root/.cargo/git/checkouts/makepad-d00a25647c09e43e/1f3b1de/platform/src/web_socket.rs:321:13 - studio websocket disabled: empty studio_http
+#   [makepad-remote] listening on 127.0.0.1:18171 pid=472618 app=card-host grabs=/tmp/makepad-remote/card-host-472618
+#   [I] /root/.cargo/git/checkouts/makepad-d00a25647c09e43e/1f3b1de/platform/src/remote.rs:550:9 - [makepad-remote] listening on 127.0.0.1:18171 pid=472618 app=card-host grabs=/tmp/makepad-remote/card-host-472618
+#   WAYLAND_DISPLAY: Not set
+#   DISPLAY: :96
+#   Selected: X11 backend
+#   Reason: DISPLAY environment variable is set
+#   [I] /root/.cargo/git/checkouts/makepad-d00a25647c09e43e/1f3b1de/platform/src/cx.rs:686:9 - memory budget: 7641 MiB (/proc/meminfo MemTotal)
+#   [I] /root/.cargo/git/checkouts/makepad-d00a25647c09e43e/1f3b1de/platform/src/thread.rs:928:9 - UI thread priority UserInteractive: Applied
+#   [I] src/host.rs:239:13 - card-host: window sized 990x613
+#   [E] src/host.rs:244:17 - card-host: refused: no signature verifier is installed, so the signature from key "oncue.local" cannot be checked
+#   [I] /root/.cargo/git/checkouts/makepad-d00a25647c09e43e/1f3b1de/platform/src/os/linux/opengl.rs:445:13 - retained-upload budgets: adapter_bytes=0 process_allowance=8012867584 allocation_limit=2003216896 source=process_allowance_fallback
+#   [E] /root/.cargo/git/checkouts/makepad-d00a25647c09e43e/1f3b1de/platform/src/os/linux/pulse_audio.rs:749:17 - PulseAudio: pa_context_connect failed (Connection refused), using ALSA only
+# 结论: card-host 不安装签名验证器（app-policy/src/verify.rs RefuseAllSignatures），
+#       带 integrity.signature 的 manifest 一律被拒（args.rs: "A signed manifest is still refused: card-host verifies no publisher keys"）。
+#       因此取证用同一份 0.4.2 应用字节的副本，仅删除 manifest 的 signature 块并以 --allow-unsigned 准入
+#       （digest_dir 不含 manifest.json，故 bundle digest 082844db… 不变，其余文件逐字节等于已发布包）。

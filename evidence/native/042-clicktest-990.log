@@ -1,0 +1,54 @@
+===== 990x613 port 18172 — baseline
+   status='虚构群聊与预设路线，仅供体验玩法。' draft[len=0 head='' tail=''] trial='那我们明早 9 点出发，在杭州住一晚？' playbtn='播放' counter=None
+[PASS] baseline loaded trial='那我们明早 9 点出发，在杭州住一晚？' status='虚构群聊与预设路线，仅供体验玩法。'
+   clicked 试映下一幕 at (53, 299) {"ok":1}
+   status='样例预设已展开；这些对白不是对真实群友的预测。' draft[len=0 head='' tail=''] trial='那我们明早 9 点出发，在杭州住一晚？' playbtn='播放' counter='假设剧本 · 0 / 3 行'
+[PASS] ①试映下一幕 status='样例预设已展开；这些对白不是对真实群友的预测。' counter='假设剧本 · 0 / 3 行'
+   clicked A 顺着说 at (46, 343):  status='已选“顺着这句”；点击播放或下一句展开假设对白。' draft[len=0 head='' tail=''] trial='那我们明早 9 点出发，在杭州住一晚？' playbtn='播放' counter='假设剧本 · 0 / 3 行'
+[PASS] ②A 顺着说 status='已选“顺着这句”；点击播放或下一句展开假设对白。' counter='假设剧本 · 0 / 3 行'
+   clicked B 换问法 at (119, 343):  status='已选“换个问法”；点击播放或下一句展开假设对白。' draft[len=0 head='' tail=''] trial='那我们明早 9 点出发，在杭州住一晚？' playbtn='播放' counter='假设剧本 · 0 / 2 行'
+[PASS] ②B 换问法 status='已选“换个问法”；点击播放或下一句展开假设对白。' counter='假设剧本 · 0 / 2 行'
+   clicked C 换玩法 at (46, 387):  status='已选“换个玩法”；点击播放或下一句展开假设对白。' draft[len=0 head='' tail=''] trial='那我们明早 9 点出发，在杭州住一晚？' playbtn='播放' counter='假设剧本 · 0 / 2 行'
+[PASS] ②C 换玩法 status='已选“换个玩法”；点击播放或下一句展开假设对白。' counter='假设剧本 · 0 / 2 行'
+   clicked 用这句 at (113, 387) : status='台词已放进草稿，可以继续修改；尚未发送。' draft[len=48 head='玩个半日旅行' tail='核实的路线。'] trial='那我们明早 9 点出发，在杭州住一晚？' playbtn='播放' counter='假设剧本 · 0 / 2 行'
+[PASS] ③用这句 fills draft len=48 head='玩个半日旅行盲盒'
+   clicked 存 A at (668, 221) : status='版本 A 已保存并回读确认；关闭后可以取回。' draft[len=48 head='玩个半日旅行' tail='核实的路线。'] trial='那我们明早 9 点出发，在杭州住一晚？' playbtn='播放' counter=None
+[PASS] ④存A status='版本 A 已保存并回读确认；关闭后可以取回。'
+   retyped trial: status='台词已改变，可以重新试映。' draft[len=48 head='玩个半日旅行' tail='核实的路线。'] trial='那我们明早 9 点出发，在杭州住一晚？那我们中午 12 点后出发，当天回重庆？' playbtn='播放' counter=None
+[PASS] ⑤trial edited trial='那我们明早 9 点出发，在杭州住一晚？那我们中午 12 点后出发，当天回重庆？'
+   re-rehearsed: status='样例预设已展开；这些对白不是对真实群友的预测。' draft[len=48 head='玩个半日旅行' tail='核实的路线。'] trial='那我们明早 9 点出发，在杭州住一晚？那我们中午 12 点后出发，当天回重庆？' playbtn='播放' counter='假设剧本 · 0 / 3 行'
+   draft for B: status='台词已放进草稿，可以继续修改；尚未发送。' draft[len=37 head='先按 12 ' tail='核实后再定。'] trial='那我们明早 9 点出发，在杭州住一晚？那我们中午 12 点后出发，当天回重庆？' playbtn='播放' counter='假设剧本 · 0 / 3 行'
+   clicked 存 B at (521, 265) : status='版本 B 已保存并回读确认；关闭后可以取回。' draft[len=37 head='先按 12 ' tail='核实后再定。'] trial='那我们明早 9 点出发，在杭州住一晚？那我们中午 12 点后出发，当天回重庆？' playbtn='播放' counter=None
+[PASS] ⑤存B status='版本 B 已保存并回读确认；关闭后可以取回。'
+[PASS] ⑤存B differs from 存A A/B contents differ
+   clicked 取 A at (566, 265) : status='版本 A 已放回编辑框；尚未发送。' draft[len=48 head='玩个半日旅行' tail='核实的路线。'] trial='那我们明早 9 点出发，在杭州住一晚？那我们中午 12 点后出发，当天回重庆？' playbtn='播放' counter=None
+[PASS] ⑥取A restore len=48 head='玩个半日旅行' tail='核实的路线。'
+   clicked 取 B at (611, 265) : status='版本 B 已放回编辑框；尚未发送。' draft[len=37 head='先按 12 ' tail='核实后再定。'] trial='那我们明早 9 点出发，在杭州住一晚？那我们中午 12 点后出发，当天回重庆？' playbtn='播放' counter=None
+[PASS] ⑥取B restore len=37 head='先按 12 ' tail='核实后再定。'
+   after 重播 reset: status='已回到 0 / 2 行；点击播放从第一句开始。' draft[len=37 head='先按 12 ' tail='核实后再定。'] trial='那我们明早 9 点出发，在杭州住一晚？那我们中午 12 点后出发，当天回重庆？' playbtn='播放' counter='假设剧本 · 0 / 2 行'
+   clicked 播放 at (643, 309) : status='正在播放“换个玩法”的假设对白。' draft[len=37 head='先按 12 ' tail='核实后再定。'] trial='那我们明早 9 点出发，在杭州住一晚？那我们中午 12 点后出发，当天回重庆？' playbtn='暂停' counter='假设剧本 · 1 / 2 行'
+[PASS] ⑦播放 starts playbtn='暂停' status='正在播放“换个玩法”的假设对白。'
+   clicked 暂停 at (643, 309) : status='已暂停在 1 / 2 行；可以继续播放或只看下一句。' draft[len=37 head='先按 12 ' tail='核实后再定。'] trial='那我们明早 9 点出发，在杭州住一晚？那我们中午 12 点后出发，当天回重庆？' playbtn='播放' counter='假设剧本 · 1 / 2 行'
+[PASS] ⑦暂停 holds playbtn='播放' status='已暂停在 1 / 2 行；可以继续播放或只看下一句。'
+   clicked 下一句 at (529, 353) : status='这条假设路线已展开全部 2 行；仍是未发送的排练。' draft[len=37 head='先按 12 ' tail='核实后再定。'] trial='那我们明早 9 点出发，在杭州住一晚？那我们中午 12 点后出发，当天回重庆？' playbtn='播放' counter='假设剧本 · 2 / 2 行'
+[PASS] ⑦下一句 advances 假设剧本 · 1 / 2 行 -> '假设剧本 · 2 / 2 行'
+   clicked 重播 at (583, 353) : status='已回到 0 / 2 行；点击播放从第一句开始。' draft[len=37 head='先按 12 ' tail='核实后再定。'] trial='那我们明早 9 点出发，在杭州住一晚？那我们中午 12 点后出发，当天回重庆？' playbtn='播放' counter='假设剧本 · 0 / 2 行'
+[PASS] ⑦重播 resets counter='假设剧本 · 0 / 2 行' status='已回到 0 / 2 行；点击播放从第一句开始。'
+===== 990x613 SUMMARY
+  PASS  baseline loaded  trial='那我们明早 9 点出发，在杭州住一晚？' status='虚构群聊与预设路线，仅供体验玩法。'
+  PASS  ①试映下一幕  status='样例预设已展开；这些对白不是对真实群友的预测。' counter='假设剧本 · 0 / 3 行'
+  PASS  ②A 顺着说  status='已选“顺着这句”；点击播放或下一句展开假设对白。' counter='假设剧本 · 0 / 3 行'
+  PASS  ②B 换问法  status='已选“换个问法”；点击播放或下一句展开假设对白。' counter='假设剧本 · 0 / 2 行'
+  PASS  ②C 换玩法  status='已选“换个玩法”；点击播放或下一句展开假设对白。' counter='假设剧本 · 0 / 2 行'
+  PASS  ③用这句 fills draft  len=48 head='玩个半日旅行盲盒'
+  PASS  ④存A  status='版本 A 已保存并回读确认；关闭后可以取回。'
+  PASS  ⑤trial edited  trial='那我们明早 9 点出发，在杭州住一晚？那我们中午 12 点后出发，当天回重庆？'
+  PASS  ⑤存B  status='版本 B 已保存并回读确认；关闭后可以取回。'
+  PASS  ⑤存B differs from 存A  A/B contents differ
+  PASS  ⑥取A restore  len=48 head='玩个半日旅行' tail='核实的路线。'
+  PASS  ⑥取B restore  len=37 head='先按 12 ' tail='核实后再定。'
+  PASS  ⑦播放 starts  playbtn='暂停' status='正在播放“换个玩法”的假设对白。'
+  PASS  ⑦暂停 holds  playbtn='播放' status='已暂停在 1 / 2 行；可以继续播放或只看下一句。'
+  PASS  ⑦下一句 advances  假设剧本 · 1 / 2 行 -> '假设剧本 · 2 / 2 行'
+  PASS  ⑦重播 resets  counter='假设剧本 · 0 / 2 行' status='已回到 0 / 2 行；点击播放从第一句开始。'
+  TOTAL 16 checks, FAIL 0: []
