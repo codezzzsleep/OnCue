@@ -5,7 +5,7 @@
 #   1) `pgrep -f <BIN>` 会命中**包装调用者自己的命令行**（关键字出现在包装脚本里）；
 #   2) 只看日志里有没有 `wm: launched`，会把**上一次运行留下的日志**当成这次的成功。
 # 现在：进程用 env.sh 的 `verify` 复核身份；日志要求 mtime 不早于本次启动时刻，
-# 并且**本次启动动作预期的窗口记录必须出现**，否则不算全绿。
+# 并从已核验宿主的实际 argv 读取启动动作，匹配该应用的窗口记录。
 #
 # 用法: deploy/health.sh
 set -uo pipefail
@@ -50,14 +50,27 @@ if verify octosense; then
       else
         bad "本次日志没有 modules linked 行"
       fi
-      # 启动动作预期的窗口记录：本次 launch 动作必须真的产出窗口，否则不算全绿
-      if [ -n "${ONCUE_LAUNCH_ACTION:-}" ]; then
-        if grep -q "wm: launched" "$LOG" 2>/dev/null; then
-          ok "本次窗口记录: $(grep -m1 'wm: launched' "$LOG" | sed 's/.*- //')"
-        else
-          bad "本次启动动作 '$ONCUE_LAUNCH_ACTION' 没有产生 wm: launched —— 应用没起来，不能算全绿"
+      # 读取当前宿主的 argv，而不是 health 新 shell 的默认值：start --launch 可覆盖默认。
+      launch_action=""
+      previous_arg=""
+      while IFS= read -r -d '' argument; do
+        if [ "$previous_arg" = "--test-action" ]; then
+          launch_action="$argument"
+          break
         fi
-      fi
+        previous_arg="$argument"
+      done < "/proc/$hpid/cmdline"
+      case "$launch_action" in
+        launch-*)
+          expected_app="${launch_action#launch-}"
+          if grep -Fq -- "wm: launched $expected_app as client " "$LOG"; then
+            ok "本次预期窗口 $expected_app 已有启动记录"
+          else
+            bad "本次启动动作 '$launch_action' 没有对应应用的 wm: launched 记录"
+          fi
+          ;;
+        *) bad "当前宿主没有可核验的 launch-<app> 动作；未证明目标应用启动" ;;
+      esac
     else
       bad "日志比本次启动还旧（mtime=$mtime < started_at=${started_at:-?}）：可能读到了上一次运行的日志"
     fi
@@ -71,11 +84,16 @@ fi
 echo "== 3. VNC / noVNC =="
 if verify x0vnc; then ok "x0vncserver 身份复核通过 (pid $(run_pid x0vnc))"; else bad "x0vncserver 身份复核不通过"; fi
 if ss -ltn 2>/dev/null | grep -q "127.0.0.1:$ONCUE_VNC_PORT"; then ok "VNC 端口 $ONCUE_VNC_PORT 在监听"; else bad "VNC 端口未监听"; fi
-if verify websockify || ss -ltn 2>/dev/null | grep -q "127.0.0.1:$ONCUE_NOVNC_PORT"; then
-  code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 8 "http://127.0.0.1:$ONCUE_NOVNC_PORT/vnc.html" || echo 000)
-  [ "$code" = "200" ] && ok "noVNC /vnc.html → 200" || bad "noVNC /vnc.html → $code"
+if verify websockify; then
+  ok "websockify 身份复核通过 (pid $(run_pid websockify))"
+  if ss -ltn 2>/dev/null | grep -q "127.0.0.1:$ONCUE_NOVNC_PORT"; then
+    code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 8 "http://127.0.0.1:$ONCUE_NOVNC_PORT/vnc.html" || echo 000)
+    [ "$code" = "200" ] && ok "noVNC /vnc.html → 200" || bad "noVNC /vnc.html → $code"
+  else
+    bad "已核验的 websockify 没有监听预期 noVNC 端口"
+  fi
 else
-  bad "noVNC 未运行"
+  bad "websockify 身份复核不通过；其他进程监听同端口不能代替本 runtime"
 fi
 
 echo "== 4. 资源（cgroup v1）=="
