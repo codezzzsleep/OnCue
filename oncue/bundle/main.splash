@@ -51,6 +51,108 @@ fn cue_is_wide(c){
 }
 // 宽度启发式只用于"预估视觉行数"：偏多算安全，偏少算只会让渲染器多折一行。
 // 每页最多 page_rows 条视觉行（末行可不满），因此阅读区高度有确定上界。
+// ==== 字素簇边界（UAX#29 子集）· 只用十进制：Splash 不支持 0x 字面量 ====
+fn cue_gcb_extend(c){
+    if c < 768 { return false }
+    if c >= 768 && c <= 879 { return true }
+    if c >= 1155 && c <= 1161 { return true }
+    if c >= 1425 && c <= 1469 { return true }
+    if c == 1471 { return true }
+    if c >= 1473 && c <= 1474 { return true }
+    if c >= 1476 && c <= 1477 { return true }
+    if c == 1479 { return true }
+    if c >= 1552 && c <= 1562 { return true }
+    if c >= 1611 && c <= 1631 { return true }
+    if c == 1648 { return true }
+    if c >= 1750 && c <= 1756 { return true }
+    if c >= 1759 && c <= 1764 { return true }
+    if c >= 1767 && c <= 1768 { return true }
+    if c >= 1770 && c <= 1773 { return true }
+    if c == 1809 { return true }
+    if c >= 1840 && c <= 1866 { return true }
+    if c >= 2304 && c <= 2307 { return true }
+    if c == 2362 { return true }
+    if c == 2364 { return true }
+    if c >= 2369 && c <= 2376 { return true }
+    if c == 2381 { return true }
+    if c >= 2385 && c <= 2391 { return true }
+    if c >= 2402 && c <= 2403 { return true }
+    if c == 2433 { return true }
+    if c == 2492 { return true }
+    if c >= 2494 && c <= 2509 { return true }
+    if c == 2519 { return true }
+    if c >= 2530 && c <= 2531 { return true }
+    if c == 3633 { return true }
+    if c >= 3636 && c <= 3642 { return true }
+    if c >= 3655 && c <= 3662 { return true }
+    if c == 3761 { return true }
+    if c >= 3764 && c <= 3772 { return true }
+    if c >= 3784 && c <= 3789 { return true }
+    if c >= 4139 && c <= 4158 { return true }
+    if c >= 6832 && c <= 6911 { return true }
+    if c >= 7616 && c <= 7679 { return true }
+    if c >= 8400 && c <= 8432 { return true }
+    if c >= 8204 && c <= 8205 { return true }
+    if c >= 12330 && c <= 12335 { return true }
+    if c >= 12441 && c <= 12442 { return true }
+    if c >= 65024 && c <= 65039 { return true }
+    if c >= 65056 && c <= 65071 { return true }
+    if c >= 65438 && c <= 65439 { return true }
+    if c >= 127995 && c <= 127999 { return true }
+    if c >= 917536 && c <= 917631 { return true }
+    if c >= 917760 && c <= 917999 { return true }
+    false
+}
+fn cue_gcb_prepend(c){
+    if c < 1536 { return false }
+    if c >= 1536 && c <= 1541 { return true }
+    if c == 1757 { return true }
+    if c == 1807 { return true }
+    if c == 2274 { return true }
+    if c == 3406 { return true }
+    if c == 69821 { return true }
+    if c == 69837 { return true }
+    if c >= 70082 && c <= 70083 { return true }
+    if c == 71999 { return true }
+    if c == 72001 { return true }
+    if c == 72250 { return true }
+    if c >= 72324 && c <= 72329 { return true }
+    if c == 73030 { return true }
+    if c == 73474 { return true }
+    false
+}
+fn cue_gcb_l(c){
+    if c >= 4352 && c <= 4447 { return true }
+    false
+}
+fn cue_gcb_v(c){
+    if c >= 4448 && c <= 4519 { return true }
+    false
+}
+fn cue_gcb_t(c){
+    if c >= 4520 && c <= 4607 { return true }
+    false
+}
+fn cue_gcb_lv(c){
+    if c >= 44032 && c <= 55203 { return true }
+    false
+}
+// 返回 true 表示 prev 与 c 之间不可断（GB3-GB9b / GB11 / GB999；RI 成对由调用方按奇偶处理）
+fn cue_gcb_nobreak(prev, c){
+    if prev == 13 && c == 10 { return true }
+    if prev == 10 || prev == 13 { return false }
+    if c == 10 || c == 13 { return false }
+    if c < 32 { return false }
+    if prev < 32 && prev != 9 { return false }
+    if cue_gcb_extend(c) { return true }
+    if c == 8205 { return true }
+    if cue_gcb_prepend(prev) { return true }
+    if cue_gcb_l(prev) { if cue_gcb_l(c) || cue_gcb_v(c) || cue_gcb_lv(c) { return true } }
+    if cue_gcb_lv(prev) || cue_gcb_v(prev) { if cue_gcb_v(c) || cue_gcb_t(c) { return true } }
+    if cue_gcb_lv(prev) || cue_gcb_t(prev) { if cue_gcb_t(c) { return true } }
+    if prev == 8205 { return true }
+    false
+}
 fn cue_paginate(text, page_rows){
     // 视觉行模型与 makepad 文本排版一致（draw/src/text/layouter.rs:375-400）：
     // 文本按 "\n" 切段，段内按列数折行，收尾的空段也算一行。
@@ -66,6 +168,8 @@ fn cue_paginate(text, page_rows){
     let page = "".to_chars()
     let cols = 0
     let rows = 1
+    let prev_c = 0
+    let ri_odd = false
     for i in total {
         let c = chars[i]
         if c == 10 {
@@ -90,18 +194,29 @@ fn cue_paginate(text, page_rows){
             let w = 1
             if cue_is_wide(c) { w = 2 }
             if cols + w > cue_page_cols {
-                if rows >= page_rows {
-                    pages.push(page.to_string())
-                    page = "".to_chars()
-                    rows = 1
-                    cols = 0
-                } else {
-                    rows += 1
-                    cols = 0
+                let nobreak = cue_gcb_nobreak(prev_c, c)
+                // 区域指示符按"成对旗帜"处理：只有 run 内第 2 个才不可断，旗帜对之间可断
+                if prev_c >= 127462 && prev_c <= 127487 {
+                    if c >= 127462 && c <= 127487 {
+                        if ri_odd { nobreak = true } else { nobreak = false }
+                    }
+                }
+                if nobreak == false {
+                    if rows >= page_rows {
+                        pages.push(page.to_string())
+                        page = "".to_chars()
+                        rows = 1
+                        cols = 0
+                    } else {
+                        rows += 1
+                        cols = 0
+                    }
                 }
             }
             page.push(c)
             cols += w
+            prev_c = c
+            if c >= 127462 && c <= 127487 { if ri_odd { ri_odd = false } else { ri_odd = true } } else { ri_odd = false }
         }
     }
     if page.len() > 0 { pages.push(page.to_string()) }
@@ -281,6 +396,9 @@ fn cue_demo_routes(){
         {title: "换个玩法", body: "虚构回应 1：每人给一个想做的事找交集。\n虚构回应 2：可以玩，中午以后再开始。\n虚构回应 3：终点别太远，想当天回家。\n依据：#4 弹性；这项新提议未获同意。", draft: "半日旅行盲盒：每人给一件事，12 点后出发。"}
     ]
     cue_select_preview(0)
+    // 样例路径必须自己产出摘要：cue_rehearse() 开头的 cue_invalidate() 会清掉旧摘要，
+    // 而统一清旧结果的语义保留不动；真实 Agent 路径用 blocks[0] 写回，两者各自负责。
+    cue_summary = "虚构现场摘要：三位群友都在中午 12 点以后有空，预算 300 左右，倾向当天往返；返程车次、是否住宿仍未确认，先按此排一版。"
     cue_set_status("样例预设已展开；这些对白不是对真实群友的预测。")
 }
 fn cue_prompt(trial){
