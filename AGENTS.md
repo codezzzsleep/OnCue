@@ -27,7 +27,7 @@
 | 包路径 | `oncue/bundle/` —— **只有 `bundle/` 会被提交** |
 | 应用 id | `oncue-screening-room`（`[a-z0-9.-]{1,64}`，不以保留名结尾 ✓） |
 | 版本 / digest | `0.4.4` / `9b221cd7ed27bb6fb38c7d91bdd04d13de6387b4055565d74bf7c1bce9f13b97` |
-| 队伍 / 成员 | OnCue / YCOROY | 
+| 队伍 / 成员 | **OnCue / YCOROY**（用户 2026-10-02 确认；队长与人数待补） |
 | 许可 | Apache-2.0（`oncue/LICENSE`） |
 
 **功能一句话**：把还没发出去的一句话放进私人排练场，读**授权房间**消息作线索，
