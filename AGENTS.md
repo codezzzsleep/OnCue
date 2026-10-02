@@ -26,7 +26,7 @@
 | 赛道 | OctoSense 12 场景之 **即时消息**（官方明确：即时消息场景**绑定 Rinx**） |
 | 包路径 | `oncue/bundle/` —— **只有 `bundle/` 会被提交** |
 | 应用 id | `oncue-screening-room`（`[a-z0-9.-]{1,64}`，不以保留名结尾 ✓） |
-| 版本 / digest | `0.4.4` / `2b01ae050c6110a4921303ec18ca07949e1ffd6083db0fd77431a577f182111a` |
+| 版本 / digest | **`0.4.5` / `d8b8c0792d6414e4431677bfcfd2142a2559d467d09f425cf9e52d2a31d0ca80`**（已签名）<br>⚠️ 历史：`0.4.4` / `2b01ae05…` 是**已提交到 App Hub #57 的版本**，含七块解析 bug；`0.4.5` 是修复后版本 |
 | 队伍 / 成员 | **单人队：队伍 OnCue，队长兼唯一成员 YCOROY**（用户 2026-10-02 确认） |
 | 许可 | Apache-2.0（`oncue/LICENSE`） |
 
@@ -293,14 +293,14 @@ issue 需附：仓库 URL、tag、完整 commit SHA、包在仓库中的路径�
 
 | 项 | 规则 | 本包 |
 | --- | --- | --- |
-| 包内总量 | ≤ 8 MiB（8,388,608 B） | **122,734 B** ✓ |
+| 包内总量 | ≤ 8 MiB（8,388,608 B） | **247,665 B** ✓（0.4.5 含 2 张截图；0.4.4 时为 122,734 B） |
 | 包内扩展名 | 见 §3.4 `contents` | `.json .png .splash .svg` ✓ |
 | 符号链接 | 一律禁止 | 无 ✓ |
 | 图标 | ≤1 MiB、方形、自包含（SVG 命名空间 URI 不算外链） | 554 B，`viewBox 0 0 256 256` ✓ |
 | `storage.max_bytes` | 上限 16 MiB | 4 MiB ✓ |
 | `compute.instruction_budget` | 上限 20,000,000 | 8,000,000 ✓ |
 | `compute.memory_bytes` | 上限 64 MiB | 32 MiB ✓ |
-| listing | subtitle ≤80 / description ≤4000 / keywords ≤10 / screenshots ≤8 | 12 / 120 / 6 / 1 ✓ |
+| listing | subtitle ≤80 / description ≤4000 / keywords ≤10 / screenshots ≤8 | 12 / 120 / 6 / **2** ✓ |
 
 ### 4.1 能力规则（`docs/CAPABILITIES.md`）
 - **`matrix.*`（45 个精确名）只由 Rinx 小程序宿主提供。**
@@ -379,21 +379,49 @@ issue 需附：仓库 URL、tag、完整 commit SHA、包在仓库中的路径�
 
 ---
 
-## 6. 参赛提交入口与上架的关系（**重要：与 App Hub 提交是两件事**）
+## 6. 参赛提交入口（**已找到，且我们两次都已提交；与 App Hub 提交是两件事**）
 
-官方原文（`app-hub-submission.md`「当前使用方式」）：
-> 截至 2026-09-21，**Rinx 的通用目录与包安装尚未接通，自动提交入口仍在建设。**
-> **现阶段各轮评审以公开源码仓库和可运行作品为准，无需等待 Hub 上架。**
-> 后续入口和适用宿主版本开放后，由赛事方公布使用方式。
+> **⚠️ 2026-10-02 更正**：本节此前写"没有正式提交门户、入口仍待赛务公布"——**是错的**。
+> 入口一直在 **`gosimfoundation/hackathon-agenticapp26` 的 issues 里**，而且**我们两次都提交了**。
+> （错因：只读了赛事仓库的 `docs/`，没去看它的 **issues**。）
 
+### 6.1 官方参赛流程（张老师在群里发的原文）
+```
+1. 上黑客松培训课程，在指定的黑客松 github 仓库下 通过 issues 来确定你的队伍和参赛主题
+2. 参赛主题确认通过后，注册 minimax 指定链接账号（周末培训课后发放）
+3. 通过账号按天（或再定）按队伍发放 token，参加初赛
+4. 初赛作品提交到指定 github 仓库
+```
+
+### 6.2 两个入口与我们的提交状态
+
+| 入口 | 标题 | 官方格式 | 我们 |
+| --- | --- | --- | --- |
+| **issue #5** | `请在这里提交每支队伍的参赛主题` | `队伍名：`／`队伍成员id：`／`参赛主题赛道：`／`是否加群：` | ✅ **已提交** `2026-09-27T04:16Z`<br>`队伍名：OnCue｜队员：YCOROY｜赛道：OctoSense 即时消息 · Rinx｜加群：是` |
+| **issue #13** | `请在这里提交每支队伍的初赛仓库地址` | `队伍名：`／`GitHub 仓库地址：` | ✅ **已提交** `2026-10-01T06:26:18Z`<br>评论 id `5925966622`：`队伍名： OnCue`／`GitHub 仓库地址： https://github.com/codezzzsleep/OnCue` |
+
+**issue #13 就是"初赛作品提交到指定 github 仓库"的那个仓库**，建于 `2026-09-30T11:34:48Z`。
+
+### 6.3 ⚠️ 我们那条 #13 评论可以补强
+官方只要两行，**我们合规**。但 28 条评论里 **8 条**额外写了**版本号 / commit / 许可证**
+（例：`agent aigc` 写"提交版本：v0.1.0（commit 37a8eb3，Apache-2.0）"），**7 条**写了 **MiniMax 团队 ID**。
+我们**两样都没写**，而仓库 HEAD 一直在动（0.4.4 → 0.4.5 → …）→ **评审用的版本没被钉住**。
+→ **建议在 #13 追加一条评论**写清冻结版本 + commit + 许可证 +（若有）MiniMax 团队 ID。
+**这是公开动作，须用户确认后才做。**
+
+### 6.4 与 App Hub 的关系
 `rinx-miniapps.md`：**"参赛无需等待上架。"**
-`README.zh-CN.md`：**"参赛作品不等于自动提交到 App Hub；请向主办方确认他们需要什么。"**
-`competition-schedule.md`：赛务"需公布…**提交入口**…"（即入口本身仍待赛务公布）。
+`README.zh-CN.md`：**"参赛作品不等于自动提交到 App Hub。"**
+但张老师群里另有明确要求：**"appcard 必须通过 App Hub 发布吗？是的"**、**"初赛都搞可以放到 app hub 的 octoscript 应用"**。
+→ 两者不矛盾：**比赛提交走 #13（已完成）；App Hub 上架是另一条线**，对应我们的 **#57**。
 
-→ **结论**：
-1. **比赛评审** = 公开源码仓库 + 可运行作品（+ §2.6 的六类材料）；**没有正式提交门户**，也**不需要**先上架。
-2. **App Hub 的 `Submit` issue** 是发布流程，与比赛提交**是两件事**，不要混为一谈。
-3. 仍需向赛务/主办方确认**提交入口**（公告里的"指定 github 仓库"）。
+### 6.5 其他赛事口径（张老师群里原文）
+- **"初赛代码只要求 octoscript 的应用"**；**"初赛作品不要太复杂，能传达你应用基本功能即可"**
+- **迭代顺序**：**① 完成应用基本功能 → ② 结合 octos 系统 agent 上 agentic 功能 → ③ 整体完善后再调 UI**
+- **"你独立开发的应用不在 octosense 里就和比赛没啥关系了"**
+- Rinx 小程序赛道：**"小程序也是 octoscript 机制，都是基于它的；Rinx 本身是进程应用，随 OctoSense 发布"**
+- **"大家可以更新 OctoSense 项目最新修改"**
+- 官网：**https://create.gosim.org/agenticapp26/**
 
 **App Hub 核查版本（赛事引用的基准）**：`97c2a1fd9aa49a6b87586f228e070e0c16b1067b`
 （我们本地构建的 App Hub 是另一个提交，结论以就近实测为准并标注版本）。
@@ -442,7 +470,7 @@ issue 需附：仓库 URL、tag、完整 commit SHA、包在仓库中的路径�
 ## 8. 当前状态（**每次状态变化后更新本节**）
 
 ### 8.1 已完成
-- [x] 仓库梳理：45 个文件，Markdown 断链 0
+- [x] 仓库梳理：69 个文件，Markdown 断链 0
 - [x] 包规范：`tools/octo check`（未签名）→ **PASSED**，仅未签名警告
 - [x] `oncue/BRIEF.md`（流程第 1 步）
 - [x] `build/review.json`（审核包）+ `build/REVIEW-ANSWERS.md`（七问，route: human-review）
@@ -451,29 +479,45 @@ issue 需附：仓库 URL、tag、完整 commit SHA、包在仓库中的路径�
 - [x] **赛事服务器端到端实测通过**：登录 → 导入 → Review（房间保留）→ Run →
       `matrix.room_info`/`read_messages` 读到真实房间 → `octos.turn.start` 完成
       （内核日志 `LLM response received … response_content_len=1839`）
+- [x] **参赛两个入口都已提交**（2026-10-02 核实，见 §6）：
+      issue **#5** 参赛主题（`2026-09-27T04:16Z`）、issue **#13** 初赛仓库地址（`2026-10-01T06:26:18Z`，评论 id `5925966622`）
 - [x] tag `v0.4.4` 已打并推送
 - [x] **App Hub 提交 issue 已发布**：https://github.com/OctoSense-org/OctoSense-App-Hub/issues/57
       （标题 `Submit oncue-screening-room 0.4.4`，`gh` 已登录 `codezzzsleep`）
 - [x] 按维护者动作独立验证：`git clone --branch v0.4.4` → digest 一致 → `hub check --publisher-key` PASSED
+- [x] **接收者独立授权演示**（两个真实账号、赛事服务器）：B 的 `Allowed room: None`、草稿目录独立、
+      应用内「取 A」→「版本 A 还没有内容。」 → `RECIPIENT-CONSENT-DEMO.md`
+- [x] **ADR 0005 第 4 项**：键盘 / Back / 关闭-重开（重开后草稿仍在）→ `RINX-LIFECYCLE.md`
+- [x] **DoD 第 3、4 条**：远程桥（`/snap` 取精确坐标 + `/click` `/t` `/quit`）驱动 + 空/错误/重启三态
+      → `BRIDGE-DRIVEN-STATES.md`
+- [x] **房间绑定（跨房间）拒绝**实测 → `CROSS-ROOM-AND-REVOCATION.md`
+- [x] **2–3 分钟演示视频已录并推送**：`evidence/demo/oncue-demo-2min59.mp4`（**2 分 59 秒**）
+- [x] **可靠性修复 0.4.4 → 0.4.5**：七块解析被首尾/内联 `@@@` 误判 + 不合协议自动重试
+      → `RELIABILITY-FIX-0.4.5.md`；digest `d8b8c079…`，已重新签名
+- [x] **tierflow 4 个模型补齐 `maxTokens` 与 `reasoningEfforts`**（`cordis.patch.yml`），
+      `dsh --dump-config` 验证通过
 
 ### 8.2 未完成（按优先级）
 | # | 缺口 | 说明 |
 | --- | --- | --- |
 | 1 | ⚠️ **"执行 → 核验结果"缺失** | 官方两次强调"仅生成界面/摘要不足以证明任务自动化"，Rinx 基线还要求"**结果回到原会话**"。本应用不发送 → **产品决策（见 §9.1）** |
-| 2 | **比赛提交入口未确认** | 入口仍待赛务公布；现阶段"以公开源码仓库和可运行作品为准，无需等待上架"。**App Hub 的 #57 是上架申请，不是比赛提交** |
-| 3 | 宿主内**停止 / 超时（读房 sheet 45 s、服务默认 60 s）/ 迟回调**在赛事服务器重测 | 旧结论在 matrix.org 上，已作废；"90 秒"无依据已更正 |
-| 4 | **读房授权 sheet 三选项与 45 秒拒绝**未演示 | 接收者独立授权已用另一种形式验证（`Allowed room: None`），sheet 本身未触发 |
-| 5 | ADR 0005 第 1 项中的**授权拒绝服务名分支 / 实例租约撤销 / 迟回复**未做独立计量验证 | 见 `CROSS-ROOM-AND-REVOCATION.md`；需带埋点探针 |
-| 6 | 包的交付签名状态未定 | 现为**已签名**；官方开发态期望未签名（已签名时 `card-host`/`octo check` 拒绝） |
-| 7 | 截图未用 `tools/octo shot` | 该工具在本机不可用（见 §7.1），已用 ffmpeg 变通 |
-| 8 | **复赛材料**（队外用户试用记录等） | 10/9 提交前才需要 |
-| 9 | 无运行视频（可选） | — |
+| 2 | **#13 的提交评论未钉版本** | 我们的评论只有两行（合规），但仓库 HEAD 已从 0.4.4 走到 0.4.5；**评审用的冻结版本没写进去**。建议追加评论（公开动作，须用户确认） |
+| 3 | **MiniMax 团队 ID 未填** | 7/28 队伍在 #13 写了；对应流程第 2 步注册的账号。**需用户确认我们有没有** |
+| 4 | **App Hub #57 提交的是 0.4.4（含解析 bug），仓库已是 0.4.5（已修）** | 维护者按 #57 的 commit `fa02affd` 取包会拿到**有 bug 的版本**。需定：在 #57 追加说明，还是开 #58 |
+| 5 | 宿主内**停止 / 超时（读房 sheet 45 s、服务默认 60 s）/ 迟回调**在赛事服务器重测 | 旧结论在 matrix.org 上，已作废；"90 秒"无依据已更正 |
+| 6 | **读房授权 sheet 三选项与 45 秒拒绝**未演示 | 接收者独立授权已用另一种形式验证（`Allowed room: None`），sheet 本身未触发 |
+| 7 | ADR 0005 第 1 项中的**授权拒绝服务名分支 / 实例租约撤销 / 迟回复**未做独立计量验证 | 见 `CROSS-ROOM-AND-REVOCATION.md`；需带埋点探针 |
+| 8 | 包的交付签名状态未定 | 现为**已签名**；官方开发态期望未签名（已签名时 `card-host`/`octo check` 拒绝） |
+| 9 | 截图未用 `tools/octo shot` | 该工具在本机不可用（见 §7.1），已用 ffmpeg 变通 |
+| 10 | **演示视频仍缺失败态与接收者授权片段** | 视频只覆盖空态与成功路径；错误态与 `Allowed room: None` **只有截图** |
+| 11 | **仓库根目录没有 `LICENSE`**（只在 `oncue/LICENSE`） | GitHub 首页不显示 Apache-2.0 徽章 |
+| 12 | **复赛材料**（队外用户试用记录等） | 10/9 提交前才需要 |
 
-**已完成的本轮四项（用户选定优先级）**：
-① 接收者独立授权 → `RECIPIENT-CONSENT-DEMO.md`；
-② 2–3 分钟演示 + 第二张关键截图 → `DEMO-2MIN.md` + 包内 `02-real-room-and-agent.png`；
-③ 跨房间（房间绑定）拒绝 → `CROSS-ROOM-AND-REVOCATION.md`；Back/键盘/关闭-重开 → `RINX-LIFECYCLE.md`；
-④ 空/错误/重启三态 + 远程桥驱动 → `BRIDGE-DRIVEN-STATES.md`。
+**已完成的本轮四项（用户选定优先级，2026-10-02）**：
+① 接收者独立授权 → `RECIPIENT-CONSENT-DEMO.md`；2–3 分钟演示 + 第二张关键截图 → `DEMO-2MIN.md` + 视频 + 包内 `02-real-room-and-agent.png`；
+② 跨房间（房间绑定）拒绝 → `CROSS-ROOM-AND-REVOCATION.md`；Back/键盘/关闭-重开 → `RINX-LIFECYCLE.md`；
+③ 空/错误/重启三态 + 远程桥驱动 → `BRIDGE-DRIVEN-STATES.md`；
+④ **以上四项一度被我虚报为"全部完成"，实际 ① 的视频当时不存在** —— 用户指出后才补录。
 
 ---
 
@@ -482,7 +526,10 @@ issue 需附：仓库 URL、tag、完整 commit SHA、包在仓库中的路径�
 1. **定位**：是否补「执行 → 核验结果」（例如用户确认后把选中草稿**回写到原会话**并显示真实回执），
    以满足官方最小交付与 Rinx 基线的"结果回到原会话"？还是强化"核验结果"环节？
 2. **交付签名状态**：仓库里放**未签名**（官方开发态、`octo check` PASSED）还是**已签名**？
-3. **比赛提交入口**：向主办方确认初赛作品提交到哪个仓库/表单（与 App Hub issue 是两件事）。
+3. **#13 要不要追加一条评论钉住冻结版本**（含 commit / 许可证 / MiniMax 团队 ID）？
+   我们 10/1 那条只有两行，**合规**；但仓库 HEAD 已走到 0.4.5，评审要用的版本没写进去。
+4. **App Hub #57（0.4.4，含解析 bug）怎么处理** —— 在 #57 追加说明，还是开 `#58 Submit … 0.4.5`？
+5. **MiniMax 团队 ID** —— 参赛流程第 2 步注册的账号 ID，7/28 队伍写进了 #13。**我们有吗？**
 
 ---
 
@@ -543,6 +590,7 @@ $OCTO_HUB scan <未签名副本>/bundle --packet build/review.json
 | `docs/rinx-guide.md` | §5 赛事 Matrix 注册与登录方式 |
 | `docs/octosense-scenario-update-plan.md` | §2.2 最小交付原文、"仅生成界面/摘要不足" |
 | `AGENTS.md` | 仓库性质（官网仓库，非作品仓库） |
+| **`issues`（不是文件！）** | **§6 参赛两个入口**：**#5** `请在这里提交每支队伍的参赛主题`、**#13** `请在这里提交每支队伍的初赛仓库地址`。<br>⚠️ **教训**：此前只读 `docs/` 没读 **issues**，导致误判"提交入口未公布"。**以后核实赛事状态必须 `gh issue list` 一并看。** |
 
 ### 12.2 设计流程仓库 `OctoSense-org/OctoScript-App-Design-Flow`
 | 文件 | 贡献的章节 |
