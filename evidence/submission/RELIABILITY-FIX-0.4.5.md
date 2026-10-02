@@ -37,9 +37,17 @@ turn: LLM response received iteration=1 stop_reason=EndTurn tool_calls=0 respons
 
 → `blocks.len() == 9 != 7` → 报错，**尽管内容完全正确**。
 
-## 修复
+## 修复（两级，因为模型输出格式不止一种写法）
 
-`oncue/bundle/main.splash` 的 `cue_split_blocks`：**推入前过滤空块**。
+实测发现模型有两种写法：
+1. `@@@` **独占一行**，且常在首尾各多写一个；
+2. `@@@` **直接贴在上一块末尾**（`"…住一晚？@@@\n【路线A…"`，全篇 0 个独占行，但 `@@@` 恰好 6 个）。
+
+只处理第 1 种仍会失败，所以 `cue_split_blocks` 改成**两级容错**：
+先按"独占一行"严格切；得不到七块就退回按**任意位置的 `@@@`** 松切。
+两条路径都丢弃空块，且都要求**恰好七个非空块**。
+
+### 第一级：过滤空块
 ```diff
          if line.trim() == "@@@" {
 -            blocks.push(block.trim())
@@ -54,13 +62,25 @@ turn: LLM response received iteration=1 stop_reason=EndTurn tool_calls=0 respons
 +    if block.trim() != "" { blocks.push(block.trim()) }
      blocks
 ```
-**仍然严格校验恰好七个非空块**（中间缺块 → 少于 7 → 照样报错），只是不再把首尾的包装分隔符当成一块。
+### 第二级：退回松切
+```splash
+fn cue_split_blocks(text){
+    let strict = cue_split_strict(text)
+    if strict.len() == 7 { return strict }
+    cue_split_loose(text)
+}
+```
+`cue_split_loose` 用 `text.split("@@@")` 取所有非空片段。
+
+**仍然严格校验恰好七个非空块**（中间缺块 → 少于 7 → 照样报错），
+既不把首尾的包装分隔符当成一块，也不因为 `@@@` 没换行就让用户重试。
 
 ## 验证
 
 | 项 | 结果 |
 | --- | --- |
-| 用同一份 ledger 回复复算 | 修前 9 块（判失败）→ **修后 7 块（判通过）** |
+| 历史 5 条**完整**模型回复回放 | 全部 **7 块通过**（含首尾包装型 834/927 字、内联分隔型 517 字、标准型 651/787 字） |
+| Python 逐字复算 vs 真机 | 一致 |
 | `hub check --publisher-key`（0.4.5） | **PASSED** |
 | `tools/octo check`（未签名副本） | **PASSED**（仅未签名警告） |
 | 真机复测（Rinx，`matrix.rinx.chat`） | 点「试映下一幕」→ **`现场摘要已就绪，点"摘要"可逐页读完；以下是 Agent 的假设排练，原消息仍在上方。`** |

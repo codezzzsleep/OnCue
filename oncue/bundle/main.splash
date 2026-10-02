@@ -422,7 +422,10 @@ fn cue_prompt(trial){
 // 模型也常在整段回复的首尾各多写一个 @@@"（实测：回复以 "@@@" 开头、以 "\n@@@" 结尾）。
 // 那是合法的七块结构，只是外面多包了一层分隔符；首尾的空块必须丢弃，
 // 否则会被数成第 8、9 块，让用户对着正确输出反复重试。
-fn cue_split_blocks(text){
+// 实测还有一种更松的写法：把 "@@@" 直接贴在上一块的末尾（"…住一晚？@@@\n【路线A…"），
+// 这时逐行匹配只能切出 1 块。所以先按"独占一行"严格切；得不到七块就退回
+// 按任意位置的 "@@@" 松切。两条路径都丢弃空块，且都要求恰好七个非空块。
+fn cue_split_strict(text){
     let lines = text.split("\n")
     let blocks = []
     let block = ""
@@ -438,6 +441,19 @@ fn cue_split_blocks(text){
     }
     if block.trim() != "" { blocks.push(block.trim()) }
     blocks
+}
+fn cue_split_loose(text){
+    let parts = text.split("@@@")
+    let blocks = []
+    for i in parts.len() {
+        if parts[i].trim() != "" { blocks.push(parts[i].trim()) }
+    }
+    blocks
+}
+fn cue_split_blocks(text){
+    let strict = cue_split_strict(text)
+    if strict.len() == 7 { return strict }
+    cue_split_loose(text)
 }
 fn cue_rehearse(){
     if cue_busy { cue_set_status("这一幕正在展开，请稍等。") return }
