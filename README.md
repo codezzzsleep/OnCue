@@ -6,6 +6,15 @@
 **顺着这句 / 换个问法 / 换个玩法**。回看原消息，逐句播放匿名的假设接话，
 把喜欢的建议放进草稿，再对照两种写法。
 
+<p align="center">
+  <img src="evidence/screenshots/app-412.png" width="300" alt="OnCue 412×892">
+  <img src="evidence/screenshots/app-412-playing.png" width="300" alt="逐句播放假设对白">
+</p>
+
+<p align="center">
+  <sub>左：打开虚构样例，回看原消息并试映下一幕 · 右：逐句播放「顺着这句」的假设对白</sub>
+</p>
+
 队伍 **OnCue** · 成员 **YCOROY** · 赛道 **OctoSense 即时消息 · Rinx**。
 
 参赛作品是 [`oncue/bundle/`](oncue/bundle/)：一个在 OctoSense / Rinx 宿主内运行的
@@ -25,7 +34,20 @@
 在已登录的 Rinx 中打开 **Discover → Mini apps → Import an app**，
 填入本包路径（`oncue/bundle`）与**你自己的测试房间**，Review 后 Run。
 
-窗口尺寸 **412×892** 与 **990×613** 下均已逐页核对可读。
+<p align="center">
+  <img src="evidence/screenshots/rinx-2-import.png" width="420" alt="Import an app">
+  <img src="evidence/screenshots/rinx-4-running.png" width="420" alt="在 Rinx 中运行">
+</p>
+
+<p align="center">
+  <sub>左：Developer 入口填入包路径与测试房间 · 右：Review 通过后在宿主内运行</sub>
+</p>
+
+窗口尺寸 **412×892** 与 **990×613** 下均已逐页核对可读：
+
+<p align="center">
+  <img src="evidence/screenshots/app-990.png" width="620" alt="OnCue 990×613">
+</p>
 
 ## 数据与边界
 
@@ -43,6 +65,6 @@
 - [原生工作流](oncue/docs/NATIVE-WORKFLOW.md) — 在宿主里装载与运行
 - [宿主环境与复现](oncue/docs/DEPENDENCIES.md) — 宿主版本、支持平台、依赖
 - [验证摘要](oncue/VERIFICATION.md) — 当前版本的实测结果与未覆盖项
-- [运行截图](evidence/screenshots/) — 双视口实机截图与 Rinx 装载流程
+- [更多截图](evidence/screenshots/) — 双视口实机截图、Rinx 装载流程与字素边界细节
 - [App Hub 材料](evidence/apphub/) — `hub check` 输出与 `hub scan` 七问回答
 - [Apache License 2.0](oncue/LICENSE)
