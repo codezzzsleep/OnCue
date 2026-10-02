@@ -47,15 +47,22 @@ OnCue/                       应用自己的仓库
 | 节点 | 时间 |
 | --- | --- |
 | **报名截止** | **9/23 23:59**（个人分别报名；队长不能代填） |
+| **官方发布锁版本环境** | **9/24 18:00 前**（锁版本环境、支持设备、启动步骤、可用能力、示例数据、**即时消息练习数据接受范围**、替代练习范围）；9/25 收异步自检 |
 | 开营 / 四场机制课 | 9/22 19:30–21:00 / 9/26–27 |
 | 制作周 | 9/28–10/4（不增必修课；10/3–4 仅可选支持） |
 | **初赛提交截止 / 版本冻结** | **10/4 23:59** |
 | 初赛评审（只用冻结版本） | 10/5–10/6 18:00 |
 | 公布 50 人晋级 | 10/6 20:00 |
 | 复赛提交 | 10/9 23:59 |
-| 复赛材料评审 / 连线检查 | 10/10–11 / 10/11 10:00–12:00 |
+| 复赛材料评审 | 10/10–**10/11 18:00** |
+| 连线检查（非评分人员） | 10/11 10:00–12:00 |
 | 线上决赛答辩 + 评奖 | 10/12 13:00–17:00，20:00 公布 |
-| GOSIM 现场展示与颁奖 | 10/17（总排名前三名） |
+| 复赛工作坊 | 10/7（三） |
+| 收齐最终讲述材料 | 10/12 12:00 前 |
+| 受邀团队确认到场代表 | 10/13 18:00 前 |
+| 现场展示包冻结 | 10/15 18:00 |
+| GOSIM 现场展示与颁奖 | 10/17（总排名前三名；**现场不再评分**，到场不影响线上名次） |
+| 赛后采纳与归档 | 10/18–10/31 |
 
 ⚠️ **待确认**：报名是否已在 9/23 前完成（成员信息在 10/4 提交时锁定）。
 
@@ -96,26 +103,42 @@ Rinx 基线给选手的起步流程（官方原文）：
 
 ### 2.5 奖项（名额与奖金已公开，两个新奖项的映射待定稿）
 奖池 ¥50,000：一等奖 1 名 ¥20,000、二等奖 2 名各 ¥9,000、三等奖 3 名各 ¥4,000。
-**最佳 Agentic 奖**（看应用是否最能让 Agent 完成真实任务）与**最佳技术突破奖**
+**最佳 Agentic 奖评分维度（定性）**：**任务完成 / 可靠运行 / 结果核验 / 人机协作 / 复现证据**
+（`octosense-scenario-update-plan.md:85`、`curriculum.md:96`；不设未确认的权重）。
+**最佳技术突破奖**
 （在工作应用基础上看生态反哺与 ROM/系统突破）。**应用层作品可获最佳 Agentic，不要求改 ROM，
 也不要求提交无关贡献**；技术突破奖**不以先拿 Agentic 奖为前提**。
 
 
 ### 2.6 初赛提交材料（`curriculum.md:92` 原文要点）
 > 10/4 23:59 初赛截止并锁定已报名成员。提交**需求、可运行最小原型及启动说明、源码或包、
-> 2–3 分钟演示、两张关键截图、数据来源与限制**。
+> 2–3 分钟演示、两张关键截图、数据来源与限制、**已报名成员名单**（队名/队长/成员登记，10/4 提交时锁定）**。
 > **至少能展示一次操作、可核对的结果，以及一个失败或空状态；静态概念图本身不满足原型要求。**
 
 ⚠️ 所以我们**还缺**：2–3 分钟演示（视频或逐步演示材料）、第二张关键截图。
 
-### 2.7 运行验收清单（`app-hub-submission.md`「运行验收与评奖」原文）
+### 2.7 复赛提交材料（`competition-schedule.md:80`、`curriculum.md:94`）
+> 10/9 23:59 前由晋级的 50 人提交：**可运行应用、安装步骤、冻结版本、能力说明、
+> 正常与失败场景验证、队外用户试用记录、完整演示及已知限制**。
+
+`curriculum.md:64`：**"让队外用户完成一次任务，记录不能完成或需要人工接管的地方。"**
+→ 复赛需要**队外用户试用记录**（不能只靠自己或队友）。
+
+### 2.8 决赛答辩与计分（`competition-schedule.md:84/88/90/92`）
+- 两个并行组各最多 25 个项目，**每项目 8 分钟：3 分钟应用演示 + 2 分钟 Agent 自动化与自选技术贡献 +
+  2 分钟问答 + 1 分钟切换**。
+- **17:30 向队伍提供评分明细；18:30 前收齐事实或计分错误说明；19:30 锁分。**
+- **10/12 结合答辩与问答完成同一轮复赛评奖，不叠加初赛分。**
+- 阻塞性修复须按统一规则**登记原因、前后版本和证据**。
+
+### 2.9 运行验收清单（`app-hub-submission.md`「运行验收与评奖」原文）
 > 实际演示应覆盖**启动、真实输入、必要授权、Agent 执行、结果核验和失败处理**。
 > 聊天或账号相关作品**还需演示接收者独立授权**，避免把发送者身份或权限带给接收者。
 > **Agent 辅助开发、通过包预检、成功上架或累计 PR 数量，均不能单独替代作品效果证据。**
 
 → 验收六项：**启动 / 真实输入 / 必要授权 / Agent 执行 / 结果核验 / 失败处理**，外加接收者独立授权。
 
-### 2.8 按作品形态交付（`app-hub-submission.md`）
+### 2.10 按作品形态交付（`app-hub-submission.md`）
 | 作品形态 | 交付方式 |
 | --- | --- |
 | **Hub 卡片包（本作品形态）** | 按 Hub 规范准备 manifest、listing、入口与本地素材，**附预检结果及实际运行证据** |
@@ -126,6 +149,12 @@ Rinx 基线给选手的起步流程（官方原文）：
 原文还强调：**"现有 Rinx 内置编辑器不是任意 Hub 包的安装入口，不能仅提交 `.card` 文件并假设宿主会加载。"**
 
 ---
+
+### 2.11 其他赛事规则（`competition-schedule.md:44/96/98`）
+- **晋级按人数统计，不是 50 支队伍**；奖项以**项目团队**为单位，单人队伍同样适用。
+- **直播出勤不作为晋级条件。**
+- **现场不再评分**；不能到场仍保留线上名次与奖励。
+- 差旅支持另行说明，**不承诺未经确认的报销**。
 
 ## 3. 官方发布流程
 
@@ -190,6 +219,9 @@ Rinx 基线给选手的起步流程（官方原文）：
 
 **gate 不检查**（由审核人/人负责）：截图是否真实、listing 文本是否占位、
 图标小尺寸是否可读、隐私政策 URL 内容是否真实。
+**gate 也不覆盖**：页面解析、图片有效性、**真实交互**。
+**`hub scan` 只生成审核材料，不证明应用能运行，也不替代比赛评审。**
+→ "预检通过"不能作为可运行性的证据。
 
 **合法取值**：
 - `category` ∈ `productivity utilities photo-video news weather travel finance health education entertainment games social shopping lifestyle developer`
@@ -254,7 +286,14 @@ issue 需附：仓库 URL、tag、完整 commit SHA、包在仓库中的路径�
 - **`matrix.*`（45 个精确名）只由 Rinx 小程序宿主提供。**
 - **`octos.session.open/history/turn.start/turn.interrupt`**：由托管内核的 OctoSense shell 提供，
   **Rinx 小程序宿主也提供**；`card-host` 一律 `no service answers "octos"`。
-- **不要申请**（无服务或商店应用零收益）：`prompt`、`llm`、`news`、`glance`、`research`、`crawl`、
+- **商店应用可用的宿主服务**：`storage`、`net`、`images`、`web`、`camera`、`microphone`、`library`、
+  `location`、`mail`、**`model`**、**`glance`**、4 个 `octos.*`、45 个 `matrix.*`。
+  - **`model`（`model.complete`）**：一次性、按 schema 校验的模型调用（`{task,input,schema,class}`，
+    `class` 为 `fast`/`strong`），由宿主按用户配置选模型并**限每日预算**；**shell 内的商店应用可用**，
+    `card-host` 不提供（`no service answers "model"`）。
+  - **`glance`**：向 glance 屏发布卡片；**获 `glance` 的任意 contained app 在 OctoSense shell 中可用**，
+    仅 `card-host` 不提供。（**此前的"不要申请"名单把 `glance` 写错了，已更正**。）
+- **不要申请**（当前无服务或商店应用零收益）：`prompt`、`llm`、`news`、`research`、`crawl`、
   `clipboard`、`ledger.read`。
 - 未申请即未授权；前缀（`octos.`、`matrix.`）或自造名都会被拒。
 - 每个 `host.request("<family>.<method>")` 需要能力 `<family>`（或精确服务名）。
@@ -285,6 +324,20 @@ issue 需附：仓库 URL、tag、完整 commit SHA、包在仓库中的路径�
 
 ⚠️ 我们的清单对照：第 1 项**跨房间拒绝 / 实例撤销 / 迟回复**未测；第 4 项 **Back / 键盘 / 关闭重开**未测。
 
+### 4.3 Rinx 读房授权 sheet（接收者独立授权的关键机制）
+`Rinx/docs/adr/0007` 原文要点：
+- **房间读取按账号授权并持久化。** 首次读某个房间时 Rinx 弹出读房 sheet，三个选项：
+  **allow once / always allow / deny**。
+- **45 秒内不回答即视为拒绝。**
+- **"always" 只存给当前登录的 Matrix 账号**（`<data>/assistant/room_grants.json`）；
+  **同一设备上的其他账号永不继承。**
+- `Settings → Privacy → Assistant access` 列出已授权房间并可撤销。
+- 把房间数据交给 `octos.turn.start` **需要同时具备 Matrix 读授权与该 Octos 授权**（ADR 0005）。
+- 宿主服务默认超时 **60 秒**（服务可另行声明）。
+
+⚠️ **更正**：此前"停止 / **90 秒** / 迟回调"里的 90 秒**没有文档依据**，应改为
+**读房 sheet 45 秒**、**宿主服务默认 60 秒**。
+
 ---
 
 ## 5. 环境事实（实测，可直接复用）
@@ -297,7 +350,7 @@ issue 需附：仓库 URL、tag、完整 commit SHA、包在仓库中的路径�
 | 赛事服务器 | Homeserver `https://matrix.rinx.chat`（**直连即可，不需代理**）；认证 `https://auth.matrix.rinx.chat` |
 | 赛事账号 | **`@codezzzsleep:matrix.rinx.chat`**（device `kI8muzdQV8`）；凭据 `/srv/oncue-runtime/secrets/rinx-chat.env`（600） |
 | 测试房间 | `!2TfOHq2ZGCYO5WJmDC:matrix.rinx.chat`（"OnCue 试映室测试房"，12 条消息） |
-| 登录方式 | 该服务器**关闭本地注册与密码登录**，只能 SSO → 必须浏览器；本机已装 firefox |
+| 登录方式 | **官方指南（`rinx-guide.md`）称 `auth.matrix.rinx.chat` 提供注册与密码找回**；<br>本机实测：**Matrix 客户端 API 的 `POST /register` 与 `m.login.password` 被关闭**（delegated auth），<br>但**认证网站上可以正常注册与登录**（已成功注册两个账号）→ 流程为**浏览器 SSO**。本机已装 firefox。 |
 | 官方工具链 | `OctoScript-App-Design-Flow/tools/octo`；先 `. /root/hackthon/refs/octo-env.sh`（设置 `OCTO_HUB`/`OCTO_CARD_HOST`） |
 | 参考仓库（完整克隆） | `/root/hackthon/refs/{hackathon-agenticapp26,OctoScript-App-Design-Flow,OctoSense-App-Hub,OctoSense,Octoscript,Rinx}` |
 | 密钥 | 发布者私钥 `/srv/oncue-runtime/dev/keys/working.key`（id `oncue.dev`，公钥 `50578fd7e0d8ac51a1e9e590835427ce8e71f46dba491860c75ae4e7c8c78042`）——**永不入仓库** |
@@ -339,15 +392,29 @@ issue 需附：仓库 URL、tag、完整 commit SHA、包在仓库中的路径�
    ```
    平台 Linux aarch64 + Xvfb + llvmpipe；带不带 `--hidden` 都一样。
    **变通**：`ffmpeg -f x11grab -video_size WxH -i :99+<x>,<y>` 抓窗口。
-2. **`card-host` 会拒绝已签名的 manifest（即使加了 `--allow-unsigned`）** ——
-   *"请在签名之前截图"*；**回访已签名版本时要另做一份未签名副本**。
+2. **已签名包在开发态一律被拒**：
+   - `card-host` 拒绝已签名 manifest（即使加 `--allow-unsigned`）——*"请在签名之前截图"*；
+   - **Rinx 的 Developer 文件夹导入同样故意拒绝发布者签名**（ADR 0006：*"its developer importer
+     deliberately rejects publisher signatures"*；ADR 0008：*"Local imports remain visibly unsigned
+     and cannot impersonate built-ins."*）。
+   → **演示接收者流程、回访已签名版本时，都必须另做一份未签名副本。**
 3. **matrix.org ≠ matrix.rinx.chat**：赛事用后者。此前在 matrix.org 上的一切"真实房间/Agent 回合"
    结论**作废**，只作内部溯源。
 4. **xclick/xtype 的坐标偏移每次不同**：先 `xwininfo` 取实际窗口位置再换算。
 5. **firefox 收到不到键盘**：X 输入焦点在 OctoSense 窗口；须 `XSetInputFocus` 到 firefox 主窗口。
 6. **`pkill -f <关键词>` 会杀掉自己**（命令行含该关键词）——按进程名或端口杀。
-7. **Splash 限制**：无 `0x` 十六进制字面量（用十进制）；无空块 + `else`；`ok` 是保留变量名；
-   `ui` 在主体后才注入，须 `start_timeout(0.05, …)`。
+7. **Splash 语法限制**（`docs/SCRIPT-API.md#gotchas`）：
+   - **十六进制颜色**以 `#` 开头；**含 `e` 且紧邻数字时必须写 `#x`**（`#x1e1e2e`、`#x2ecc71`），
+     `#x` 一律安全 —— 否则分词器会把它读成指数。
+   - **无 `range()`**：用 `for i in n`。
+   - **背景**：`View{show_bg: true draw_bg.color: …}` 在 `card-host` 中不绘制背景；
+     用 **`SolidView`** 或 `RoundedView` 做填充面板。
+   - **`ButtonFlat` 不能有子控件**：里面的 `Label` 不会被绘制。
+   - `local_time()` 在 card-host 中是 **UTC**。
+   - **文字默认白色**。
+   - **`TextInput` 必须有数值高度**。
+   - 无空块 + `else`（`on_render` 中 `if` 与 `for` 必须分开）；`ok` 是保留变量名。
+   - `ui` 在主体执行后才注入，须 `start_timeout(0.05, …)` 启动。
 8. **手机（Android）无法侧载任意应用包**；`card-host` 的远程控制桥在 Android 上被编译移除。
 
 ---
@@ -377,7 +444,8 @@ issue 需附：仓库 URL、tag、完整 commit SHA、包在仓库中的路径�
 | 4c | **"一次操作 + 可核对的结果 + 一个失败/空状态"** | 初赛原型的最低演示要求；失败/空状态已有部分证据 |
 | 5 | DoD #3：交互用**远程桥**驱动 | 此前用 XTest；`/snap` 已验证可用 |
 | 6 | DoD #4：**空/错误/重启**三态完整测试 | 证据不完整 |
-| 7 | 宿主内**停止 / 90 秒 / 迟回调**在赛事服务器重测 | 旧结论在 matrix.org 上，已作废 |
+| 7 | 宿主内**停止 / 超时（读房 sheet 45 s、服务默认 60 s）/ 迟回调**在赛事服务器重测 | 旧结论在 matrix.org 上，已作废；"90 秒"无依据已更正 |
+| 7a | **读房授权 sheet 三选项与 45 秒拒绝、跨账号不继承**未演示 | 接收者独立授权的核心机制 |
 | 7b | **跨房间拒绝 / 实例撤销 / 迟回复**未测（ADR 0005 第 1 项） | 需在 Rinx 上跑 |
 | 7c | **Back / 键盘 / 关闭-重开**未测（ADR 0005 第 4 项） | 需在 Rinx 上跑 |
 | 8 | 包的交付签名状态 | 现为**已签名**；官方开发态期望未签名（已签名时 `card-host`/`octo check` 拒绝） |
@@ -486,7 +554,16 @@ $OCTO_HUB scan <未签名副本>/bundle --packet build/review.json
 | `docs/adr/0008-rinx-system-app-catalog.md` | §4.2 内置目录与导入包的边界 |
 | `docs/rinx-guide.md`（赛事仓库） | §5 Matrix 服务器与登录 |
 
-### 12.5 尚未通读（若后续需要再读，读完请补进上表）
+### 12.5 已做的完整性审计（2026-10-02）
+用独立审计员（subagent）以本文件为基准、对上述全部文档做逐条比对，**发现并修正了 16 处遗漏/不准确**：
+复赛材料清单（含队外用户试用记录）、最佳 Agentic 评分维度、初赛材料漏"已报名成员名单"、
+时间表漏 5 个节点、9/24 环境发布节点、决赛答辩与计分流程、出勤/现场/晋级口径、
+Rinx 开发态导入同样拒绝发布者签名、`hub scan` 不证明可运行、**十六进制规则写错（应为 `#x`）**、
+`glance` 被误列入"不要申请"、漏记 `model.complete`、Splash gotchas 缺 6 条、
+**读房授权 sheet 机制（45 秒）与"90 秒"无依据**、房间数据转交 octos 需两类授权、
+注册说法与官方指南矛盾。全部已并入正文。
+
+### 12.6 尚未通读（若后续需要再读，读完请补进上表）
 `OctoScript-App-Design-Flow/docs/SCRIPT-API.md`、`docs/AI-SERVICES.md`（1325 行）、
 `docs/GLOSSARY.md`、`docs/app-card-design-requirements.md`（已读，属卡应用视觉需求，与本脚本应用关系小）、
 `docs/matter-centered-ux-research.md`、`OctoSense/` 与 `Octoscript/` 各仓库的多数文档、
