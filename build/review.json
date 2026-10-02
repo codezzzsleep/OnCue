@@ -36,7 +36,8 @@
     "release_notes": "0.4.4：修复长文本阅读与分页。重新调整阅读区列宽与行数（每行 16 列、每页 3 视觉行、原消息区每页 1 行），长单行文本与多页 A/B 不再被裁断；在 412×892 与 990×613 两个视口下逐页核对到像素可读。新增字素边界保护：组合标记、肤色修饰符、变体选择符、keycap、ZWJ 家族与成对旗帜不会被折到两页（emoji 不再出现半字形）。修复「摘要」入口在样例路径下永远打不开的问题。房间名为空时显示「已授权群聊」，不再回落到完整房间 ID。权限与存储配额不变。",
     "schema": 1,
     "screenshots": [
-      "screenshots/01-native-rinx.png"
+      "screenshots/01-native-rinx.png",
+      "screenshots/02-real-room-and-agent.png"
     ],
     "subtitle": "先试着说，再决定要不要发"
   },
@@ -56,7 +57,7 @@
     },
     "id": "oncue-screening-room",
     "integrity": {
-      "bundle_blake3": "9b221cd7ed27bb6fb38c7d91bdd04d13de6387b4055565d74bf7c1bce9f13b97",
+      "bundle_blake3": "2b01ae050c6110a4921303ec18ca07949e1ffd6083db0fd77431a577f182111a",
       "signature": null
     },
     "name": "OnCue · 群聊试映室",

@@ -12,7 +12,8 @@
     "假设对白"
   ],
   "screenshots": [
-    "screenshots/01-native-rinx.png"
+    "screenshots/01-native-rinx.png",
+    "screenshots/02-real-room-and-agent.png"
   ],
   "icon": "assets/icon.svg",
   "platforms": [

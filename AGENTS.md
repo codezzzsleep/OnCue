@@ -26,7 +26,7 @@
 | 赛道 | OctoSense 12 场景之 **即时消息**（官方明确：即时消息场景**绑定 Rinx**） |
 | 包路径 | `oncue/bundle/` —— **只有 `bundle/` 会被提交** |
 | 应用 id | `oncue-screening-room`（`[a-z0-9.-]{1,64}`，不以保留名结尾 ✓） |
-| 版本 / digest | `0.4.4` / `9b221cd7ed27bb6fb38c7d91bdd04d13de6387b4055565d74bf7c1bce9f13b97` |
+| 版本 / digest | `0.4.4` / `2b01ae050c6110a4921303ec18ca07949e1ffd6083db0fd77431a577f182111a` |
 | 队伍 / 成员 | **单人队：队伍 OnCue，队长兼唯一成员 YCOROY**（用户 2026-10-02 确认） |
 | 许可 | Apache-2.0（`oncue/LICENSE`） |
 

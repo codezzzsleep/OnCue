@@ -3,9 +3,10 @@ $ hub check oncue/bundle --publisher-key oncue.dev=50578fd7e0d8ac51a1e9e59083542
 oncue-screening-room 0.4.4 — PASSED
   grants: capabilities {"matrix.read_messages", "matrix.room_info", "octos.session.open", "octos.turn.interrupt", "octos.turn.start", "storage"}, hosts {}, storage 4194304 bytes, agent none
 
-$ hub check oncue/bundle --allow-unsigned
+$ tools/octo check <未签名副本>
 
-oncue-screening-room 0.4.4 — REFUSED
-  [refused] publisher-signature: publisher key "oncue.dev" is not registered with this hub
+octo: hub stamp -> 2b01ae050c6110a4921303ec18ca07949e1ffd6083db0fd77431a577f182111a
+octo: /opt/src/apphub/OctoSense-App-Hub/target/release/hub check /tmp/oncue-unsigned2/bundle --allow-unsigned
+oncue-screening-room 0.4.4 — PASSED
+  [warning] publisher-signature: unsigned: accountability rests on the hub alone
   grants: capabilities {"matrix.read_messages", "matrix.room_info", "octos.session.open", "octos.turn.interrupt", "octos.turn.start", "storage"}, hosts {}, storage 4194304 bytes, agent none
-hub: the bundle was refused

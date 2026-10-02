@@ -64,7 +64,7 @@ Rinx 基线同样把它列为核心机制（每次打开须授权、关联账号
 
 ```
 仓库 HEAD = a0814a0    tag v0.4.4 -> a0814a0    跟踪文件 33 个 / 1.4M
-包 0.4.4  digest 9b221cd7ed27bb6fb38c7d91bdd04d13de6387b4055565d74bf7c1bce9f13b97
+包 0.4.4  digest 2b01ae050c6110a4921303ec18ca07949e1ffd6083db0fd77431a577f182111a
 已签名（oncue.dev）；hub check --publisher-key -> PASSED
 宿主 :99 运行中，pid 150001，exe sha256 87ed4dcc…（官方 Rinx c515e5fc 构建，零本地补丁）
 ```
