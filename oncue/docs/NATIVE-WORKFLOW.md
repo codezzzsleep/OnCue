@@ -3,7 +3,7 @@
 > 本文件的 Rinx 侧结论（房间读取 / 七块回合 / 停止·90 秒·迟回调等）是在
 > **Rinx 当时安装的 `0.4.3` 包（digest `ec7773d51f2078e618d1711bb9b2840629e272858b040abf0af19c1c492e9619`）**
 > 之上取得的（多数经由叠加在该基线上的**探针包**）。
-> **它们不代表当前包 `0.4.4`（digest `2478d2300f7cbebc17f439caf3965e710a010285d6ddfa306778243efb63d81f`）。**
+> **它们不代表当前包 `0.4.4`（digest `9b221cd7ed27bb6fb38c7d91bdd04d13de6387b4055565d74bf7c1bce9f13b97`）。**
 >
 > 当前包已通过 Rinx `Discover → Mini apps → Import an app` 的 **Developer Review→Run** 装载
 > （快照 `rinx-miniapp-4739e871-…`，digest 与当前包精确一致），**同版回归尚在进行**；

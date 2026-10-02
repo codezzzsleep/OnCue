@@ -1,7 +1,7 @@
 # OnCue `oncue-screening-room` 0.4.4 — `hub scan` 七问答案
 
 - 记录时间：2026-10-02；审核对象：**当前包 0.4.4**
-- digest：`2478d2300f7cbebc17f439caf3965e710a010285d6ddfa306778243efb63d81f`
+- digest：`9b221cd7ed27bb6fb38c7d91bdd04d13de6387b4055565d74bf7c1bce9f13b97`
 - 审核包：`hub scan oncue/bundle --packet …`（7 问原文取自该包）
 - `hub check --allow-unsigned` → **PASSED**（仅剩未签名警告）
 - grants：`storage, matrix.room_info, matrix.read_messages, octos.session.open, octos.turn.start, octos.turn.interrupt`
