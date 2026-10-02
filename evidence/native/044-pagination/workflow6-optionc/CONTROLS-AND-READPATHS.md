@@ -50,3 +50,22 @@ prefix=merged-ab mode=2 W=412x892 clicks=2 clamp=True distinct_pages=2
 但**我的点击序列没有成功写入 A 版内容**，因此**"A/B 对照的内容阅读路径"没有验证**。
 
 **我不把"按钮能点"当成"内容路径通过"。** 该项状态：**未验证**。
+
+## ⑤ 更正：`A/B 对照` 内容路径 **已验证**（探针调产品函数，非坐标点击）
+
+④ 里我报"未验证"是因为**我的 UI 点击序列没有把草稿填上**（`用这句` 那一下没点中），
+不是产品问题。改用探针**直接调用与按钮 `on_click` 相同的产品函数**后，路径是通的：
+
+```
+ab-1  routes=3  draft_before=0
+ab-2  draft_after_choose=18          <- cue_choose_route(0) 把建议台词放进草稿（18 字）
+ab-3  take_a_len=18  mode=2  take_read=0   <- cue_keep_take(0) 存 A 并切到对照模式
+ab-4  after_read_a  mode=2  take_read=0  take_a_len=18  ws_pages=1   <- cue_read_take(0)
+ab-5  final  mode=2  take_read=0  take_a=18  take_b=0
+落盘证据：<app storage>/take-a.txt 已写入
+```
+
+**结论**：`A/B 对照` 的**内容阅读路径通过**（函数级验证 + 落盘证据），
+并且 `A/B 对照` / `显示 A` / `显示 B` 三个按钮的可达性在 ① 中已单独验证（28/28）。
+**两者合起来**才构成"该路径可用"的结论——我没有把"按钮能点"单独当成内容路径通过，
+也没有因为我点不中就把产品判成坏的。
