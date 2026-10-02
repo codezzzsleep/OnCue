@@ -1,0 +1,104 @@
+# Submit oncue-screening-room 0.4.4
+
+## 仓库
+- Repository: https://github.com/codezzzsleep/OnCue
+- Tag: `v0.4.4`
+- Commit: `03bb88d30554979bb59f8877d6e84fc6b4fd7bea`
+- Bundle path in repo: `oncue/bundle`
+- App id / version: `oncue-screening-room` / `0.4.4`
+- Bundle digest (bundle_blake3): `2478d2300f7cbebc17f439caf3965e710a010285d6ddfa306778243efb63d81f`
+
+## 发布者
+- publisher id: `oncue.dev`
+- public key: `50578fd7e0d8ac51a1e9e590835427ce8e71f46dba491860c75ae4e7c8c78042`
+
+## hub check 输出（`hub check oncue/bundle --publisher-key oncue.dev=<hex>`，在 tag 指向的同一批字节上）
+```
+oncue-screening-room 0.4.4 — PASSED
+  grants: capabilities {"matrix.read_messages", "matrix.room_info", "octos.session.open", "octos.turn.interrupt", "octos.turn.start", "storage"}, hosts {}, storage 4194304 bytes, agent none
+```
+
+## hub scan 七问回答
+
+## Q1 应用是否如其名称/副标题/描述所声称？请引用源码文本。
+
+**是。** `main.splash` 里构建的界面文本与 `listing.json` 的描述逐项对应：
+
+- 标题 `"OnCue · 群聊试映室"`、副标题 `"先试着说，再决定要不要发。"`
+- 三条路线标题在 `cue_demo_routes()` / 七块解析处：`"顺着这句"`、`"换个问法"`、`"换个玩法"`
+- 逐句播放控件：`"播放"`、`"重播"`、`"下一句"`、`"停止等待"`
+- 草稿与对照：`"保留这句"`、`"取回草稿"`、`"存 A"`/`"取 A"`/`"存 B"`/`"取 B"`、`"A/B 对照"`、`"显示 A"`/`"显示 B"`
+- 阅读：`"对白"`、`"摘要"`、`"上一页"`/`"下一页"`
+- **不发送**的边界同时写在界面与描述里：状态文案 `"原消息是事实线索；对白、摘要与 A/B 为逐页阅读的私下排练，仍需你判断。尚未发送。"`，
+  以及状态提示 `"这条假设路线已逐句播完。可以改台词、换路线，或把建议放进草稿。"`
+
+**当前包实测支撑**（与上面每条声明对应，均为 0.4.4 上的新证据）：
+- 分页：8 夹具 × 412/990 双视口，页数 34/21/27/46/51/32/28/46，逐条相同、全部 `clamp=True`
+- 真实房间 12 条 × 两视口（3,4,3,5,5,5,5,5,5,5,5,5）
+- 七块 7 段 × 两视口（5,21,4,20,6,25,8）
+- 拼接无损：应用自证 `ALL_EQUAL=true` 且 `orig_bytes == join_bytes`
+- 逐句播放 7 项（下一句保持暂停 / 播放跨 2 间隔 / 暂停不前进 / 续播 / 重播归零 / 换路线隔离旧 timer / 无 routes 不崩）
+- 全部控件可达 **28/28**
+
+## Q2 listing 的平台与分类是否适合这类应用？
+
+**适合。** 分类 `productivity`；这类"先私下排练再决定要不要发"的辅助读物属于生产力工具。
+平台声明与实测一致：**应用是可运行的 OctoScript 应用**，在 `card-host`（412×892 / 990×613）与
+**Rinx mini-app host**（Developer `Import an app` → Review → Run，快照 digest 与本包精确一致）上均实际运行。
+**如实说明**：Rinx 内的同版回归仍在进行，尚未取得逐条 room 可视证据（见 Q7 限制）。
+
+## Q3 授予的能力是否与界面上可见行为相符？逐项说明它请求的每个宿主及理由；并指出屏幕上不需要的授权。
+
+**相符。** 六项 capability 与可见功能的对应：
+
+| capability | 屏幕上的可见用途 |
+| --- | --- |
+| `storage` | 草稿（`draft.txt`）、版本 A/B（`take-a.txt`/`take-b.txt`）的保存与重开取回 |
+| `matrix.room_info` | `载入群聊` 后显示房间名（空房名回落为"已授权群聊"，**不显示完整 room id**） |
+| `matrix.read_messages` | 读取本次授权房间最近 12 条文本，作为"现场原消息"编号展示 |
+| `octos.session.open` | 打开应用自己的会话，承载一次排练回合 |
+| `octos.turn.start` | `试映下一幕`：让助手产出三条假设路线（七块结构） |
+| `octos.turn.interrupt` | `停止等待`：用户可中止尚未返回的回合 |
+
+**没有任何屏幕上看不到的授权**：`hosts: {}`，`main.splash` 内不含任何 URL（无网络目标）。
+
+## Q4 界面是否有欺骗性（冒充系统提示、支付页、登录页或其它品牌）？
+
+**没有。** 界面只使用自有的圆角卡片与药丸按钮样式，无支付、无登录表单、无系统提示外观；
+应用**不索取也不持有**任何密钥/token（密钥留在宿主的 AI providers，应用侧只调用 `octos.*`）。
+文案明确区分"事实线索 / 假设对白 / 建议台词 / 尚未发送"。
+示例数据集中在 `样例舞台`，其状态与标题都写有 `样例`/`虚构`，不会被误当成真实群友发言。
+
+## Q5 源码或其数据中是否有"读起来像给助手的指令"而非给人的内容？
+
+**没有越界内容。** 唯一"面向助手"的文本是应用**自身功能所需**的提示构造：
+`cue_prompt()` 组装发给 `octos.turn.start` 的要求（要求返回固定七块结构、引用来源编号）。
+它是**应用与助手之间的接口参数**，不是要助手去执行系统级动作的指令；
+不含凭据请求、不含"忽略此前指令"之类覆盖性措辞、不含误导用户的内容。
+
+## Q6 是否有辱骂性措辞，或针对特定个人的内容？
+
+**没有。** 示例消息为虚构群聊（`阿柚`、`七喜`、`小林`），内容为出行安排；
+无辱骂、无针对真实个人的内容。真实房间内容只在用户授权后读取并仅在本地展示，应用**不发送**任何消息。
+
+## Q7 Route：pass / human-review / reject，并给出可供发布者行动的理由。
+
+**`human-review`。**
+
+**建议通过的理由**
+- `hub check --allow-unsigned` **PASSED**（仅剩未签名警告）；能力与可见行为逐项对应；无多余授权；无网络目标。
+- 当前包在 **412×892 与 990×613** 上完成：8 夹具双视口分页、真实 12 条、七块 7 段、控件 28/28、
+  应用自证无损、逐句播放 7 项、字素边界 15 类 × 16 padding 双视口 0 处切断（修复前基线 39 处）。
+- 已走通 Rinx 官方 Developer `Import an app` → Review（显示 `Local unsigned bundle`、Allowed room 精确一致）→ Run，
+  且导入快照 digest 与本包**精确一致**。
+
+**需要人复核的具体理由（务必如实呈现）**
+1. **Rinx 内的同版回归尚未全部完成**：room 最新 12/13 条的**逐条可视证据**受 Rinx 内嵌视图裁切所限尚未取得；
+   七块 / 停止 / 90 秒 / 迟回调亦同。已有的 Rinx 侧旧结论取自 **0.4.3**，本包**不引用**它们。
+2. **未签名**：需发布者本人 `hub keygen` / `hub sign-manifest` / 打 tag / 开 `Submit` issue。
+3. **homeserver 为 `matrix.org`**，非赛事指南指定的 `matrix.rinx.chat`；赛事账号需用户本人注册/授权。
+4. **"接收者独立授权"演示尚未做**（官方对聊天/账号类作品的要求）；本应用**不分享、不发送**，
+   材料中需准确写明"未发送排练"与授权边界。
+5. 应用依赖 `matrix.*`（仅 Rinx mini-app host 提供）与 `octos.*`（Rinx mini-app host 提供）；
+   在**不提供这些服务**的宿主（如 `card-host`）里，应用会显示不可用并仍可用样例舞台继续 —— 但**核心功能不可用**，
+   这一点已在文档中写明，未夸大。
