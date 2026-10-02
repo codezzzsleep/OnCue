@@ -1,7 +1,0 @@
-P1_len=8
-P1_chars=3
-P2_rebuilt=汉A🙂
-P2_equal=true
-P2_rawlen=8
-P3_bad=2772165128578
-P3_equal=false

@@ -1,7 +1,0 @@
-prefix=990-f05-workspace W=990x613 btn=(640,345) clicks=6 clamp=True distinct_pages=6
-p1 517b4cfc47aede04
-p2 5c0a951a758d4eb0
-p3 a227eec17cf7ba37
-p4 328d19094278b2ba
-p5 b4d709746e58bfc4
-p6 71a5243af52b3e89

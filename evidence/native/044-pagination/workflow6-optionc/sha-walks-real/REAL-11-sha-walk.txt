@@ -1,7 +1,0 @@
-prefix=REAL-11 W=412x892 btn=(121,508) clicks=5 clamp=True distinct_pages=5
-p1 9e26dc73b7bfa7c1
-p2 c74593f53defeb30
-p3 cf6a74be6c0f6249
-p4 cd098179a4dfbbfa
-p5 28b435e77320e792
-p6 28b435e77320e792

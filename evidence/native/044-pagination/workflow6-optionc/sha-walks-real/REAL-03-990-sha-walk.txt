@@ -1,5 +1,0 @@
-prefix=REAL-03-990 W=990x613 btn=(121,490) clicks=3 clamp=True distinct_pages=3
-p1 58713fd94c3550d0
-p2 89b9ed54416c779f
-p3 18c9c3d7456dbe2e
-p4 18c9c3d7456dbe2e

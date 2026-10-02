@@ -1,0 +1,11 @@
+$ hub check oncue/bundle --publisher-key oncue.dev=50578fd7e0d8ac51a1e9e590835427ce8e71f46dba491860c75ae4e7c8c78042
+
+oncue-screening-room 0.4.4 — PASSED
+  grants: capabilities {"matrix.read_messages", "matrix.room_info", "octos.session.open", "octos.turn.interrupt", "octos.turn.start", "storage"}, hosts {}, storage 4194304 bytes, agent none
+
+$ hub check oncue/bundle --allow-unsigned
+
+oncue-screening-room 0.4.4 — REFUSED
+  [refused] publisher-signature: publisher key "oncue.dev" is not registered with this hub
+  grants: capabilities {"matrix.read_messages", "matrix.room_info", "octos.session.open", "octos.turn.interrupt", "octos.turn.start", "storage"}, hosts {}, storage 4194304 bytes, agent none
+hub: the bundle was refused

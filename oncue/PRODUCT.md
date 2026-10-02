@@ -26,9 +26,9 @@
 
 ## 历史原型
 
-早期 Python 网页只用于探索交互，已退出开发、验收、演示与参赛交付主线。
-它不证明 OctoSense / Rinx 集成，也不作为当前产品入口；历史说明仅保留在
-[WEB-PREVIEW-LEGACY.md](docs/WEB-PREVIEW-LEGACY.md) 供溯源。
+早期还有一个 Python 网页原型，只用于探索交互，**已退出开发、验收、演示与参赛交付主线**，
+且**已从本仓库移除**——它不证明 OctoSense / Rinx 集成，也不作为当前产品入口。
+本作品只有一条路径：在 OctoSense / Rinx 宿主内运行的 OctoScript 小程序（见 `bundle/`）。
 
 ## 候选后续玩法
 

@@ -1,4 +1,0 @@
-emoji 与 ZWJ 序列：👨‍👩‍👧‍👦 👩‍💻 🏳️‍🌈 👍🏽 ✊🏿 🇨🇳 🇺🇳 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂 🙂
-组合字符（NFD，e + 组合锐音符等）：café naïve résumé Ångström señor Zoë Dvor̊́k Łódź Ćwikła Müller Straße ęóüı̇
-
-中文与 emoji 混排：我们去西湖边 🙃 然后喝咖啡 ☕ 再去看电影 🎬 预算 300 元 💸 记得带身份证 🪪 有问题群里说 📱

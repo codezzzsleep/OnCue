@@ -1,7 +1,0 @@
-prefix=REAL-07 W=412x892 btn=(121,508) clicks=5 clamp=True distinct_pages=5
-p1 9e26dc73b7bfa7c1
-p2 e84a024933c0f491
-p3 5f251b6700e84fea
-p4 b500267d79655cf4
-p5 7cfa5081d16e0622
-p6 7cfa5081d16e0622

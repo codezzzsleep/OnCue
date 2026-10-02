@@ -1,9 +1,0 @@
-prefix=990-blk07 W=990x613 btn=(121,490) clicks=8 clamp=True distinct_pages=8
-p1 0cbde456941cf7c4
-p2 bdd6476280a06f4d
-p3 61647b74a157443a
-p4 efaae4ada10269f7
-p5 cfed20b703f97258
-p6 9f77f29285ffe09a
-p7 44d61fa584b98b3e
-p8 c195cc3724a8e047
