@@ -268,6 +268,21 @@ Rinx 基线给选手的起步流程（官方原文）：
 issue 需附：仓库 URL、tag、完整 commit SHA、包在仓库中的路径、发布者 id 与公钥（**或写 "unsigned"**）、
 `hub check --publisher-key` 的完整输出、七问回答。**首次提交一定等人工处理**。
 
+
+### 3.8 基线选择：用各仓库的 `main`（README.zh-CN.md §现状）
+> 原文（`README.zh-CN.md:85`）：**"脚本应用依赖的工作已于 2026-09-26 合入各仓库的 `main`；请使用各仓库的 `main`。"**
+> 同节还写明：**"在手机上安装自己的应用包 — 不支持。"**
+
+→ 我们的基线应取各仓库 `main`。当前：
+`Rinx` = `c515e5fc9b6d`（main）、`OctoSense` = `c19da8d`、`OctoSense-App-Hub` = `41bc959`、
+`OctoScript-App-Design-Flow` = `caa5d36`。**每次重建前先 `git fetch` 确认是否仍是最新 main。**
+
+### 3.9 应用能做什么 / 不能做什么（README.zh-CN.md §黑客松）
+> **能做**：自己的存储、访问已声明主机的 HTTPS 请求、图片与网页、相机、定位，以及通过宿主服务使用 Mail。
+> **不能做**：持有密码/密钥/token；**自创权限或宿主服务**（那是 App Hub 和 Shell 的修改）；
+> 使用 `llm` 或 `os.*` id（仅限系统应用）；**侧载到手机**。
+> `card-host` 不提供任何宿主服务，所以类似 Mail 的应用在其中会显示 `no service answers`。
+
 ### 3.7 汇报格式（`AGENTS.md#reporting`）
 - **Verified**：跑过的每条命令与结果（gate 输出**原样引用**）、截图路径
 - **Not verified**：没跑过的（平台、`card-host` 不提供的宿主服务、手机），**写"未验证"，不写"应该可以"**
@@ -532,7 +547,13 @@ $OCTO_HUB scan <未签名副本>/bundle --packet build/review.json
 ### 12.2 设计流程仓库 `OctoSense-org/OctoScript-App-Design-Flow`
 | 文件 | 贡献的章节 |
 | --- | --- |
-| `README.zh-CN.md` | §3.1 快速上手预期输出、§5 平台（仅 macOS 已验证）、§7.2 签名与截图关系、§6 参赛≠上架 |
+| `README.zh-CN.md` | §3.1 快速上手预期输出、§3.8 用各仓库 main、§3.9 能做/不能做、§5 平台（仅 macOS 已验证）、§7.2 签名与截图关系、§6 参赛≠上架 |
+
+> **`README.zh-CN.md` 逐节覆盖声明**（16 节）：
+> **已吸收**：黑客松从这里开始、快速上手、`tools/octo`、设计流程、应用是什么、隔离规则、
+> 应用中的 AI、运行应用、无头测试、发布、现状（→§3.8/§3.9）。
+> **判断为不适用**（描述的是该流程仓库自身，与本作品无关）：仓库结构、示例、参与贡献、相关仓库。
+> **部分吸收**：Agent 从这里开始（其"阅读顺序"对应 §12 的文档清单）。
 | `AGENTS.md` | §3.2 Definition of Done、§3.3 每个应用的规则、§3.7 汇报格式、语法提醒 |
 | `flows/README.md` | §3.6 共同交接（stamp/check/run/shot） |
 | `flows/script-app/FLOW.md` | §3.1 十四步流程 |
