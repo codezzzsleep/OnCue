@@ -1,0 +1,5 @@
+prefix=412-blk03 W=412x892 btn=(121,508) clicks=4 clamp=True distinct_pages=4
+p1 54256cb10d9a90dc
+p2 29f4c59fde9f817f
+p3 75dc6943e1b65cfc
+p4 905dccbbc9cf4487

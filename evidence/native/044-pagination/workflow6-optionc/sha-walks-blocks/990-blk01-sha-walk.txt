@@ -1,0 +1,6 @@
+prefix=990-blk01 W=990x613 btn=(121,490) clicks=5 clamp=True distinct_pages=5
+p1 8b8137ecd2deb662
+p2 1c9d76a97c7a68f6
+p3 cd1501050a5db633
+p4 39fb3c886fa38e38
+p5 93067f92b6d4eab7

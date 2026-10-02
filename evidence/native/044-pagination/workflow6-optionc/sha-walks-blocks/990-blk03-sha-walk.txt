@@ -1,0 +1,5 @@
+prefix=990-blk03 W=990x613 btn=(121,490) clicks=4 clamp=True distinct_pages=4
+p1 0122affdfab4cc43
+p2 a7b50eccda0ef343
+p3 4f6e46ce1c097ccb
+p4 1c137b79bc1b0d52

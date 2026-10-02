@@ -1,0 +1,9 @@
+prefix=412-blk07 W=412x892 btn=(121,508) clicks=8 clamp=True distinct_pages=8
+p1 15aceaf16edfae4d
+p2 d0274d44d3aefd9e
+p3 3feb5a240563bb95
+p4 1b9aacdc24e3fe1b
+p5 8f22f4055928f700
+p6 b7a2a223a98cfe72
+p7 1835e1e781cccabc
+p8 f17f14f04253d10e
