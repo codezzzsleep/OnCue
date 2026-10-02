@@ -419,6 +419,9 @@ fn cue_prompt(trial){
 // 模型偶尔会使用 CRLF，或在分隔行两侧带空格。七块结构本身完整时，
 // 不能因为换行风格不同就让用户重试；但分隔符仍必须独占一行，且最终仍严格校验
 // 恰好七个非空块，避免把正文中的 "@@@" 误当结构。
+// 模型也常在整段回复的首尾各多写一个 @@@"（实测：回复以 "@@@" 开头、以 "\n@@@" 结尾）。
+// 那是合法的七块结构，只是外面多包了一层分隔符；首尾的空块必须丢弃，
+// 否则会被数成第 8、9 块，让用户对着正确输出反复重试。
 fn cue_split_blocks(text){
     let lines = text.split("\n")
     let blocks = []
@@ -426,14 +429,14 @@ fn cue_split_blocks(text){
     for i in lines.len() {
         let line = lines[i]
         if line.trim() == "@@@" {
-            blocks.push(block.trim())
+            if block.trim() != "" { blocks.push(block.trim()) }
             block = ""
         } else {
             if block != "" { block += "\n" }
             block += line
         }
     }
-    blocks.push(block.trim())
+    if block.trim() != "" { blocks.push(block.trim()) }
     blocks
 }
 fn cue_rehearse(){
