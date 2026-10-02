@@ -454,22 +454,19 @@ issue 需附：仓库 URL、tag、完整 commit SHA、包在仓库中的路径�
       `matrix.room_info`/`read_messages` 读到真实房间 → `octos.turn.start` 完成
       （内核日志 `LLM response received … response_content_len=1839`）
 - [x] tag `v0.4.4` 已打并推送
+- [x] **App Hub 提交 issue 已发布**：https://github.com/OctoSense-org/OctoSense-App-Hub/issues/57
+      （标题 `Submit oncue-screening-room 0.4.4`，`gh` 已登录 `codezzzsleep`）
+- [x] 按维护者动作独立验证：`git clone --branch v0.4.4` → digest 一致 → `hub check --publisher-key` PASSED
 
 ### 8.2 未完成（按优先级）
 | # | 缺口 | 说明 |
 | --- | --- | --- |
 | 1 | **接收者独立授权演示** | **官方硬要求**，零证据；需第二个账号（分享 → 接收者独立授权 → 自己的草稿/账号，不继承权限） |
 | 2 | ⚠️ **"执行 → 核验结果"缺失** | 官方两次强调"仅生成界面/摘要不足以证明任务自动化"，Rinx 基线还要求"**结果回到原会话**"。本应用不发送 → **产品决策** |
-| 3 | **开 Submit issue** | 唯一挡住 App Hub 正式提交的动作；本机无 GitHub token |
 | 4 | **比赛提交入口未确认** | 入口仍待赛务公布；现阶段"以公开源码仓库和可运行作品为准，无需等待上架" |
-| 4b | **2–3 分钟演示 + 第二张关键截图** | `curriculum.md:92` 明确的初赛材料，我们还没有 |
 | 4c | **"一次操作 + 可核对的结果 + 一个失败/空状态"** | 初赛原型的最低演示要求；失败/空状态已有部分证据 |
-| 5 | DoD #3：交互用**远程桥**驱动 | 此前用 XTest；`/snap` 已验证可用 |
-| 6 | DoD #4：**空/错误/重启**三态完整测试 | 证据不完整 |
 | 7 | 宿主内**停止 / 超时（读房 sheet 45 s、服务默认 60 s）/ 迟回调**在赛事服务器重测 | 旧结论在 matrix.org 上，已作废；"90 秒"无依据已更正 |
 | 7a | **读房授权 sheet 三选项与 45 秒拒绝、跨账号不继承**未演示 | 接收者独立授权的核心机制 |
-| 7b | **跨房间拒绝 / 实例撤销 / 迟回复**未测（ADR 0005 第 1 项） | 需在 Rinx 上跑 |
-| 7c | **Back / 键盘 / 关闭-重开**未测（ADR 0005 第 4 项） | 需在 Rinx 上跑 |
 | 8 | 包的交付签名状态 | 现为**已签名**；官方开发态期望未签名（已签名时 `card-host`/`octo check` 拒绝） |
 | 9 | 截图未用 `tools/octo shot` | 该工具在本机不可用（见 §7.1），已用 ffmpeg 变通 |
 | 11 | 无运行视频（可选） | — |

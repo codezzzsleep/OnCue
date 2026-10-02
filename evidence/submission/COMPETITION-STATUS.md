@@ -39,7 +39,7 @@
 | 8 | `hub check --allow-unsigned --catalog <App Hub catalog>` → 无版本/连续性拒绝 | 因发布者密钥尚未在 hub 登记，`--catalog` 检查被 `publisher-signature` 拒绝 | **待发布后**（属发布方流程，非作品缺陷） |
 | 9 | 仓库里只应有 bundle 与源码；**不得有密钥、`.local-state`、`build/`** | 仓库 33 个文件，已清理；密钥在仓库外（`/srv/oncue-runtime/dev/keys/`） | **已有** |
 | 10 | **HUMAN**：`hub sign-manifest` + `hub check --publisher-key` → PASSED | 已完成（key_id `oncue.dev`，公钥与 catalog 登记一致） | **已有** |
-| 11 | **HUMAN**：打 tag + 在 `OctoSense-App-Hub/issues` 开 `Submit <id> <version>` | tag `v0.4.4` 已打并推送；**issue 未开**（本机无 GitHub token） | **未完成** |
+| 11 | **HUMAN**：打 tag + 在 `OctoSense-App-Hub/issues` 开 `Submit <id> <version>` | tag `v0.4.4` 已打；**issue #57 已发布** | **已完成** |
 
 ## 3. 提交材料（`app-hub-submission.md` 的 6 项）逐项对照
 

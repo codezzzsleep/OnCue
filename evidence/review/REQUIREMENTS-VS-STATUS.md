@@ -61,8 +61,8 @@
 | 数据来源/权限/隐私/授权拒绝失败 | ✅ | `PRIVACY.md` + 七问回答 |
 | Agent 任务演示（输入/步骤/核验/人工确认） | ⚠️ | 有实测，**无按该结构的专门材料** |
 | 运行截图/日志/复现步骤 | ✅ | 多份 |
-| **2–3 分钟演示** | ❌ | **初赛硬性材料，缺** |
-| **两张关键截图** | ❌ | 只有 1 张正式截图 |
+| **2–3 分钟演示** | ✅ | `evidence/submission/DEMO-2MIN.md`（7 段时间轴：操作/画面/台词） |
+| **两张关键截图** | ✅ | 已入包：`01-native-rinx.png` + `02-real-room-and-agent.png` |
 | **已报名成员名单** | ✅ | **单人队：队伍 OnCue / 队长兼成员 YCOROY**；原文注明"仅供赛务核验、**不随作品公开**"，故不入公开仓库 |
 | 复赛：**队外用户试用记录** | ❌ | 复赛阶段材料，未做 |
 
@@ -75,8 +75,8 @@
 | ③ manifest / main.splash（3–4 步） | ✅ | 能力最小、`hosts` 为空 |
 | ④ `tools/octo run --hidden --detach`（第 5 步） | ✅ | `admitted` + `ready: first frame drawn` |
 | ⑤ `tools/octo shot`（第 6 步） | ❌ | **本机工具不可用**（`grab timeout`），改用 ffmpeg 抓窗口 |
-| ⑥ 远程桥驱动每个交互（第 7 步 / DoD 3） | ⚠️ | `/snap` 可用；交互此前用 XTest |
-| ⑦ 空/错误/重启三态（第 8 步 / DoD 4） | ⚠️ | 证据不完整 |
+| ⑥ 远程桥驱动每个交互（第 7 步 / DoD 3） | ✅ | `curl /snap?q=Button` 取精确坐标 + `/click` `/t` `/quit` 全流程 |
+| ⑦ 空/错误/重启三态（第 8 步 / DoD 4） | ✅ | `BRIDGE-DRIVEN-STATES.md`：空态/服务不可用/存A/重启后取回 |
 | ⑧ 定稿 listing（第 10 步） | ✅ | 全部 gate 限额通过 |
 | ⑨ `tools/octo check` → PASSED（第 12 步 / DoD 1） | ✅ | 未签名副本：`— PASSED` |
 | ⑩ `hub scan` packet + 七问（第 13 步 / DoD 5） | ✅ | `build/review.json` + `REVIEW-ANSWERS.md` |
