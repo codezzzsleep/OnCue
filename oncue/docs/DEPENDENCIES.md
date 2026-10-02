@@ -7,14 +7,16 @@
 | 组件 | 仓库 | 钉定提交 |
 | --- | --- | --- |
 | OctoSense | `OctoSense-org/OctoSense` | `6c4746f0854b74446f854fdcd32eeb87b5192a81` |
-| Rinx（mini-app 宿主） | `hagency-org/Rinx` | **`bb2a4d4df7d0` 或更新**（见下） |
+| Rinx（mini-app 宿主） | `hagency-org/Rinx` | **`c515e5fc9b6dc22e67f7d551b09fdd793ec685a1`**（官方 main，见下） |
 | octos（内核） | `octos-org/octos` | `fe08d8e6b3b32e672b0f956a2b692c3c8205b167` |
 | App Hub | `OctoSense-org/OctoSense-App-Hub` | `0f332112f0b5a379c5bb33790df74b21597190cf` |
 
-> **关于 Rinx 版本**：`bb2a4d4df7d0`（PR #48 "fix: preserve attached room when reviewing
-> imported mini apps"，2026-10-01 合并）修掉了 mini app import 面板里 `ids!(room)` 的歧义。
-> **该修复已在官方上游**，因此本作品可直接用官方 Rinx 复现，**不需要任何自定义补丁**。
-> 比它更早的 Rinx 会出现"Review 后房间被清空"的问题。
+> **关于 Rinx 版本**：本作品**使用官方 Rinx `main`（`c515e5fc9b6d`），未做任何源码改动**。
+> 其中 room 控件消歧由上游 PR #48 `bb2a4d4df7d0`（2026-10-01 合并）提供 —— 该 PR 修掉了
+> mini app import 面板里 `ids!(room)` 的歧义。**比它更早的 Rinx 会出现"Review 后房间被清空"的问题**，
+> 因此本作品要求 **Rinx ≥ `bb2a4d4`**；本次交付在官方 `c515e5fc9b6d` 上构建并实测。
+> 上游在 `0879548`(v1.0.0) 与 `c515e5fc` 之间还含 `5a9e2af2`（对齐 OctoSense 当前钉定的
+> makepad / App Hub / octos）等提交。
 
 ## 2. 支持平台
 

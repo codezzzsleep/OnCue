@@ -14,7 +14,8 @@
 
 本清单描述应验证的操作，不是通过报告。固定宿主为OctoSense
 `6c4746f0854b74446f854fdcd32eeb87b5192a81`、Rinx
-`0879548ba826c786eb6ad3f60dfba7bd342bd750`、octos
+`c515e5fc9b6dc22e67f7d551b09fdd793ec685a1`（**官方最新 main，无需任何本地补丁**；
+room 控件消歧由上游 PR #48 `bb2a4d4` 提供）、octos
 `fe08d8e6b3b32e672b0f956a2b692c3c8205b167`，实测平台为Linux aarch64。
 
 ## 导入与布局
