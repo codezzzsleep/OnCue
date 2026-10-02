@@ -3,6 +3,7 @@ let cue_routes = []
 let cue_demo = true
 let cue_busy = false
 let cue_revision = 0
+let cue_last_prompt = ""
 let cue_scene = "样例舞台 · 国庆搭子局"
 let cue_summary = ""
 let cue_take_a = ""
@@ -455,6 +456,51 @@ fn cue_split_blocks(text){
     if strict.len() == 7 { return strict }
     cue_split_loose(text)
 }
+// 模型并非每次都严格给出七块。格式变体（首尾多包一层、分隔符不换行）
+// 已在 cue_split_blocks 里兼容；对真正不合协议的回复，自动重试一次再交给用户决定，
+// 不让用户对着偶发的模型抖动反复手点。
+fn cue_start_turn(prompt_text, request_revision, attempt){
+    cue_last_prompt = prompt_text
+    host.request("octos.turn.start", {text: prompt_text}, fn(reply){
+        cue_accept_reply(reply, request_revision, attempt)
+    })
+}
+fn cue_accept_reply(reply, request_revision, attempt){
+    if request_revision != cue_revision { return }
+    if !reply.is_ok {
+        cue_set_busy(false)
+        cue_set_status("这次试映没有完成：" + reply.error)
+        return
+    }
+    let blocks = cue_split_blocks(reply.data.text)
+    let usable = blocks.len() == 7
+    if usable {
+        for i in blocks.len() {
+            blocks[i] = blocks[i].trim()
+            if blocks[i] == "" { usable = false }
+        }
+    }
+    if usable {
+        cue_set_busy(false)
+        cue_routes = [
+            {title: "顺着这句", body: blocks[1], draft: blocks[2]},
+            {title: "换个问法", body: blocks[3], draft: blocks[4]},
+            {title: "换个玩法", body: blocks[5], draft: blocks[6]}
+        ]
+        cue_select_preview(0)
+        cue_summary = blocks[0]
+        cue_set_status("现场摘要已就绪，点“摘要”可逐页读完；以下是 Agent 的假设排练，原消息仍在上方。")
+        return
+    }
+    if attempt < 1 {
+        cue_set_status("Agent 这一次的剧本不完整，正在自动重试…")
+        cue_start_turn(cue_last_prompt, request_revision, attempt + 1)
+        return
+    }
+    cue_set_busy(false)
+    if blocks.len() == 7 { cue_set_status("这份剧本有一块是空的，请再试一次。") return }
+    cue_set_status("Agent 尚未形成七块完整剧本，请再试一次。")
+}
 fn cue_rehearse(){
     if cue_busy { cue_set_status("这一幕正在展开，请稍等。") return }
     let trial = ui.cue_trial.text().trim()
@@ -475,31 +521,7 @@ fn cue_rehearse(){
             cue_set_status("Agent 暂时不可用：" + session.error)
             return
         }
-        host.request("octos.turn.start", {text: prompt_text}, fn(reply){
-            if request_revision != cue_revision { return }
-            cue_set_busy(false)
-            if !reply.is_ok { cue_set_status("这次试映没有完成：" + reply.error) return }
-            let blocks = cue_split_blocks(reply.data.text)
-            if blocks.len() != 7 {
-                cue_set_status("Agent 尚未形成七块完整剧本，请再试一次。")
-                return
-            }
-            for i in blocks.len() {
-                blocks[i] = blocks[i].trim()
-                if blocks[i] == "" {
-                    cue_set_status("这份剧本有一块是空的，请再试一次。")
-                    return
-                }
-            }
-            cue_routes = [
-                {title: "顺着这句", body: blocks[1], draft: blocks[2]},
-                {title: "换个问法", body: blocks[3], draft: blocks[4]},
-                {title: "换个玩法", body: blocks[5], draft: blocks[6]}
-            ]
-            cue_select_preview(0)
-            cue_summary = blocks[0]
-            cue_set_status("现场摘要已就绪，点“摘要”可逐页读完；以下是 Agent 的假设排练，原消息仍在上方。")
-        })
+        cue_start_turn(prompt_text, request_revision, 0)
     })
 }
 fn cue_choose_route(index){

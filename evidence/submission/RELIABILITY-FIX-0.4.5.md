@@ -90,3 +90,14 @@ fn cue_split_blocks(text){
 - digest：`2b01ae050c6110a4921303ec18ca07949e1ffd6083db0fd77431a577f182111a`
   → **`055c5fd806055f74fc13fa9f1acefabfa3079079153137adc971ae80079684a1`**
 - 已重新 `stamp` + `sign-manifest`（发布者 `oncue.dev`，密钥始终在仓库外）
+
+## 追加：自动重试（同一版本内）
+
+即使兼容了两种分隔符写法，模型仍会偶发地给出**真正不合协议**的回复（实测有一次点「试映下一幕」
+得到 `Agent 尚未形成七块完整剧本，请再试一次。`）。让用户为偶发的模型抖动反复手点不合理。
+
+改为：解析不通过时**自动重试一次**，仍不通过才提示用户。
+- `cue_start_turn(prompt_text, request_revision, attempt)` 负责发回合
+- `cue_accept_reply(reply, request_revision, attempt)` 负责解析；不通过且 `attempt < 1` 时自动重发
+- 重试期间保持 busy 状态，用户可随时点「停止等待」中断
+- 两次都不通过 → 保留原来的提示文案，不静默吞掉失败
