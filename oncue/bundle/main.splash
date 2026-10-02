@@ -190,6 +190,10 @@ fn cue_paginate(text, page_rows){
             } else {
                 rows += 1
             }
+            // 源码里的换行符是真正的簇边界：重置状态。
+            // 注意：宽度超限造成的"人工换页"**不**重置 RI 奇偶（它属于源串状态）。
+            prev_c = c
+            ri_odd = false
         } else {
             let w = 1
             if cue_is_wide(c) { w = 2 }
