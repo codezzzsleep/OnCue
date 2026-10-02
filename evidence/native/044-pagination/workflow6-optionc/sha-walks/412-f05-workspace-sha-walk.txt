@@ -1,0 +1,7 @@
+prefix=412-f05-workspace W=412x892 btn=(339,353) clicks=6 clamp=True distinct_pages=6
+p1 b45f4e400aa946df
+p2 d35f2979286e2418
+p3 5e9224800db75f53
+p4 658c098b6d3ce0b7
+p5 bb0d9bb073c6ec97
+p6 b4e69c5032aee4e0
