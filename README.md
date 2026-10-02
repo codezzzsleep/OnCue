@@ -7,12 +7,12 @@
 把喜欢的建议放进草稿，再对照两种写法。
 
 <p align="center">
-  <img src="evidence/screenshots/app-412.png" width="300" alt="OnCue 412×892">
-  <img src="evidence/screenshots/app-412-playing.png" width="300" alt="逐句播放假设对白">
+  <img src="evidence/screenshots/hero.png" width="100%"
+       alt="OnCue 在 990×613 与 412×892 两个视口下的界面">
 </p>
 
 <p align="center">
-  <sub>左：打开虚构样例，回看原消息并试映下一幕 · 右：逐句播放「顺着这句」的假设对白</sub>
+  <sub>同一应用在 <b>990×613</b>（宽屏）与 <b>412×892</b>（窄屏）两个视口下的排版</sub>
 </p>
 
 队伍 **OnCue** · 成员 **YCOROY** · 赛道 **OctoSense 即时消息 · Rinx**。
@@ -27,6 +27,15 @@
 3. 选「换个玩法」，把讨论变成半日旅行盲盒：每人给一个想做的事，再找条件的交集。
 4. 播放、暂停或逐句查看假设对白，把喜欢的建议放进草稿；改两种写法，分别存 A、存 B，再取回对照。
 
+<p align="center">
+  <img src="evidence/screenshots/app-row.png" width="62%"
+       alt="左侧：打开样例并试映下一幕；右侧：逐句播放假设对白">
+</p>
+
+<p align="center">
+  <sub>左：打开虚构样例、回看原消息 · 右：逐句播放「顺着这句」的假设对白</sub>
+</p>
+
 原消息是事实线索，下一幕是假设，未被同意的行程和费用仍需自己核实。
 
 ## 在 Rinx 里运行
@@ -35,19 +44,15 @@
 填入本包路径（`oncue/bundle`）与**你自己的测试房间**，Review 后 Run。
 
 <p align="center">
-  <img src="evidence/screenshots/rinx-2-import.png" width="420" alt="Import an app">
-  <img src="evidence/screenshots/rinx-4-running.png" width="420" alt="在 Rinx 中运行">
+  <img src="evidence/screenshots/rinx-flow.png" width="100%"
+       alt="左侧：Import an app 表单；右侧：应用在 Rinx 宿主内运行">
 </p>
 
 <p align="center">
   <sub>左：Developer 入口填入包路径与测试房间 · 右：Review 通过后在宿主内运行</sub>
 </p>
 
-窗口尺寸 **412×892** 与 **990×613** 下均已逐页核对可读：
-
-<p align="center">
-  <img src="evidence/screenshots/app-990.png" width="620" alt="OnCue 990×613">
-</p>
+窗口尺寸 **412×892** 与 **990×613** 下均已逐页核对可读。
 
 ## 数据与边界
 
