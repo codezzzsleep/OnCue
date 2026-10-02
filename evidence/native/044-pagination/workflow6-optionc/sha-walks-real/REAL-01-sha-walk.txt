@@ -1,0 +1,5 @@
+prefix=REAL-01 W=412x892 btn=(121,508) clicks=3 clamp=True distinct_pages=3
+p1 c66c64a2ef4bfb62
+p2 a8c45e503952923c
+p3 4224156918347098
+p4 4224156918347098

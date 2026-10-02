@@ -1,0 +1,6 @@
+prefix=REAL-02 W=412x892 btn=(121,496) clicks=4 clamp=True distinct_pages=4
+p1 05f5bfc67c2a3fca
+p2 9e810de1ea50ad10
+p3 6dfe24f825944994
+p4 e3b25ca4b7f62275
+p5 e3b25ca4b7f62275

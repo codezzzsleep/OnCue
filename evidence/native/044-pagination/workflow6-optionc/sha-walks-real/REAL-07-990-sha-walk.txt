@@ -1,0 +1,7 @@
+prefix=REAL-07-990 W=990x613 btn=(121,490) clicks=5 clamp=True distinct_pages=5
+p1 cf946934b5633862
+p2 23104cecb1b29245
+p3 1ae146464d3c0c72
+p4 4370e79e3f01155a
+p5 4d2186331c21df73
+p6 4d2186331c21df73

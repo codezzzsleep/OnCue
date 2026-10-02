@@ -1,0 +1,7 @@
+prefix=REAL-04 W=412x892 btn=(121,496) clicks=5 clamp=True distinct_pages=5
+p1 f0e596ec5ef00c7e
+p2 c2fe12d9fc3c28d0
+p3 f4fde87d6d3e241c
+p4 b5703dd40f5215d2
+p5 2d9ca0fe22b40b34
+p6 2d9ca0fe22b40b34

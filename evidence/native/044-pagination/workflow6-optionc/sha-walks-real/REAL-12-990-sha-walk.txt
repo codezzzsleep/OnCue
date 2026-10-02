@@ -1,0 +1,4 @@
+prefix=REAL-12-990 W=990x613 btn=(140,454) clicks=2 clamp=True distinct_pages=2
+p1 054219c84434b4a6
+p2 615af77aa5020b3e
+p3 615af77aa5020b3e

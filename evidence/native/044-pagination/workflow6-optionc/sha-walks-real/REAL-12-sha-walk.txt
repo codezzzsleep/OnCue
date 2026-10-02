@@ -1,0 +1,7 @@
+prefix=REAL-12 W=412x892 btn=(121,496) clicks=5 clamp=True distinct_pages=5
+p1 f0e596ec5ef00c7e
+p2 d598e6f1196ca85b
+p3 97e1bf8b9dd016bc
+p4 4b27a09393e4a54d
+p5 89190a4e6ecd689c
+p6 89190a4e6ecd689c
