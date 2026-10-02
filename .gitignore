@@ -10,3 +10,5 @@ __pycache__/
 build/*
 !build/SUBMISSION.md
 !build/SUBMISSION-CHECKLIST.md
+!build/review.json
+!build/REVIEW-ANSWERS.md
