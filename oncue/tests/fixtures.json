@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "notice": "Literal controlled fixtures, not natural model results. Pagination expectations are conservation/cluster assertions, not a Python implementation.",
+  "canonical_blocks": ["S0|摘要：先确认时间与预算。", "A1|假设回应甲。\nA1b|依据：#2，待确认。", "A2|建议：中午之后？", "B1|假设回应乙。\nB1b|依据：#3，新提议。", "B2|建议：当天往返？", "C1|假设回应丙。\nC1b|依据：#4，待核实。", "C2|建议：来个半日小游戏？"],
+  "parser": [
+    {"id": "standard7", "text": "S0\n@@@\nA1\n@@@\nA2\n@@@\nB1\n@@@\nB2\n@@@\nC1\n@@@\nC2", "valid": true, "blocks": ["S0", "A1", "A2", "B1", "B2", "C1", "C2"]},
+    {"id": "wrapper7", "text": "@@@\nS0\n@@@\nA1\n@@@\nA2\n@@@\nB1\n@@@\nB2\n@@@\nC1\n@@@\nC2\n@@@", "valid": true, "blocks": ["S0", "A1", "A2", "B1", "B2", "C1", "C2"]},
+    {"id": "leading_wrapper7", "text": "@@@\nS0\n@@@\nA1\n@@@\nA2\n@@@\nB1\n@@@\nB2\n@@@\nC1\n@@@\nC2", "valid": true, "blocks": ["S0", "A1", "A2", "B1", "B2", "C1", "C2"]},
+    {"id": "trailing_wrapper7", "text": "S0\n@@@\nA1\n@@@\nA2\n@@@\nB1\n@@@\nB2\n@@@\nC1\n@@@\nC2\n@@@\n", "valid": true, "blocks": ["S0", "A1", "A2", "B1", "B2", "C1", "C2"]},
+    {"id": "crlf7", "text": "@@@\r\nS0\r\n@@@\r\nA1\r\n第二行\r\n@@@\r\nA2\r\n@@@\r\nB1\r\n@@@\r\nB2\r\n@@@\r\nC1\r\n@@@\r\nC2\r\n@@@\r\n", "valid": true, "blocks": ["S0", "A1\n第二行", "A2", "B1", "B2", "C1", "C2"]},
+    {"id": "eol7", "text": "S0@@@\nA1@@@\nA2@@@\nB1@@@\nB2@@@\nC1@@@\nC2", "valid": true, "blocks": ["S0", "A1", "A2", "B1", "B2", "C1", "C2"]},
+    {"id": "eol_wrapper7", "text": "@@@\nS0@@@\nA1@@@\nA2@@@\nB1@@@\nB2@@@\nC1@@@\nC2@@@\n", "valid": true, "blocks": ["S0", "A1", "A2", "B1", "B2", "C1", "C2"]},
+    {"id": "separator_whitespace7", "text": "  S0  \n  @@@ \nA1\n\t@@@\t\nA2\n@@@\nB1\n@@@\nB2\n@@@\nC1\n@@@\nC2  ", "valid": true, "blocks": ["S0", "A1", "A2", "B1", "B2", "C1", "C2"]},
+    {"id": "internal_blank_lines_preserved", "text": "S0\n@@@\nA1\n\n依据：#2\n@@@\nA2\n@@@\nB1\n@@@\nB2\n@@@\nC1\n@@@\nC2", "valid": true, "blocks": ["S0", "A1\n\n依据：#2", "A2", "B1", "B2", "C1", "C2"]},
+    {"id": "internal_empty_block", "text": "S0\n@@@\nA1\n@@@\n  \n@@@\nB1\n@@@\nB2\n@@@\nC1\n@@@\nC2", "valid": false, "blocks": []},
+    {"id": "six_blocks", "text": "S0\n@@@\nA1\n@@@\nA2\n@@@\nB1\n@@@\nB2\n@@@\nC1", "valid": false, "blocks": []},
+    {"id": "eight_blocks", "text": "S0\n@@@\nA1\n@@@\nA2\n@@@\nB1\n@@@\nB2\n@@@\nC1\n@@@\nC2\n@@@\nEXTRA", "valid": false, "blocks": []},
+    {"id": "body_inline_marker", "text": "S0中间@@@符号\n@@@\nA1\n@@@\nA2\n@@@\nB1\n@@@\nB2\n@@@\nC1\n@@@\nC2", "valid": true, "blocks": ["S0中间@@@符号", "A1", "A2", "B1", "B2", "C1", "C2"]},
+    {"id": "strict_body_eol_marker", "text": "S0提到@@@\n仍属于摘要\n@@@\nA1\n@@@\nA2\n@@@\nB1\n@@@\nB2\n@@@\nC1\n@@@\nC2", "valid": true, "blocks": ["S0提到@@@\n仍属于摘要", "A1", "A2", "B1", "B2", "C1", "C2"]},
+    {"id": "ambiguous_mixed_six_to_seven", "text": "S0提到@@@\n仍属于摘要\n@@@\nA1\n@@@\nA2\n@@@\nB1\n@@@\nB2\n@@@\nC1", "valid": false, "blocks": [], "reason": "One attached literal plus five standard boundaries must not manufacture a missing seventh block."},
+    {"id": "duplicate_leading_wrapper", "text": "@@@\n@@@\nS0\n@@@\nA1\n@@@\nA2\n@@@\nB1\n@@@\nB2\n@@@\nC1\n@@@\nC2", "valid": false, "blocks": []},
+    {"id": "duplicate_trailing_wrapper", "text": "S0\n@@@\nA1\n@@@\nA2\n@@@\nB1\n@@@\nB2\n@@@\nC1\n@@@\nC2\n@@@\n@@@", "valid": false, "blocks": []},
+    {"id": "empty_response", "text": " \r\n\t", "valid": false, "blocks": []}
+  ],
+  "pagination": [
+    {"id": "empty", "text": "", "cols": 16, "rows": 3, "clusters": [], "exact": [""]},
+    {"id": "ascii16", "text": "1234567890123456", "cols": 16, "rows": 1, "clusters": [], "exact": ["1234567890123456"]},
+    {"id": "ascii17", "text": "12345678901234567", "cols": 16, "rows": 1, "clusters": [], "exact": ["1234567890123456", "7"]},
+    {"id": "cjk9", "text": "甲乙丙丁戊己庚辛壬", "cols": 16, "rows": 1, "clusters": [], "exact": ["甲乙丙丁戊己庚辛", "壬"]},
+    {"id": "newlines_rows3", "text": "甲\n乙\n丙\n丁\n", "cols": 16, "rows": 3, "clusters": [], "exact": null},
+    {"id": "leading_newline_rows1", "text": "\n甲\n", "cols": 16, "rows": 1, "clusters": [], "exact": null},
+    {"id": "crlf_boundary", "text": "1234567890123456\r\n下一行", "cols": 16, "rows": 1, "clusters": ["\r\n"], "exact": null},
+    {"id": "combining", "text": "123456789012345éZ", "cols": 16, "rows": 1, "clusters": ["é"], "exact": null},
+    {"id": "emoji_zwj", "text": "12345678901234👩‍👩‍👧‍👦Z", "cols": 16, "rows": 1, "clusters": ["👩‍👩‍👧‍👦"], "exact": null},
+    {"id": "emoji_modifier", "text": "12345678901234👍🏽Z", "cols": 16, "rows": 1, "clusters": ["👍🏽"], "exact": null},
+    {"id": "regional_pairs", "text": "12345678901234🇨🇳🇫🇷🇯🇵Z", "cols": 16, "rows": 1, "clusters": ["🇨🇳", "🇫🇷", "🇯🇵"], "exact": null},
+    {"id": "hangul_jamo", "text": "12345678901234각Z", "cols": 16, "rows": 1, "clusters": ["각"], "exact": null},
+    {"id": "marker_order", "text": "M0|事实#2\nM1|假设@@@正文\nM2|待核实🙂\nM3|END", "cols": 16, "rows": 3, "clusters": [], "exact": null}
+  ],
+  "assertion_ids": {
+    "parser": ["parser.standard7", "parser.wrapper7", "parser.leading_wrapper7", "parser.trailing_wrapper7", "parser.crlf7", "parser.eol7", "parser.eol_wrapper7", "parser.separator_whitespace7", "parser.internal_blank_lines_preserved", "parser.internal_empty_block", "parser.six_blocks", "parser.eight_blocks", "parser.body_inline_marker", "parser.strict_body_eol_marker", "parser.ambiguous_mixed_six_to_seven", "parser.duplicate_leading_wrapper", "parser.duplicate_trailing_wrapper", "parser.empty_response", "parser.protocol_order_rejects_swap", "parser.protocol_requires_markers", "parser.output_order_and_markers"],
+    "pagination": ["pagination.empty", "pagination.ascii16", "pagination.ascii17", "pagination.cjk9", "pagination.newlines_rows3", "pagination.leading_newline_rows1", "pagination.crlf_boundary", "pagination.combining", "pagination.emoji_zwj", "pagination.emoji_modifier", "pagination.regional_pairs", "pagination.hangul_jamo", "pagination.marker_order", "pagination.production_reader_navigation"],
+    "retry": ["retry.first_malformed_second_valid", "retry.both_malformed", "retry.stop_during_second", "retry.edit_during_second", "retry.old_callback_new_request", "retry.host_error_no_format_retry", "retry.duplicate_after_success_ignored", "retry.host_allowlist"],
+    "deadline": ["deadline.waiting_at_80", "deadline.same_revision_on_retry", "deadline.original_budget_expired", "deadline.timeout_elapsed", "deadline.late_callback_ignored", "deadline.host_allowlist"]
+  }
+}

@@ -1,0 +1,310 @@
+// Only this harness shadows host; all cue_* production functions stay byte-exact.
+// Timers, UI handles, strings, arrays and fs remain the real card-host APIs.
+let probe_assertions = []
+let probe_events = []
+let probe_requests = []
+let probe_unexpected = 0
+let probe_started_at = 0.0
+let probe_deadline_start = 0.0
+let probe_deadline_revision = 0
+let probe_timeout_at = 0.0
+let probe_before_late = ""
+let probe_current_case = "boot"
+let host = {request: fn(service, payload, callback){
+    probe_requests.push({service: service, payload: payload, callback: callback})
+    probe_events.push({kind: "request", case_id: probe_current_case, service: service, payload: payload, revision: cue_revision, at: time_now()})
+    if service != "octos.session.open" && service != "octos.turn.start" && service != "octos.turn.interrupt" {
+        probe_unexpected += 1
+    }
+    probe_requests.len()
+}}
+
+fn probe_join(values, separator){
+    let result = ""
+    for i in values.len() {
+        if i > 0 { result += separator }
+        result += values[i]
+    }
+    result
+}
+fn probe_equal_strings(actual, expected){
+    if actual.len() != expected.len() { return false }
+    for i in expected.len() { if actual[i] != expected[i] { return false } }
+    true
+}
+fn probe_assert(id, passed, detail){
+    probe_assertions.push({id: id, passed: passed, detail: detail})
+}
+fn probe_snapshot(){
+    {busy: cue_busy, revision: cue_revision, summary: cue_summary,
+     routes: cue_routes, status: ui.cue_status.text(), trial: ui.cue_trial.text()}
+}
+fn probe_checkpoint(complete){
+    let all_passed = true
+    for i in probe_assertions.len() { if !probe_assertions[i].passed { all_passed = false } }
+    let result = {schema: 1, meta: probe_meta, complete: complete, passed: all_passed,
+        started_at: probe_started_at, observed_at: time_now(), assertions: probe_assertions,
+        events: probe_events, unexpected_host_requests: probe_unexpected}
+    fs.write("probe-result.json", result.to_json())
+}
+fn probe_finish(){
+    probe_checkpoint(true)
+    cue_set_status("受控探针已完成；结果在 probe-result.json。不是自然模型测试。")
+}
+fn probe_reply(text){ {is_ok: true, data: {text: text}, error: ""} }
+fn probe_good_reply(){
+    let marked = []
+    let markers = cue_protocol_markers()
+    for i in probe_fixtures.canonical_blocks.len() { marked.push(markers[i] + "\n" + probe_fixtures.canonical_blocks[i]) }
+    probe_reply(probe_join(marked, "\n@@@\n"))
+}
+fn probe_bad_reply(){ probe_reply("S0\n@@@\nA1\n@@@\nA2\n@@@\nB1\n@@@\nB2\n@@@\nC1") }
+fn probe_deliver(index, reply){
+    if index < 0 || index >= probe_requests.len() {
+        probe_assert("harness.missing_callback", false, {index: index, count: probe_requests.len()})
+        return
+    }
+    let request = probe_requests[index]
+    let callback = request.callback
+    probe_events.push({kind: "deliver", case_id: probe_current_case, service: request.service,
+        request_index: index, at: time_now(), revision_before: cue_revision})
+    callback(reply)
+}
+fn probe_count_service(service){
+    let count = 0
+    for i in probe_requests.len() { if probe_requests[i].service == service { count += 1 } }
+    count
+}
+fn probe_reset(case_id){
+    cue_invalidate()
+    cue_demo = false
+    cue_sources = [{sender: "受控夹具", body: "中午以后，预算待确认；不要发消息。"}]
+    cue_scene = "受控 OctoScript 测试，非自然模型"
+    cue_msg_index = 0
+    cue_msg_page = 0
+    ui.cue_trial.set_text("先确认时间再讨论？")
+    cue_set_status("受控测试准备")
+    probe_requests = []
+    probe_current_case = case_id
+}
+fn probe_begin(case_id){
+    probe_reset(case_id)
+    cue_rehearse()
+    probe_deliver(0, {is_ok: true, data: {}, error: ""})
+}
+fn probe_routes_match(){
+    let expected = probe_fixtures.canonical_blocks
+    if cue_summary != expected[0] || cue_routes.len() != 3 { return false }
+    if cue_routes[0].title != "顺着这句" || cue_routes[1].title != "换个问法" || cue_routes[2].title != "换个玩法" { return false }
+    for i in 3 {
+        if cue_routes[i].body != expected[1 + i * 2] || cue_routes[i].draft != expected[2 + i * 2] { return false }
+    }
+    true
+}
+
+fn probe_parser(){
+    for i in probe_fixtures.parser.len() {
+        let fixture = probe_fixtures.parser[i]
+        let blocks = cue_split_blocks(fixture.text)
+        let valid = cue_validate_blocks(blocks)
+        let passed = valid == fixture.valid
+        if fixture.valid { passed = passed && probe_equal_strings(blocks, fixture.blocks) }
+        probe_assert("parser." + fixture.id, passed, {expected_valid: fixture.valid,
+            actual_valid: valid, actual_blocks: blocks, expected_blocks: fixture.blocks})
+    }
+    let canonical = cue_split_blocks(probe_good_reply().data.text)
+    let protocol_ok = cue_validate_protocol(canonical)
+    let swapped = canonical[1]
+    canonical[1] = canonical[3]
+    canonical[3] = swapped
+    probe_assert("parser.protocol_order_rejects_swap", protocol_ok && !cue_validate_protocol(canonical), {swapped: canonical})
+    probe_assert("parser.protocol_requires_markers", !cue_validate_protocol(probe_fixtures.canonical_blocks), {unmarked: true})
+    probe_reset("parser.output_order_and_markers")
+    cue_set_busy(true)
+    cue_accept_reply(probe_good_reply(), cue_revision, 0)
+    let mapping = probe_routes_match()
+    let rendered = []
+    let selected = []
+    if cue_routes.len() == 3 {
+        for i in 3 {
+            cue_select_preview(i)
+            cue_play_count = cue_play_lines.len()
+            cue_rebuild_ws()
+            let text = cue_ws_text()
+            rendered.push(text)
+            cue_choose_route(i)
+            selected.push(ui.cue_draft.text())
+            let expected = probe_fixtures.canonical_blocks[1 + i * 2] + "\n建议台词：" + probe_fixtures.canonical_blocks[2 + i * 2]
+            mapping = mapping && text == expected && probe_join(cue_ws_pages, "") == expected
+            mapping = mapping && ui.cue_draft.text() == probe_fixtures.canonical_blocks[2 + i * 2]
+        }
+    }
+    cue_show_summary()
+    mapping = mapping && probe_join(cue_ws_pages, "") == probe_fixtures.canonical_blocks[0]
+    probe_assert("parser.output_order_and_markers", mapping && !cue_busy,
+        {state: probe_snapshot(), rendered: rendered, selected: selected})
+    probe_finish()
+}
+
+fn probe_pagination(){
+    let saved_cols = cue_page_cols
+    for i in probe_fixtures.pagination.len() {
+        let fixture = probe_fixtures.pagination[i]
+        cue_page_cols = fixture.cols
+        let pages = cue_paginate(fixture.text, fixture.rows)
+        let rejoined = probe_join(pages, "")
+        let passed = rejoined == fixture.text && pages.len() >= 1
+        if fixture.text != "" {
+            for p in pages.len() { if pages[p] == "" { passed = false } }
+        }
+        for c in fixture.clusters.len() {
+            let found = false
+            for p in pages.len() { if pages[p].search(fixture.clusters[c]) >= 0 { found = true } }
+            if !found { passed = false }
+        }
+        if fixture.exact != nil { passed = passed && probe_equal_strings(pages, fixture.exact) }
+        probe_assert("pagination." + fixture.id, passed,
+            {pages: pages, rejoined: rejoined, expected_text: fixture.text, clusters: fixture.clusters})
+    }
+    cue_page_cols = saved_cols
+    probe_reset("pagination.production_reader_navigation")
+    let message = "M0|事实#2\nM1|假设@@@正文\nM2|待核实🙂\nM3|END"
+    cue_sources = [{sender: "fixture", body: message}]
+    cue_msg_page = 0
+    cue_sync_message()
+    let nav = probe_join(cue_msg_pages, "") == message
+    let count = cue_msg_pages.len()
+    for i in count { cue_msg_page_next() }
+    nav = nav && cue_msg_page == count - 1
+    for i in count { cue_msg_page_prev() }
+    nav = nav && cue_msg_page == 0
+    cue_summary = message
+    cue_show_summary()
+    count = cue_ws_pages.len()
+    for i in count { cue_page_next() }
+    nav = nav && cue_ws_page == count - 1 && probe_join(cue_ws_pages, "") == message
+    for i in count { cue_page_prev() }
+    nav = nav && cue_ws_page == 0
+    probe_assert("pagination.production_reader_navigation", nav,
+        {message_pages: cue_msg_pages, workspace_pages: cue_ws_pages, message_page: cue_msg_page, workspace_page: cue_ws_page})
+    probe_finish()
+}
+
+fn probe_retry(){
+    probe_begin("first_malformed_second_valid")
+    let revision = cue_revision
+    probe_deliver(1, probe_bad_reply())
+    let retry_wait = cue_busy && probe_count_service("octos.turn.start") == 2
+    let same_prompt = false
+    if probe_requests.len() >= 3 { same_prompt = probe_requests[1].payload.text == probe_requests[2].payload.text }
+    probe_deliver(2, probe_good_reply())
+    probe_assert("retry.first_malformed_second_valid", retry_wait && same_prompt && !cue_busy && cue_revision == revision && probe_routes_match(),
+        {state: probe_snapshot(), turn_calls: probe_count_service("octos.turn.start"), same_prompt: same_prompt})
+    let before_duplicate = probe_snapshot().to_json()
+    probe_deliver(2, probe_reply("LATE\n@@@\nA\n@@@\nB\n@@@\nC\n@@@\nD\n@@@\nE\n@@@\nF"))
+    probe_assert("retry.duplicate_after_success_ignored", before_duplicate == probe_snapshot().to_json(), {state: probe_snapshot()})
+
+    probe_begin("both_malformed")
+    probe_deliver(1, probe_bad_reply())
+    probe_deliver(2, probe_reply("S\n@@@\nA\n@@@\nB\n@@@\nC\n@@@\nD\n@@@\nE\n@@@\nF\n@@@\nEXTRA"))
+    probe_assert("retry.both_malformed", !cue_busy && cue_routes.len() == 0 && cue_summary == "" && probe_count_service("octos.turn.start") == 2 && ui.cue_status.text().search("再试") >= 0,
+        {state: probe_snapshot(), turn_calls: probe_count_service("octos.turn.start")})
+
+    probe_begin("stop_during_second")
+    probe_deliver(1, probe_bad_reply())
+    revision = cue_revision
+    cue_stop_wait()
+    let after_stop = probe_snapshot().to_json()
+    probe_deliver(2, probe_good_reply())
+    probe_assert("retry.stop_during_second", !cue_busy && cue_revision > revision && cue_routes.len() == 0 && cue_summary == "" && after_stop == probe_snapshot().to_json() && probe_count_service("octos.turn.interrupt") == 1,
+        {state: probe_snapshot(), turn_calls: probe_count_service("octos.turn.start"), interrupts: probe_count_service("octos.turn.interrupt")})
+
+    probe_begin("edit_during_second")
+    probe_deliver(1, probe_bad_reply())
+    revision = cue_revision
+    ui.cue_trial.set_text("编辑后的新台词")
+    cue_edit_trial("编辑后的新台词")
+    let after_edit = probe_snapshot().to_json()
+    probe_deliver(2, probe_good_reply())
+    probe_assert("retry.edit_during_second", !cue_busy && cue_revision > revision && cue_routes.len() == 0 && cue_summary == "" && after_edit == probe_snapshot().to_json() && probe_count_service("octos.turn.interrupt") == 1,
+        {state: probe_snapshot(), interrupts: probe_count_service("octos.turn.interrupt")})
+
+    probe_begin("old_callback_new_request")
+    probe_deliver(1, probe_bad_reply())
+    let old_request = probe_requests[2]
+    let old_callback = old_request.callback
+    cue_stop_wait()
+    probe_begin("new_request_wins")
+    let new_waiting = probe_snapshot().to_json()
+    // New request is BUSY: this must exercise revision protection, not only !busy.
+    old_callback(probe_reply("OLD\n@@@\nA\n@@@\nB\n@@@\nC\n@@@\nD\n@@@\nE\n@@@\nF"))
+    let old_ignored_while_busy = cue_busy && new_waiting == probe_snapshot().to_json()
+    probe_deliver(1, probe_good_reply())
+    let new_state = probe_snapshot().to_json()
+    old_callback(probe_reply("OLD\n@@@\nA\n@@@\nB\n@@@\nC\n@@@\nD\n@@@\nE\n@@@\nF"))
+    probe_assert("retry.old_callback_new_request", old_ignored_while_busy && new_state == probe_snapshot().to_json() && probe_routes_match(), {state: probe_snapshot(), old_ignored_while_busy: old_ignored_while_busy})
+
+    probe_begin("host_error_no_format_retry")
+    probe_deliver(1, {is_ok: false, data: nil, error: "controlled service error"})
+    probe_assert("retry.host_error_no_format_retry", !cue_busy && cue_routes.len() == 0 && probe_count_service("octos.turn.start") == 1 && ui.cue_status.text().search("controlled service error") >= 0,
+        {state: probe_snapshot(), turn_calls: probe_count_service("octos.turn.start")})
+    probe_assert("retry.host_allowlist", probe_unexpected == 0, {unexpected: probe_unexpected})
+    probe_finish()
+}
+
+fn probe_deadline_observe(){
+    let elapsed = time_now() - probe_deadline_start
+    if !cue_busy && probe_timeout_at == 0.0 {
+        probe_timeout_at = time_now()
+        probe_events.push({kind: "observed_not_busy", elapsed: elapsed, at: probe_timeout_at, state: probe_snapshot()})
+        probe_checkpoint(false)
+    }
+    if elapsed < 92.5 { start_timeout(0.10, fn(){ probe_deadline_observe() }) }
+}
+fn probe_deadline(){
+    probe_reset("deadline_90_seconds_real_time")
+    probe_deadline_start = time_now()
+    cue_rehearse()
+    probe_deadline_revision = cue_revision
+    // Session-open is deliberately part of the same 90-second budget.
+    start_timeout(5.0, fn(){
+        probe_deliver(0, {is_ok: true, data: {}, error: ""})
+        probe_checkpoint(false)
+    })
+    start_timeout(80.0, fn(){
+        probe_assert("deadline.waiting_at_80", cue_busy && cue_revision == probe_deadline_revision && probe_count_service("octos.turn.start") == 1,
+            {elapsed: time_now() - probe_deadline_start, state: probe_snapshot()})
+        probe_deliver(1, probe_bad_reply())
+        probe_assert("deadline.same_revision_on_retry", cue_busy && cue_revision == probe_deadline_revision && probe_count_service("octos.turn.start") == 2,
+            {elapsed: time_now() - probe_deadline_start, state: probe_snapshot()})
+        probe_checkpoint(false)
+    })
+    start_timeout(91.5, fn(){
+        probe_assert("deadline.original_budget_expired", !cue_busy && cue_revision > probe_deadline_revision && cue_summary == "" && cue_routes.len() == 0 && probe_count_service("octos.turn.interrupt") == 1 && ui.cue_status.text().search("90") >= 0,
+            {elapsed: time_now() - probe_deadline_start, state: probe_snapshot(), interrupts: probe_count_service("octos.turn.interrupt")})
+        let observed_elapsed = probe_timeout_at - probe_deadline_start
+        probe_assert("deadline.timeout_elapsed", probe_timeout_at > 0.0 && observed_elapsed >= 89.5 && observed_elapsed <= 91.5,
+            {observed_elapsed: observed_elapsed, tolerance_seconds: 1.5, clock: "time_now Unix seconds; external collector also uses monotonic time"})
+        probe_before_late = probe_snapshot().to_json()
+        probe_checkpoint(false)
+    })
+    start_timeout(92.0, fn(){ probe_deliver(2, probe_good_reply()) })
+    start_timeout(93.0, fn(){
+        probe_assert("deadline.late_callback_ignored", !cue_busy && probe_before_late == probe_snapshot().to_json(),
+            {elapsed: time_now() - probe_deadline_start, state: probe_snapshot()})
+        probe_assert("deadline.host_allowlist", probe_unexpected == 0, {unexpected: probe_unexpected})
+        probe_finish()
+    })
+    probe_deadline_observe()
+}
+
+fn probe_boot(){
+    probe_started_at = time_now()
+    probe_checkpoint(false)
+    if probe_meta.suite == "parser" { probe_parser() return }
+    if probe_meta.suite == "pagination" { probe_pagination() return }
+    if probe_meta.suite == "retry" { probe_retry() return }
+    if probe_meta.suite == "deadline" { probe_deadline() return }
+    probe_assert("harness.unknown_suite", false, {suite: probe_meta.suite})
+    probe_finish()
+}

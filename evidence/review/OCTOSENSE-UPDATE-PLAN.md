@@ -1,48 +1,51 @@
-# OctoSense 更新应对计划（2026-10-03 更新到来时执行）
+# OctoSense 更新应对计划（2026-10-02 晚修订）
 
-> **来源**：用户 2026-10-02 告知"明天 octosense 会有一次更新"。非官方文档，待届时核对。
+来源：用户转述最新官方群通知“明天 OctoSense 会有一次更新”。按本次通知日期指 **2026-10-03**；具体发布时间、版本及支持能力未给出。
+完整核对与版本记录见[最新通知核对](<OFFICIAL-NOTICE-2026-10-02.md>)，项目规则见[AGENTS](<../../AGENTS.md>)。
 
-## 为什么要在意
-我们的宿主 `octosense` 是**自己从源码构建**的（基线：官方 Rinx `c515e5fc9b6d` + OctoSense `c19da8d`）。
-OctoSense 更新可能改动：Shell、`apps/`（系统应用与宿主服务）、`native-apps.json`、
-`native-runtime.lock.json`（Makepad/Octoscript 锁定版本）、以及对 App Hub 的 pin。
+## 已完成：只更新参考源码
 
-## 执行步骤
-```sh
-cd /root/hackthon/refs/OctoSense
-git fetch origin && git log --oneline -15 origin/main      # 看更新了什么
-git diff --stat HEAD origin/main                            # 影响面
-# 重点看这些路径是否变动：
-#   apps/ (系统应用与宿主服务)  native-apps.json  native-runtime.lock.json
-#   crates/shell/  crates/ai-host/  desktop/  rom/
-# 同时看 App Hub 与 Rinx 是否也有新提交（它们的 pin 可能被改）
-cd /root/hackthon/refs/OctoSense-App-Hub && git fetch origin && git log --oneline -5 origin/main
-cd /root/hackthon/refs/Rinx && git fetch origin && git log --oneline -5 origin/main
+2026-10-02 晚已直连同步六个参考仓库并补全浅克隆历史。OctoSense main 从 `c19da8d` 快进至 `b221f7b4c877dd823d04e4ee510cc74880de5535`；其他五仓 main 未变。
+
+本次上游变化共12提交、34文件，主要是系统应用Agent/通知、助手复制与功能键、退出等待修复；根依赖与运行时锁定文件未变。
+**这是10/2已经存在的提交，不代表10/3预告更新。没有重建、替换、重启正在运行的宿主。**
+
+现有宿主二进制SHA-256仍为：
+
+```text
+87ed4dccd14bac51222f40c38d4db086911790786b688a68a503002ada64ba25
 ```
-## 若需要重建宿主
-```sh
-cd /root/hackthon/refs/Rinx && git checkout <新基线>            # 官方源码，零改动
-cat > /tmp/rinx-official-config.toml <<'CFG'
-[patch."https://github.com/hagency-org/Rinx.git"]
-rinx = { path = "/root/hackthon/refs/Rinx" }
-CFG
-cd /opt/src/OctoSense
-cp target/release/octosense /root/oncue-runtime/backup/octosense-before-update-$(date +%s)
-CARGO_BUILD_JOBS=2 cargo build --release -p octosense --config /tmp/rinx-official-config.toml
-```
-## 重建后的回归清单（按 AGENTS.md §4.2 / ADR 0005）
-1. `tools/octo check`（未签名副本）→ `PASSED`
-2. 宿主换装 + `:99` 可访问
-3. Rinx 登录赛事服务器 → 房间列表可见
-4. `Import an app` → **Review 保留房间** → Run
-5. 应用内 `载入群聊` → **真实房名 + 原消息已载入**
-6. `试映下一幕` → **Agent 回合完成**（内核日志有 `LLM response received`）
-7. **读房授权 sheet** 三选项与 45 秒拒绝（接收者演示要用）
-8. 跨房间拒绝 / 实例撤销 / 迟回复处理
-9. Back / 键盘 / 关闭-重开
-10. 记录**未验证的平台/服务组合**，不得写"应该可以"
 
-## 注意
-- 更新可能**改动上限或能力名**：重建后重跑 `--dump-config` 与 `hub check` 的 `grants:` 行核对。
-- 若官方同时更新 App Hub / Rinx 的 pin，**以它们的新 pin 为准**，不要混用旧版本结论。
-- 所有新结论必须标注**服务器与版本**。
+## 四类版本分别记录
+
+1. **参考仓库main**：用于读新代码与文档。
+2. **宿主锁定依赖**：由该宿主提交的native-apps及runtime锁选择，不随其他仓库main自动改变。
+3. **本机实际构建源码**：参考仓库之外的构建目录，可能有已记录补丁。
+4. **实际二进制/测试证据**：以构建记录、校验和与实际运行结果为准。
+
+不能从“参考仓库拉到最新”推出“运行宿主已经升级”。当前参考OctoSense锁Rinx `4b89097d`、App Hub `58c3c8ae`、Octoscript-Makepad `8f103d0c`，不能直接混搭refs各仓main。
+本机已有底层构建依赖包含原有修改，本轮未清理、重置或覆盖。
+
+## 明日出现新提交后的处理顺序（尚未执行）
+
+1. 检查参考仓库工作树与HEAD，记录更新前提交；不动脏工作树，不强制reset。
+2. fetch官方仓库并比较提交、文件差异；关注Shell、AI host、app-peers、Rinx、App Hub以及锁定版本。
+3. 阅读变更涉及的guide、接口与实现，判断是否修复OnCue的实际问题，报告收益/兼容风险。
+4. **停在是否重建/换装的人工检查点**。仅有更新通知不构成替换已运行宿主的授权。
+5. 若用户决定升级：在独立构建工作树准备官方锁定依赖，保存旧二进制与启动配置；不把移动的refs路径当永久覆盖补丁。
+6. 用独立测试实例、端口及数据目录回归，验证通过后才讨论换装与回退。
+
+这些是后续计划，不是本轮已执行或验证的命令；本轮没有设置自动更新任务。
+
+## 获准升级后的最小回归清单
+
+- 未签名开发副本预检与脚本加载，无解析/回调错误。
+- Rinx赛事服务器登录、Review列出的能力和房间、Run实例授权。
+- 真实房间读取 → octos假设排练 → 人查看修改 → 草稿保存与回读。
+- 空/错误/重启、按钮与正文可达、Back/键盘/关闭重开。
+- 无房间绑定拒绝、账号隔离；真正跨房间/租约撤销/迟回复分别计量，不相互冒充。
+- 应用90秒等待预算、Rinx185秒pending、3600秒租约分别核对。助手read_room的45秒sheet是另一条路径，不要求普通miniapp读取必出现。
+- 正式发布包单独签名和公钥检查；Developer导入不代替App Hub签名目录安装与维护者审核。
+- 记录服务器、应用版本、宿主及依赖版本、实测平台、通过/失败/未测项。
+
+初赛仍按**基本功能 → octos运行时能力 → 必要UI修补**推进，不因等待更新而转向独立原生/Rust/ROM，也不擅自增加发送消息。

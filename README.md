@@ -2,6 +2,8 @@
 
 **先试着说，再决定要不要发。**
 
+> **当前 main：0.4.6 开发检查点，尚非最终验收/上架版。** 已保存响应式布局、解析与重试修复及49项原生受控测试；模型事实边界、完整视觉/持久化回归和同版演示仍待完成。见[检查点说明](<evidence/submission/CHECKPOINT-0.4.6.md>)。下方展示图与旧视频均为历史版本，不作为本版验收证据。
+
 把一句还没发出去的话放进私人排练场，看三个不同的下一幕：
 **顺着这句 / 换个问法 / 换个玩法**。回看原消息，逐句播放匿名的假设接话，
 把喜欢的建议放进草稿，再对照两种写法。
@@ -18,7 +20,7 @@
 队伍 **OnCue** · 成员 **YCOROY** · 赛道 **OctoSense 即时消息 · Rinx**。
 
 参赛作品是 [`oncue/bundle/`](oncue/bundle/)：一个在 OctoSense / Rinx 宿主内运行的
-**OctoScript 小程序**，经 App Hub 发布。
+**OctoScript 小程序**，按 App Hub 流程准备发布；当前尚未官方收录。
 
 ## 一分钟怎么玩
 
@@ -40,8 +42,8 @@
 
 ## 在 Rinx 里运行
 
-在已登录的 Rinx 中打开 **Discover → Mini apps → Import an app**，
-填入本包路径（`oncue/bundle`）与**你自己的测试房间**，Review 后 Run。
+开发复现使用[未签名副本工具](<oncue/tools/prepare_dev_bundle.py>)生成独立副本，不直接导入仓库里的签名包。然后在已登录的 Rinx 中打开 **Discover → Mini apps → Import an app**，
+填入副本路径与**你自己的测试房间**，Review 后 Run。完整命令见[检查点复现说明](<evidence/submission/CHECKPOINT-0.4.6.md>)；登录与模型配置均留在宿主。
 
 <p align="center">
   <img src="evidence/screenshots/rinx-flow.png" width="100%"
@@ -52,7 +54,7 @@
   <sub>左：Developer 入口填入包路径与测试房间 · 右：Review 通过后在宿主内运行</sub>
 </p>
 
-窗口尺寸 **412×892** 与 **990×613** 下均已逐页核对可读。
+当前检查点已在 Rinx 外窗 **412×892** 与 **990×613** 下逐页读取真实三路线与摘要；实际应用嵌入区分别为 **376×727** 与 **954×448**。完整视觉与全部交互验收尚未结束。
 
 ## 数据与边界
 
