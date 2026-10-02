@@ -435,3 +435,65 @@ $OCTO_HUB check oncue/bundle --publisher-key oncue.dev=50578fd7e0d8ac51a1e9e5908
 # 审核包
 $OCTO_HUB scan <未签名副本>/bundle --packet build/review.json
 ```
+
+---
+
+## 12. 附录：依据文档清单（完整性可审计）
+
+本文件的内容全部来自以下**已逐字读完**的上游文档。若要核对"是否有遗漏"，
+按本表逐项检查；新增上游文档时同步补进本表。
+
+### 12.1 竞赛仓库 `gosimfoundation/hackathon-agenticapp26`
+| 文件 | 贡献的章节 |
+| --- | --- |
+| `README.md` | §2.2 竞赛定位、12 场景、报名与名单锁定、§2.5 奖项 |
+| `docs/competition-schedule.md` | §2.1 时间线、评审与晋级规则、赛务待公布项 |
+| `docs/app-hub-submission.md` | §2.3 提交材料 6 项、§2.7 运行验收清单、§2.8 交付形态表、§6 提交入口现状 |
+| `docs/curriculum.md` | §2.6 初赛材料（2–3 分钟演示、两张截图、一次操作/可核对结果/失败或空状态） |
+| `docs/rinx-miniapps.md` | §2.4 独立授权机制、选手起步 5 步、基线提交 `05daf9bd` |
+| `docs/rinx-guide.md` | §5 赛事 Matrix 注册与登录方式 |
+| `docs/octosense-scenario-update-plan.md` | §2.2 最小交付原文、"仅生成界面/摘要不足" |
+| `AGENTS.md` | 仓库性质（官网仓库，非作品仓库） |
+
+### 12.2 设计流程仓库 `OctoSense-org/OctoScript-App-Design-Flow`
+| 文件 | 贡献的章节 |
+| --- | --- |
+| `README.zh-CN.md` | §3.1 快速上手预期输出、§5 平台（仅 macOS 已验证）、§7.2 签名与截图关系、§6 参赛≠上架 |
+| `AGENTS.md` | §3.2 Definition of Done、§3.3 每个应用的规则、§3.7 汇报格式、语法提醒 |
+| `flows/README.md` | §3.6 共同交接（stamp/check/run/shot） |
+| `flows/script-app/FLOW.md` | §3.1 十四步流程 |
+| `docs/PUBLISHING.md` | §3.4 gate 11 项检查表、§3.2 listing 取值与限额、§3.5 远程桥路由 |
+| `docs/CAPABILITIES.md` | §4.1 能力规则、上限、"不要申请"名单、保留 id 名 |
+| `docs/QUICKSTART.md` | §5 工具链与运行方式（部分） |
+| `docs/HOST-SERVICES.md` | §3.3 宿主服务与面板（部分） |
+| `docs/NATIVE-WORKSPACE.md` | §5 原生运行时工作区（部分） |
+
+### 12.3 App Hub 仓库 `OctoSense-org/OctoSense-App-Hub`
+| 文件 | 贡献的章节 |
+| --- | --- |
+| `docs/PUBLISHING.md` | §3.6 发布清单原文、签名与提交契约、Do not 清单 |
+| `docs/FIRST-APP.md` | §3.3 `{{assets}}` 规则、§7.2 card-host 拒绝已签名、§1.1 仓库结构 |
+| `docs/ICONS.md` | §4 图标与包体规则 |
+| `README.zh-CN.md` | §5 App Hub 定位 |
+
+### 12.4 Rinx 仓库 `hagency-org/Rinx`
+| 文件 | 贡献的章节 |
+| --- | --- |
+| `docs/adr/0002-octoscript-mini-app-authority.md` | §4.2 三重校验、凭据边界 |
+| `docs/adr/0005-octoscript-miniapps-matrix-octos.md` | §4.2 机制定义 + **官方 5 项验证清单** |
+| `docs/adr/0006-shared-app-hub-miniapps.md` | §4.2 Rinx 1.1.0 的 App Hub 库安装/打开路径 |
+| `docs/adr/0007-host-owned-octos-app-peers.md` | §4.2 `octos.*` 由宿主拥有 peer、精确服务名 |
+| `docs/adr/0008-rinx-system-app-catalog.md` | §4.2 内置目录与导入包的边界 |
+| `docs/rinx-guide.md`（赛事仓库） | §5 Matrix 服务器与登录 |
+
+### 12.5 尚未通读（若后续需要再读，读完请补进上表）
+`OctoScript-App-Design-Flow/docs/SCRIPT-API.md`、`docs/AI-SERVICES.md`（1325 行）、
+`docs/GLOSSARY.md`、`docs/app-card-design-requirements.md`（已读，属卡应用视觉需求，与本脚本应用关系小）、
+`docs/matter-centered-ux-research.md`、`OctoSense/` 与 `Octoscript/` 各仓库的多数文档、
+`hackathon-agenticapp26/docs/courses/**`、`docs/demo/**`、`docs/promo-article.md`、
+`Rinx/lab/**`。
+
+> **备注**：`docs/app-card-design-requirements.md`（208 行，卡应用与事务 Tile 的 UX 需求）
+> 已读，其 SRC-01…07 / TIME-01…12 / AC-01…14 面向**卡应用（L0）**形态；
+> 本作品是**脚本应用**，不逐条适用，但它的"来源可追溯""原文与模型复述分开标识"
+> 与本应用的设计一致。
