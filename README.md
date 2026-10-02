@@ -65,7 +65,7 @@ OctoScript 原生小程序，**在 OctoSense / Rinx 宿主内运行**，经 App 
 | 原生播放 | 0.4.1暂停5秒及8秒计数稳定，逐句、重播、切路线有实测；不代表所有内部回调均已覆盖 |
 | 0.4.3阅读候选 | AI1逐张看完412×892、990×613共12张实图，短样例可读；长单行文本与多页A/B仍待修复，不算全文阅读通过 |
 | 服务不可用 | 实际 card-host 显示 Matrix 不可用；可手动回样例继续。没有把它算作真实 Octos 失败分支测试 |
-| Rinx与共享Octos | 登录及本人房间双向消息有AI2报告；OnCue读取十二条、真实七块剧本、停止/90秒超时/迟回调隔离仍待验证 |
+| Rinx与共享Octos | 登录及本人房间双向消息有AI2报告；OnCue读取十二条、真实七块剧本、停止/90秒超时/迟回调隔离**仍待验证**。⚠️ 2026-10-02 查明：Rinx 当时安装的是 **0.4.3**（digest `ec7773d5…`），故此前这些 Rinx 侧结论**均不代表当前包**；当前包（0.4.4，digest `2478d230…`）已用 `Discover → Mini apps → Import an app` 的 Developer Review→Run 装载（快照 digest 精确一致），**同版回归进行中**。homeserver 为 `matrix.org`，非赛事 `matrix.rinx.chat` |
 | App Hub | 0.4.3资源摘要只读核对匹配；AI2报告精确签名提交先push后本地seq9演练。包内商店图仍是0.4.2，需下一版更新；不等官方收录 |
 
 详见 [验证记录](oncue/VERIFICATION.md)、[0.4.3独立评审](evidence/native/043-ai1-review.md) 与 [0.4.2历史评审](evidence/native/042-ai1-review.md)。
