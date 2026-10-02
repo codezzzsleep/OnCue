@@ -17,9 +17,9 @@ let cue_read_mode = 0
 let cue_msg_index = 0
 let cue_msg_page = 0
 let cue_ws_page = 0
-let cue_page_cols = 11
-let cue_page_rows = 5
-let cue_msg_rows = 4
+let cue_page_cols = 16
+let cue_page_rows = 3
+let cue_msg_rows = 1
 let cue_msg_pages = [""]
 let cue_ws_pages = [""]
 
@@ -235,7 +235,7 @@ fn cue_import_room(){
             return
         }
         cue_scene = "" + room.data.room_name
-        if cue_scene == "" { cue_scene = "" + room.data.room_id }
+        if cue_scene == "" { cue_scene = "已授权群聊" }
         ui.cue_scene_label.set_text(cue_scene)
         host.request("matrix.read_messages", {limit: 12}, fn(result){
             if reading_revision != cue_revision { return }
@@ -641,9 +641,9 @@ SolidView{width: Fill height: Fill flow: Down padding: 12 spacing: 8 new_batch: 
                 CueButton{text: "下翻" on_click: || cue_msg_page_next()}
                 cue_msg_page_label := Label{text: "第 1 页 / 共 1 页" width: Fill draw_text.color: cue_muted draw_text.text_style.font_size: 12}
             }
-            RoundedView{width: Fill height: Fill flow: Down padding: 12 new_batch: true draw_bg.color: #xffffff
+            RoundedView{width: Fill height: Fill flow: Down padding: 6 new_batch: true draw_bg.color: #xffffff
                 cue_msg_head := CueText{text: "" draw_text.color: cue_muted draw_text.text_style.font_size: 13}
-                cue_msg_pager := View{width: Fill height: Fit flow: Down spacing: 6 on_render: || {
+                cue_msg_pager := View{width: Fill height: Fit flow: Down spacing: 2 on_render: || {
                     let idx = cue_msg_page
                     if idx >= cue_msg_pages.len() { idx = 0 }
                     for i in cue_msg_pages.len() {
