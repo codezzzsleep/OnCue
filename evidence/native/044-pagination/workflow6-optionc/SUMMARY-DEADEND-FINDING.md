@@ -37,3 +37,13 @@ sum-d  after_rehearse      summary_len=0   mode=0     <- 试映下一幕把它�
 - 方案 b：把 `cue_invalidate()` 清 summary 的行为改成"仅在真实读取新房间时清"；
 - 方案 c（最小）：把提示文案改成不再指向"试映下一幕"。
 **这会改动 bundle 内容与摘要**，所以我没有自行合入 —— 需要你定方案后再 stamp。
+
+## 候选修法（**均未应用**，等指示）
+
+| 方案 | 改动 | 影响面 | 评估 |
+| --- | --- | --- | --- |
+| **a** | `cue_demo_routes()` 里补 `cue_summary = …` | 仅 demo 路径；与真实 Agent 路径对称 | **推荐** |
+| b | 把清 `cue_summary` 从 `cue_invalidate()` 挪到"真实读取新房间时" | 动公共函数，多处调用 | 风险较大 |
+| c | 只改提示文案 | 最小，但摘要仍不可达 | 只治提示，不单独用 |
+
+倾向 **a + c**。三种都改 bundle 与 digest，等指示后再应用并只 stamp 一次。
