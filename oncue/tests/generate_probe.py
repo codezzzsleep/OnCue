@@ -31,7 +31,7 @@ REQUIRED_FUNCTIONS = {
 STORAGE_FIXTURES = {"draft.txt": "draft", "take-a.txt": "take_a", "take-b.txt": "take_b"}
 INITIALIZER = re.compile(
     r"(?m)^start_timeout\(0\.05,\s*fn\(\)\{\s*"
-    r"cue_show_demo\(\)\s+cue_refresh_takes\(\)\s*\}\)\s*$"
+    r"cue_show_demo\(\)\s+cue_(?:refresh_takes|boot_state)\(\)\s*\}\)\s*$"
 )
 
 

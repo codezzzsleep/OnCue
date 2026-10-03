@@ -321,6 +321,16 @@ fn cue_request_current(revision){
     }
     true
 }
+// Production reads its own app data from the live instance before new state is
+// applied; ui is injected after the body evaluates, so boot must be deferred.
+fn cue_boot_state(){
+    cue_refresh_takes()
+    if fs.exists("draft.txt") { ui.cue_draft.set_text(fs.read("draft.txt")) }
+    else if cue_take_a != "" { ui.cue_draft.set_text(cue_take_a) }
+    if cue_take_a != "" || cue_take_b != "" || fs.exists("draft.txt") {
+        cue_set_status("已恢复上次保存的草稿版本；仍未发送。")
+    }
+}
 fn cue_edit_trial(text){
     cue_invalidate()
     cue_set_status("台词已改变，可以重新试映。")
@@ -592,6 +602,22 @@ fn cue_references_valid(text){
 fn cue_protocol_markers(){
     ["【摘要】", "【A对白】", "【A建议】", "【B对白】", "【B建议】", "【C对白】", "【C建议】"]
 }
+fn cue_commitment_words(){
+    ["已同意", "已经同意", "一致同意", "全员同意", "大家都同意", "已确认", "已订票", "已付款", "已支付", "已敲定", "已定"]
+}
+// Deterministic gate for fabricated consensus: commitment wording is rejected
+// in every content line EXCEPT 待确认 questions, where asking about consent is
+// legitimate. Prompts alone did not stop the model from writing "大家已同意".
+fn cue_has_commitment_claim(body){
+    let words = cue_commitment_words()
+    let lines = body.split("\n")
+    for i in lines.len() {
+        let line = lines[i]
+        if line.strip_prefix("待确认") != line { continue }
+        for j in words.len() { if line.search(words[j]) >= 0 { return true } }
+    }
+    false
+}
 fn cue_validate_protocol(blocks){
     if !cue_validate_blocks(blocks) { return false }
     let markers = cue_protocol_markers()
@@ -605,6 +631,7 @@ fn cue_validate_protocol(blocks){
     for i in 6 {
         let body = blocks[i + 1].strip_prefix(markers[i + 1]).trim()
         if !cue_numbers_grounded(body) || !cue_references_valid(body) { return false }
+        if cue_has_commitment_claim(body) { return false }
         if i == 1 || i == 3 || i == 5 {
             if body.to_chars().len() > 150 || body.search("\n") >= 0 { return false }
             if body.search("？") < 0 && body.search("?") < 0 { return false }
@@ -909,7 +936,7 @@ fn cue_read_take(slot){
     else { cue_set_status("正在阅读版本 A，第 1 页 / 共 " + cue_ws_pages.len() + " 页；仍是未发送的排练。") }
 }
 
-start_timeout(0.05, fn(){ cue_show_demo() cue_refresh_takes() })
+start_timeout(0.05, fn(){ cue_show_demo() cue_boot_state() })
 
 let cue_ink = #x193629
 let cue_muted = #x53675a

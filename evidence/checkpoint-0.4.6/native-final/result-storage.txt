@@ -2,7 +2,7 @@ Real jail bytes: draft.txt | 92 bytes | SHA256 4bf1da45b4c2a5f5db2a532f1e10d438a
 Real jail bytes: take-a.txt | 77 bytes | SHA256 2855e3997808cd5049620e645aca4f2e467fa17d3263f62db9be155b81a153b6
 Real jail bytes: take-b.txt | 95 bytes | SHA256 7a24a74983409ccf7b7f12c22f853918f8074f96051b93735de0d9a798f8a3ba
 Suite: storage | controlled injection, NOT natural model evidence
-Production SHA256: 54e25d567ca0c606bb9ba73198e7cfea20604bab6300213be9136e3e5a18ac17
+Production SHA256: 4b2fd02fb3e893dd15214a22f7ce173eed3d11c5cab1cbda4c72ef8038e472b5
 Runtime interval: 0.003s | collector monotonic wait: 0.000s
 PASS storage.fresh_jail_required
 PASS storage.empty_restore_preserves_editor

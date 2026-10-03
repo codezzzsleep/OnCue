@@ -1,6 +1,6 @@
 Suite: grounding | controlled injection, NOT natural model evidence
-Production SHA256: 54e25d567ca0c606bb9ba73198e7cfea20604bab6300213be9136e3e5a18ac17
-Runtime interval: 0.003s | collector monotonic wait: 0.000s
+Production SHA256: 4b2fd02fb3e893dd15214a22f7ce173eed3d11c5cab1cbda4c72ef8038e472b5
+Runtime interval: 0.004s | collector monotonic wait: 0.000s
 PASS grounding.excerpt_one_id_current_behavior
 PASS grounding.excerpt_selection_order
 PASS grounding.excerpt_whitespace_crlf
@@ -47,7 +47,9 @@ PASS grounding.protocol_wrong_excerpt_rejected
 PASS grounding.protocol_reworded_excerpt_rejected
 PASS grounding.protocol_invented_number_rejected
 PASS grounding.protocol_invalid_reference_rejected
+PASS grounding.protocol_commitment_claim_rejected
+PASS grounding.protocol_commitment_question_allowed
 PASS grounding.protocol_does_not_verify_semantics
 PASS grounding.empty_source_bounds
 PASS grounding.no_host_calls
-PASS: 49 assertions; source/provenance/assertion inventory verified
+PASS: 51 assertions; source/provenance/assertion inventory verified

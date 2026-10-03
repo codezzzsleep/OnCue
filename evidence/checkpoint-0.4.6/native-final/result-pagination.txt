@@ -1,6 +1,6 @@
 Suite: pagination | controlled injection, NOT natural model evidence
-Production SHA256: 54e25d567ca0c606bb9ba73198e7cfea20604bab6300213be9136e3e5a18ac17
-Runtime interval: 0.002s | collector monotonic wait: 0.000s
+Production SHA256: 4b2fd02fb3e893dd15214a22f7ce173eed3d11c5cab1cbda4c72ef8038e472b5
+Runtime interval: 0.003s | collector monotonic wait: 0.000s
 PASS pagination.empty
 PASS pagination.ascii16
 PASS pagination.ascii17
@@ -15,4 +15,5 @@ PASS pagination.regional_pairs
 PASS pagination.hangul_jamo
 PASS pagination.marker_order
 PASS pagination.production_reader_navigation
-PASS: 14 assertions; source/provenance/assertion inventory verified
+PASS pagination.long_text_many_pages
+PASS: 15 assertions; source/provenance/assertion inventory verified

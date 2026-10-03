@@ -1,0 +1,25 @@
+name: test-infrastructure
+
+# Scope note (honest): this workflow validates the TEST INFRASTRUCTURE ONLY
+# (generator extraction, checker, fixture/inventory consistency). The 146
+# runtime assertions execute inside the real card-host OctoScript VM and need
+# a built card-host binary + X display; they are archived under
+# evidence/ and re-run locally per oncue/tests/README.md. Do not read a green
+# run here as app-level coverage.
+
+on:
+  push:
+    paths: ['oncue/tests/**', 'oncue/bundle/main.splash', '.github/workflows/**']
+  pull_request:
+    paths: ['oncue/tests/**', 'oncue/bundle/main.splash']
+
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Infrastructure self-test (no card-host required)
+        run: python3 oncue/tests/selftest_infrastructure.py

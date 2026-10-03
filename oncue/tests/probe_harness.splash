@@ -104,6 +104,17 @@ fn probe_routes_match(){
     }
     true
 }
+fn probe_routes_match_after_accept(blocks){
+    if blocks.len() != 7 { return false }
+    if !cue_validate_protocol(blocks) { return false }
+    let markers = cue_protocol_markers()
+    let expected = probe_fixtures.canonical_blocks
+    for i in 7 {
+        let body = blocks[i].strip_prefix(markers[i]).trim()
+        if body != expected[i] { return false }
+    }
+    true
+}
 
 fn probe_parser(){
     for i in probe_fixtures.parser.len() {
@@ -127,6 +138,33 @@ fn probe_parser(){
     probe_assert("parser.excerpt_rejects_rewording", cue_source_excerpt("#2 杭州") == "" && cue_source_excerpt("#99") == "" && cue_source_excerpt("#2\n#2") == "", {})
     probe_assert("parser.rejects_invented_price", !cue_numbers_grounded("青旅人均80元") && cue_numbers_grounded("预算500，依据#1"), {})
     probe_assert("parser.rejects_invalid_citation", !cue_references_valid("依据#99") && cue_references_valid("依据#2、#3"), {})
+    probe_reset("parser.marked7_no_separator")
+    let markers = cue_protocol_markers()
+    let marked_text = ""
+    for i in probe_fixtures.canonical_blocks.len() {
+        if i > 0 { marked_text += "\n" }
+        marked_text += markers[i] + "\n" + probe_fixtures.canonical_blocks[i]
+    }
+    let marked_blocks = cue_split_blocks(marked_text)
+    probe_assert("parser.marked7_no_separator_valid", cue_validate_protocol(marked_blocks) && probe_routes_match_after_accept(marked_blocks), {blocks: marked_blocks})
+    let missing = ""
+    for i in probe_fixtures.canonical_blocks.len() {
+        if i == 3 { continue }
+        if i > 0 { missing += "\n" }
+        missing += markers[i] + "\n" + probe_fixtures.canonical_blocks[i]
+    }
+    probe_assert("parser.marked7_missing_marker_rejected", !cue_validate_protocol(cue_split_blocks(missing)), {missing_section: "B建议"})
+    let dup = markers[0] + "\n" + probe_fixtures.canonical_blocks[0] + "\n" + markers[0] + "\n" + probe_fixtures.canonical_blocks[0] + "\n"
+    for i in 7 { if i > 0 { dup += markers[i] + "\n" + probe_fixtures.canonical_blocks[i] + "\n" } }
+    probe_assert("parser.marked7_duplicate_marker_rejected", !cue_validate_protocol(cue_split_blocks(dup)), {duplicated: "摘要"})
+    let reordered = ""
+    let order = [0, 2, 1, 3, 4, 5, 6]
+    for i in order.len() { reordered += markers[order[i]] + "\n" + probe_fixtures.canonical_blocks[order[i]] + "\n" }
+    probe_assert("parser.marked7_reordered_marker_rejected", !cue_validate_protocol(cue_split_blocks(reordered)), {swapped: "A对白/A建议"})
+    let wrapped_marked = "@@@\n" + marked_text + "\n@@@"
+    let wrapped_blocks = cue_split_blocks(wrapped_marked)
+    let combo_ok = wrapped_blocks.len() == 7 && cue_validate_protocol(wrapped_blocks)
+    probe_assert("parser.marked7_wrapped_separator_combo_rejected", !combo_ok, {combo: "outer @@@ wrapper + unseparated marked body", blocks: wrapped_blocks})
     probe_reset("parser.output_order_and_markers")
     cue_set_busy(true)
     cue_accept_reply(probe_good_reply(), cue_revision, 0)
@@ -158,6 +196,7 @@ fn probe_pagination(){
     let saved_cols = cue_page_cols
     for i in probe_fixtures.pagination.len() {
         let fixture = probe_fixtures.pagination[i]
+        if fixture.id == "long_text_many_pages" { continue }
         cue_page_cols = fixture.cols
         let pages = cue_paginate(fixture.text, fixture.rows)
         let rejoined = probe_join(pages, "")
@@ -170,7 +209,9 @@ fn probe_pagination(){
             for p in pages.len() { if pages[p].search(fixture.clusters[c]) >= 0 { found = true } }
             if !found { passed = false }
         }
-        if fixture.exact != nil { passed = passed && probe_equal_strings(pages, fixture.exact) }
+        let has_exact = false
+        for k in fixture { if k == "exact" { has_exact = true } }
+        if has_exact { passed = passed && probe_equal_strings(pages, fixture.exact) }
         probe_assert("pagination." + fixture.id, passed,
             {pages: pages, rejoined: rejoined, expected_text: fixture.text, clusters: fixture.clusters})
     }
@@ -195,6 +236,18 @@ fn probe_pagination(){
     nav = nav && cue_ws_page == 0
     probe_assert("pagination.production_reader_navigation", nav,
         {message_pages: cue_msg_pages, workspace_pages: cue_ws_pages, message_page: cue_msg_page, workspace_page: cue_ws_page})
+    probe_reset("pagination.long_reader")
+    let long_fixture = nil
+    for i in probe_fixtures.pagination.len() { if probe_fixtures.pagination[i].id == "long_text_many_pages" { long_fixture = probe_fixtures.pagination[i] } }
+    if long_fixture != nil {
+        cue_page_cols = long_fixture.cols
+        let long_pages = cue_paginate(long_fixture.text, long_fixture.rows)
+        let long_joined = probe_join(long_pages, "")
+        let preserved = long_joined == long_fixture.text && long_pages.len() >= 3
+        for p in long_pages.len() { if long_pages[p] == "" { preserved = false } }
+        probe_assert("pagination.long_text_many_pages", preserved, {pages: long_pages.len(), rejoined: long_joined == long_fixture.text})
+        cue_page_cols = saved_cols
+    }
     probe_finish()
 }
 
@@ -494,10 +547,18 @@ fn probe_grounding(){
     blocks = probe_mark_blocks(probe_fixtures.grounding.protocol_blocks)
     blocks[1] = "【A对白】\n依据#0。"
     probe_assert("grounding.protocol_invalid_reference_rejected", !cue_validate_protocol(blocks), {body: blocks[1]})
-    // A deliberately false-sounding but digit-free hypothetical passes the
-    // bounded production checks. This records a limitation, not factual truth.
+    // Deterministic commitment gate: fabricated consensus is rejected outright...
     blocks = probe_mark_blocks(probe_fixtures.grounding.protocol_blocks)
-    blocks[1] = "【A对白】\n大家已经同意，已经替全员订票。依据#2。"
+    blocks[1] = "【A对白】\n大家已同意，已经替全员订票。依据#2。"
+    probe_assert("grounding.protocol_commitment_claim_rejected", !cue_validate_protocol(blocks), {body: blocks[1]})
+    // ...but ASKING about consent in a 待确认 line stays legal.
+    blocks = probe_mark_blocks(probe_fixtures.grounding.protocol_blocks)
+    blocks[1] = "【A对白】\n虚构回应甲：住一晚还是当天回？\n待确认：大家已同意了吗？依据#2。"
+    probe_assert("grounding.protocol_commitment_question_allowed", cue_validate_protocol(blocks), {body: blocks[1]})
+    // A deliberately false-sounding but digit-free, commitment-free hypothetical
+    // still passes the bounded checks. This records a limitation, not truth.
+    blocks = probe_mark_blocks(probe_fixtures.grounding.protocol_blocks)
+    blocks[1] = "【A对白】\n大家其实都想去杭州，只是没人直说。依据#2。"
     probe_assert("grounding.protocol_does_not_verify_semantics", cue_validate_protocol(blocks), {body: blocks[1], semantic_verification: false})
     cue_sources = []
     probe_assert("grounding.empty_source_bounds", cue_source_excerpt("#1") == "" && !cue_references_valid("#1") && cue_references_valid("没有引用") && cue_numbers_grounded("77") && !cue_numbers_grounded("500"), {source_count: cue_sources.len(), trial_is_still_allowed: true})

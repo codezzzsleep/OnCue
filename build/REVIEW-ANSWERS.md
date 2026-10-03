@@ -1,4 +1,4 @@
-# `hub scan` 七问回答 — oncue-screening-room 0.4.4
+# `hub scan` 七问回答 — oncue-screening-room 0.4.7
 
 对应 `build/review.json`（`hub scan` 生成，含 7 个问题）。逐问作答，答案只引用包内真实内容。
 

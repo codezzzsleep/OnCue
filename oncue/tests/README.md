@@ -1,8 +1,8 @@
 # OnCue 真实 OctoScript 受控探针
 
-这些文件是测试基础设施，不属于发布包。**历史 0.4.6 的 49 项受控断言已运行通过**，见[0.4.6检查点](<../../evidence/submission/CHECKPOINT-0.4.6.md>)和[归档结果](<../../evidence/checkpoint-0.4.6/native/>)，不覆盖下述当前扩充。
+这些文件是测试基础设施，不属于发布包。**当前 0.4.7 的 146 项受控断言已按当前生产字节实跑通过**（8 套：parser30 / pagination15 / retry8 / playback18 / storage14 / grounding51（含共识承诺门禁）/ envelope4 / deadline6，生产函数逐字节保留），逐条结果见 `evidence/checkpoint-0.4.6/native-final/result-*.txt` 与对应 provenance；历史 0.4.6 的 49 项见[检查点](<../../evidence/submission/CHECKPOINT-0.4.6.md>)。
 
-**本轮聚焦扩充仅做 Python 基础设施自检，未启动 card-host / display / Rinx，未生成或更改归档证据。** 当前 8 套共 138 个运行时断言：保留 parser25 / pagination14 / retry8 / deadline6，新增 playback18 / storage14 / grounding49 / envelope4。交给主线程按当前生产字节重新生成并串行实跑；`envelope` 的恶意 nil 数据可能触发生产错误，必须如实 FAIL，不能把这一套的失败豁免后宣称全通过。
+**运行状态说明**：截至 2026-10-03，8 套均已在本地按最终生产字节（SHA256 `4b2fd02f…`）串行实跑通过，含 90 秒期限实测超时 90.04 秒、`envelope` 畸形回调如实通过（生产已加 guard，非豁免）。本 README 不再存在"待实跑"套件。
 
 宿主回调为受控注入，不代表真实模型输出质量或 Rinx 全链路已验收。Python 仅负责打包、字节校验、等待与结果检查，**没有移植生产 parser、分页、重试、播放、存储或 grounding 算法到 Python**。
 
@@ -17,7 +17,7 @@
 生成器的唯一页面改动：
 
 1. 在生产状态声明之后、生产函数之前插入 `probe_*` harness、fixture 常量，以及只在探针内遮蔽的 `let host = {request: ...}`。
-2. 把已知的 `start_timeout(0.05, fn(){ cue_show_demo() cue_refresh_takes() })` 初始化替换为 `start_timeout(0.20, fn(){ probe_boot() })`，避免默认样例/历史存储干扰。
+2. 把已知的 `start_timeout(0.05, fn(){ cue_show_demo() cue_boot_state() })` 初始化替换为 `start_timeout(0.20, fn(){ probe_boot() })`，避免默认样例/历史存储干扰。
 3. 所有生产函数，包括 `cue_deadline` 内 **90.0 秒**与 `cue_play_pulse` 内 **1.4 秒**定时器，保持逐字节一致。生成后再次抽取逐一比较；初始化结构、必需生产函数或 harness 调用清单改变则失败，要求显式审查，不猜位置。
 4. 生成器拒绝 harness 遮蔽 `fs` / `ui` / `start_timeout` / `time_now`；provenance 写明真实 jail、非语义事实验证，以及 storage 的三份 UTF-8 原始夹具哈希。
 
@@ -110,7 +110,26 @@ probe manifest 改为唯一 `oncue-probe-<suite>` id，仅申请 `storage`，无
 
 `envelope.nil_data_handled_without_runtime_error` 要求真实调用无运行时异常，并已退出 busy 或确实启动唯一格式重试，不能把无异常但搁置请求算妥善处理。当前生产直接读取 `reply.data.text`，静态预期可能 FAIL；实际结论必须看 OctoScript。异常时该断言为 `false`，checker 返回 1，不提供 XFAIL/skip/allow-failure。其余断言记录正常开回合、未发布路线和 host allowlist；记录后停止受控等待。若运行时错误无法被该 catch 捕获，会缺完成结果，checker 应为 INCOMPLETE 而非 PASS。
 
-## 重跑命令（当前扩充尚未执行运行时）
+## 重跑命令
+
+**运行状态（2026-10-03）**：8 套共 146 项断言已按最终生产字节（SHA256 `4b2fd02f…`）串行实跑通过，逐条结果与 provenance 见 `evidence/checkpoint-0.4.6/native-final/`。以下为复现步骤。
+
+### 评审复跑前置条件（card-host 从公开源码构建）
+
+断言在真实 `card-host` 的 OctoScript VM 内执行，复跑需要 card-host 二进制。它是开源的，构建路径：
+
+```bash
+git clone https://github.com/OctoSense-org/OctoSense-App-Hub.git
+cd OctoSense-App-Hub
+git checkout 0f332112f0b5a379c5bb33790df74b21597190cf   # 与我们实测一致的提交
+cargo build --release -p card-host                       # 产出 target/release/card-host
+export OCTO_HUB="$PWD/target/release/hub"
+export OCTO_CARD_HOST="$PWD/target/release/card-host"
+```
+
+另需：一个 X display（本机用 Xvfb `:97`，任何独立 display 均可）与 Python 3.9+。我们实测的 card-host 二进制 sha256 记录在 `oncue/VERIFICATION.md` 第一节，可用于核对构建产物一致性。若无法构建 card-host，可运行不依赖它的基础设施自检：`python3 oncue/tests/selftest_infrastructure.py`（只验证生成器/checker，不代表运行时断言通过）。
+
+### 复跑步骤
 
 从工作区 `/root/hackthon` 操作；使用**主线程自行管理、已存在且与宿主分离**的 display，例如 `:101`。不要使用宿主 display，不读取其授权文件，不启动/重建宿主，不安装工具。
 

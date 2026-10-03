@@ -1,6 +1,6 @@
 Suite: retry | controlled injection, NOT natural model evidence
-Production SHA256: 54e25d567ca0c606bb9ba73198e7cfea20604bab6300213be9136e3e5a18ac17
-Runtime interval: 0.004s | collector monotonic wait: 0.000s
+Production SHA256: 4b2fd02fb3e893dd15214a22f7ce173eed3d11c5cab1cbda4c72ef8038e472b5
+Runtime interval: 0.005s | collector monotonic wait: 0.000s
 PASS retry.first_malformed_second_valid
 PASS retry.duplicate_after_success_ignored
 PASS retry.both_malformed

@@ -1,6 +1,6 @@
 Suite: parser | controlled injection, NOT natural model evidence
-Production SHA256: 54e25d567ca0c606bb9ba73198e7cfea20604bab6300213be9136e3e5a18ac17
-Runtime interval: 0.004s | collector monotonic wait: 0.000s
+Production SHA256: 4b2fd02fb3e893dd15214a22f7ce173eed3d11c5cab1cbda4c72ef8038e472b5
+Runtime interval: 0.005s | collector monotonic wait: 0.000s
 PASS parser.standard7
 PASS parser.wrapper7
 PASS parser.leading_wrapper7
@@ -25,5 +25,10 @@ PASS parser.excerpt_exact
 PASS parser.excerpt_rejects_rewording
 PASS parser.rejects_invented_price
 PASS parser.rejects_invalid_citation
+PASS parser.marked7_no_separator_valid
+PASS parser.marked7_missing_marker_rejected
+PASS parser.marked7_duplicate_marker_rejected
+PASS parser.marked7_reordered_marker_rejected
+PASS parser.marked7_wrapped_separator_combo_rejected
 PASS parser.output_order_and_markers
-PASS: 25 assertions; source/provenance/assertion inventory verified
+PASS: 30 assertions; source/provenance/assertion inventory verified
