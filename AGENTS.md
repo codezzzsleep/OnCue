@@ -519,7 +519,7 @@ OctoSense [原生依赖](<../refs/OctoSense/native-apps.json>)锁 Rinx `4b89097d
 - [x] [远程桥三态](<evidence/submission/BRIDGE-DRIVEN-STATES.md>)、[Back/键盘/关闭重开](<evidence/submission/RINX-LIFECYCLE.md>)、
   [无绑定房间拒绝](<evidence/submission/CROSS-ROOM-AND-REVOCATION.md>)有历史证据，非全部授权机制实测。
 - [x] [179.334秒视频](<evidence/demo/oncue-demo-2min59.mp4>)与两张包内截图存在且已跟踪；视频无旁白/字幕。
-- [x] [0.4.5修复](<evidence/submission/RELIABILITY-FIX-0.4.5.md>)在main；唯一标签仍v0.4.4。
+- [x] [0.4.5修复](<evidence/submission/RELIABILITY-FIX-0.4.5.md>)在main；标签 v0.4.4（#57 提交）与 v0.4.7（HEAD `f363d4b`）并存。
 - [x] 比赛#5/#13已登记，MiniMax团队ID已填；App Hub #57已开，但旧版且未证实上架。
 - [x] 本轮六参考仓全部直连同步、补全历史；OctoSense `c19da8d → b221f7b`，其他main不变。
 - [x] 本轮完整阅读制作/发布/AI/赛事关键指南并核对相关实现，修正阶段混淆、发送误读和超时混用。
