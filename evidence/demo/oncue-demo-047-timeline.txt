@@ -1,0 +1,29 @@
+    1.2s  geometry  | rinx_frame=990x613@54,44
+    1.2s  recording_started
+    6.3s  fill_bundle_path
+   11.2s  fill_room
+   13.6s  review_bundle
+   14.0s  review_shown  | OnCue · 群聊试映室 0.4.7 · Local unsigned bundle / Services: storage, matrix.room_info, matrix.read_messages, octos.session.o
+   19.1s  run_app
+   25.3s  load_room
+   28.4s  room_loaded  | 原消息已载入，可逐条翻看；长消息可用“上翻 / 下翻”逐页读完。
+   32.6s  next_message_1
+   37.1s  next_message_2
+   41.0s  prev_message
+   45.9s  rehearse_clicked  | Agent 正在排练三个可能的下一幕…
+   79.6s  turn_done  | 原文摘录已逐字核对；三路线为 Agent 假设，不是群友承诺。
+   82.6s  open_excerpt
+   84.8s  excerpt_page_1  | 原文摘录（逐字核对，不代表群内共识）： ⏎ #1 明早 9 点出发，住一晚 ⏎
+   90.0s  excerpt_page_2  | #2 我中午才能走 ⏎ #3 希望当天回来 ⏎ #8 住宿我想住青旅
+   95.5s  excerpt_page_3  | #2 我中午才能走 ⏎ #3 希望当天回来 ⏎ #8 住宿我想住青旅
+  101.8s  route_A
+  125.0s  play
+  129.6s  pause
+  135.1s  route_B
+  140.1s  replay
+  153.9s  save_A  | 版本 A 已保存并回读确认；关闭后可以取回。
+  165.2s  save_B  | 版本 B 已保存并回读确认；关闭后可以取回。
+  168.9s  show_A
+  181.7s  restore_A  | 版本 A 已放回编辑框；尚未发送。
+  183.9s  draft_restored_exact  | 版本 A：那就先按中午出发、当天回来排一版？
+  186.0s  recording_stopped

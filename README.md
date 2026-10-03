@@ -72,5 +72,6 @@
 - [宿主环境与复现](oncue/docs/DEPENDENCIES.md) — 宿主版本、支持平台、依赖
 - [验证摘要](oncue/VERIFICATION.md) — 当前版本的实测结果与未覆盖项
 - **当前版截图**：[包内两张](<oncue/bundle/screenshots/>)——真实 Rinx 主机、真实授权房间与真实助手回合的同版截图，已逐张打开查看。
+- [当前版演示](<evidence/submission/DEMO-0.4.7.md>) — 2 分 58 秒真实连续录屏、时间轴与解说词
 - [App Hub 材料](evidence/apphub/) — `hub check` 输出与 `hub scan` 七问回答
 - [Apache License 2.0](oncue/LICENSE)
