@@ -1,0 +1,10 @@
+Suite: deadline | controlled injection, NOT natural model evidence
+Production SHA256: 54e25d567ca0c606bb9ba73198e7cfea20604bab6300213be9136e3e5a18ac17
+Runtime interval: 92.995s | collector monotonic wait: 92.982s
+PASS deadline.waiting_at_80
+PASS deadline.same_revision_on_retry
+PASS deadline.original_budget_expired
+PASS deadline.timeout_elapsed
+PASS deadline.late_callback_ignored
+PASS deadline.host_allowlist
+PASS: 6 assertions; source/provenance/assertion inventory verified

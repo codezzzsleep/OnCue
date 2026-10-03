@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "notice": "Literal controlled fixtures, not natural model results. Pagination expectations are conservation/cluster assertions, not a Python implementation.",
-  "canonical_blocks": ["S0|摘要：先确认时间与预算。", "A1|假设回应甲。\nA1b|依据：#2，待确认。", "A2|建议：中午之后？", "B1|假设回应乙。\nB1b|依据：#3，新提议。", "B2|建议：当天往返？", "C1|假设回应丙。\nC1b|依据：#4，待核实。", "C2|建议：来个半日小游戏？"],
+  "canonical_blocks": ["#2\n#3", "A1|假设回应甲。\nA1b|依据：#2，待确认。", "A2|建议：中午之后？", "B1|假设回应乙。\nB1b|依据：#3，新提议。", "B2|建议：当天往返？", "C1|假设回应丙。\nC1b|依据：#4，待核实。", "C2|建议：来个半日小游戏？"],
   "parser": [
     {"id": "standard7", "text": "S0\n@@@\nA1\n@@@\nA2\n@@@\nB1\n@@@\nB2\n@@@\nC1\n@@@\nC2", "valid": true, "blocks": ["S0", "A1", "A2", "B1", "B2", "C1", "C2"]},
     {"id": "wrapper7", "text": "@@@\nS0\n@@@\nA1\n@@@\nA2\n@@@\nB1\n@@@\nB2\n@@@\nC1\n@@@\nC2\n@@@", "valid": true, "blocks": ["S0", "A1", "A2", "B1", "B2", "C1", "C2"]},
@@ -37,10 +37,84 @@
     {"id": "hangul_jamo", "text": "12345678901234각Z", "cols": 16, "rows": 1, "clusters": ["각"], "exact": null},
     {"id": "marker_order", "text": "M0|事实#2\nM1|假设@@@正文\nM2|待核实🙂\nM3|END", "cols": 16, "rows": 3, "clusters": [], "exact": null}
   ],
+  "playback_routes": [
+    {"title": "受控路线 A", "body": "A甲：第一句。\nA乙：第二句。\nA丙：第三句。\nA丁：第四句。\nA戊：第五句。", "draft": "A 建议，未发送。"},
+    {"title": "受控路线 B", "body": "B甲：另一路线。\nB乙：等待核实🙂。\nB丙：最后一句。", "draft": "B 建议，未发送。"}
+  ],
+  "storage": {
+    "draft": "  草稿首行 👩‍👩‍👧‍👦  \n\n第二行\t保留制表与 é\n尾行 🇨🇳  \n",
+    "take_a": "  A 版本：先核实 👍🏽  \n\n A 第二行\t空格不裁剪\n结尾🙂  \n",
+    "take_b": "\n  B 版本：不同问法 🇫🇷\nB 中间  两个空格\n 👩‍👩‍👧‍👦 尾行 \t ",
+    "blank": " \n\t  \n "
+  },
+  "grounding": {
+    "notice": "Current bounded behavior, not semantic fact verification. Excerpt accepts 1-4 IDs although prompt requests 2-4. Numeric checks use ASCII digit tokens including trial and source IDs; references only check ASCII IDs after #.",
+    "sources": [
+      {"sender": "夹具甲", "body": "预算 500，9 点集合。\n  保留缩进 👩‍👩‍👧‍👦  "},
+      {"sender": "夹具乙", "body": "中午之后再讨论，尚未同意。"},
+      {"sender": "夹具丙", "body": "当天回来；不承诺订票。"},
+      {"sender": "夹具丁", "body": "路线由大家共同决定。"},
+      {"sender": "夹具戊", "body": "金额待核实。"}
+    ],
+    "trial": "草稿里新提议 77 元，未发送。",
+    "excerpts": [
+      {"id": "excerpt_one_id_current_behavior", "selection": "#1", "expected": "原文摘录（逐字核对，不代表群内共识）：\n#1 预算 500，9 点集合。\n  保留缩进 👩‍👩‍👧‍👦  "},
+      {"id": "excerpt_selection_order", "selection": "#3\n#2", "expected": "原文摘录（逐字核对，不代表群内共识）：\n#3 当天回来；不承诺订票。\n#2 中午之后再讨论，尚未同意。"},
+      {"id": "excerpt_whitespace_crlf", "selection": " \t#2\r\n #1 \n", "expected": "原文摘录（逐字核对，不代表群内共识）：\n#2 中午之后再讨论，尚未同意。\n#1 预算 500，9 点集合。\n  保留缩进 👩‍👩‍👧‍👦  "},
+      {"id": "excerpt_four_ids", "selection": "#2\n#3\n#4\n#5", "expected": "原文摘录（逐字核对，不代表群内共识）：\n#2 中午之后再讨论，尚未同意。\n#3 当天回来；不承诺订票。\n#4 路线由大家共同决定。\n#5 金额待核实。"},
+      {"id": "excerpt_duplicate_rejected", "selection": "#2\n #2 ", "expected": ""},
+      {"id": "excerpt_zero_rejected", "selection": "#0", "expected": ""},
+      {"id": "excerpt_out_of_range_rejected", "selection": "#6", "expected": ""},
+      {"id": "excerpt_leading_zero_rejected", "selection": "#02", "expected": ""},
+      {"id": "excerpt_negative_rejected", "selection": "#-1", "expected": ""},
+      {"id": "excerpt_rewording_rejected", "selection": "#2 大家已同意", "expected": ""},
+      {"id": "excerpt_same_line_ids_rejected", "selection": "#2、#3", "expected": ""},
+      {"id": "excerpt_empty_rejected", "selection": " \n\t", "expected": ""},
+      {"id": "excerpt_internal_blank_rejected", "selection": "#2\n\n#3", "expected": ""},
+      {"id": "excerpt_five_ids_rejected", "selection": "#1\n#2\n#3\n#4\n#5", "expected": ""}
+    ],
+    "tokens": [
+      {"id": "tokens_ascii_runs_only", "text": "v12.50 -9 9:30 １２ 三 🙂", "expected": ["12", "50", "9", "9", "30"]},
+      {"id": "tokens_keep_leading_zeros", "text": "005 #2 500", "expected": ["005", "2", "500"]}
+    ],
+    "numbers": [
+      {"id": "numbers_source_allowed", "text": "预算500，9点集合。", "expected": true},
+      {"id": "numbers_invented_rejected", "text": "青旅80元。", "expected": false},
+      {"id": "numbers_substring_rejected", "text": "费用50元。", "expected": false},
+      {"id": "numbers_trial_allowed_not_fact", "text": "已付款77元。", "expected": true},
+      {"id": "numbers_source_id_allowed_not_fact", "text": "入住5晚。", "expected": true},
+      {"id": "numbers_same_digits_not_semantics", "text": "已替大家支付500元。", "expected": true},
+      {"id": "numbers_leading_zero_rejected", "text": "费用0500元。", "expected": false},
+      {"id": "numbers_decimal_parts_not_value", "text": "费用500.9元。", "expected": true},
+      {"id": "numbers_negative_sign_not_checked", "text": "余额-500元。", "expected": true},
+      {"id": "numbers_fullwidth_outside_scope", "text": "费用８０元。", "expected": true},
+      {"id": "numbers_chinese_outside_scope", "text": "费用八十元。", "expected": true},
+      {"id": "numbers_no_digits_not_semantics", "text": "所有人已同意，已经订票。", "expected": true}
+    ],
+    "references": [
+      {"id": "refs_valid_bounds", "text": "依据#1、#5。", "expected": true},
+      {"id": "refs_duplicates_allowed", "text": "依据#2和#2。", "expected": true},
+      {"id": "refs_no_hash_not_semantics", "text": "没有引用但声称全员同意。", "expected": true},
+      {"id": "refs_zero_rejected", "text": "依据#0。", "expected": false},
+      {"id": "refs_out_of_range_rejected", "text": "依据#6。", "expected": false},
+      {"id": "refs_negative_rejected", "text": "依据#-1。", "expected": false},
+      {"id": "refs_bare_hash_rejected", "text": "依据#。", "expected": false},
+      {"id": "refs_fullwidth_rejected", "text": "依据#２。", "expected": false},
+      {"id": "refs_leading_zero_rejected", "text": "依据#02。", "expected": false},
+      {"id": "refs_suffix_not_checked", "text": "依据#2任意后缀。", "expected": true},
+      {"id": "refs_decimal_suffix_not_checked", "text": "依据#2.9。", "expected": true},
+      {"id": "refs_double_hash_rejected", "text": "依据##2。", "expected": false}
+    ],
+    "protocol_blocks": ["#1\n#2", "虚构回应甲：待确认。\n依据：#1", "先核实预算500？", "虚构回应乙：仍待确认。\n依据：#2", "中午以后再讨论？", "虚构回应丙：一起想个小游戏。\n依据：#3", "先提议，不承诺执行？"]
+  },
   "assertion_ids": {
-    "parser": ["parser.standard7", "parser.wrapper7", "parser.leading_wrapper7", "parser.trailing_wrapper7", "parser.crlf7", "parser.eol7", "parser.eol_wrapper7", "parser.separator_whitespace7", "parser.internal_blank_lines_preserved", "parser.internal_empty_block", "parser.six_blocks", "parser.eight_blocks", "parser.body_inline_marker", "parser.strict_body_eol_marker", "parser.ambiguous_mixed_six_to_seven", "parser.duplicate_leading_wrapper", "parser.duplicate_trailing_wrapper", "parser.empty_response", "parser.protocol_order_rejects_swap", "parser.protocol_requires_markers", "parser.output_order_and_markers"],
+    "parser": ["parser.standard7", "parser.wrapper7", "parser.leading_wrapper7", "parser.trailing_wrapper7", "parser.crlf7", "parser.eol7", "parser.eol_wrapper7", "parser.separator_whitespace7", "parser.internal_blank_lines_preserved", "parser.internal_empty_block", "parser.six_blocks", "parser.eight_blocks", "parser.body_inline_marker", "parser.strict_body_eol_marker", "parser.ambiguous_mixed_six_to_seven", "parser.duplicate_leading_wrapper", "parser.duplicate_trailing_wrapper", "parser.empty_response", "parser.protocol_order_rejects_swap", "parser.protocol_requires_markers", "parser.excerpt_exact", "parser.excerpt_rejects_rewording", "parser.rejects_invented_price", "parser.rejects_invalid_citation", "parser.output_order_and_markers"],
     "pagination": ["pagination.empty", "pagination.ascii16", "pagination.ascii17", "pagination.cjk9", "pagination.newlines_rows3", "pagination.leading_newline_rows1", "pagination.crlf_boundary", "pagination.combining", "pagination.emoji_zwj", "pagination.emoji_modifier", "pagination.regional_pairs", "pagination.hangul_jamo", "pagination.marker_order", "pagination.production_reader_navigation"],
     "retry": ["retry.first_malformed_second_valid", "retry.both_malformed", "retry.stop_during_second", "retry.edit_during_second", "retry.old_callback_new_request", "retry.host_error_no_format_retry", "retry.duplicate_after_success_ignored", "retry.host_allowlist"],
-    "deadline": ["deadline.waiting_at_80", "deadline.same_revision_on_retry", "deadline.original_budget_expired", "deadline.timeout_elapsed", "deadline.late_callback_ignored", "deadline.host_allowlist"]
+    "deadline": ["deadline.waiting_at_80", "deadline.same_revision_on_retry", "deadline.original_budget_expired", "deadline.timeout_elapsed", "deadline.late_callback_ignored", "deadline.host_allowlist"],
+    "playback": ["playback.empty_route_controls", "playback.select_starts_hidden", "playback.invalid_selection_unchanged", "playback.play_first_line", "playback.pause_invalidates_epoch", "playback.paused_timer_inert", "playback.resume_preserves_progress", "playback.real_timer_advances", "playback.next_line_pauses", "playback.complete_exact_text", "playback.next_line_upper_bound", "playback.restart_hidden_zero", "playback.route_switch_resets", "playback.old_epoch_ignored_while_new_playing", "playback.switched_route_timer_isolated", "playback.timer_completes_and_pauses", "playback.play_after_end_restarts", "playback.no_host_calls"],
+    "storage": ["storage.fresh_jail_required", "storage.empty_restore_preserves_editor", "storage.blank_never_creates_files", "storage.draft_exact_save_read", "storage.draft_exact_restore", "storage.take_a_no_routes_exact_save", "storage.take_b_no_routes_exact_save", "storage.refresh_from_real_files", "storage.take_a_read_and_page_bounds", "storage.take_b_read_exact", "storage.take_a_restore_exact", "storage.take_b_restore_exact", "storage.blank_never_overwrites_files", "storage.no_host_calls"],
+    "grounding": ["grounding.excerpt_one_id_current_behavior", "grounding.excerpt_selection_order", "grounding.excerpt_whitespace_crlf", "grounding.excerpt_four_ids", "grounding.excerpt_duplicate_rejected", "grounding.excerpt_zero_rejected", "grounding.excerpt_out_of_range_rejected", "grounding.excerpt_leading_zero_rejected", "grounding.excerpt_negative_rejected", "grounding.excerpt_rewording_rejected", "grounding.excerpt_same_line_ids_rejected", "grounding.excerpt_empty_rejected", "grounding.excerpt_internal_blank_rejected", "grounding.excerpt_five_ids_rejected", "grounding.tokens_ascii_runs_only", "grounding.tokens_keep_leading_zeros", "grounding.numbers_source_allowed", "grounding.numbers_invented_rejected", "grounding.numbers_substring_rejected", "grounding.numbers_trial_allowed_not_fact", "grounding.numbers_source_id_allowed_not_fact", "grounding.numbers_same_digits_not_semantics", "grounding.numbers_leading_zero_rejected", "grounding.numbers_decimal_parts_not_value", "grounding.numbers_negative_sign_not_checked", "grounding.numbers_fullwidth_outside_scope", "grounding.numbers_chinese_outside_scope", "grounding.numbers_no_digits_not_semantics", "grounding.refs_valid_bounds", "grounding.refs_duplicates_allowed", "grounding.refs_no_hash_not_semantics", "grounding.refs_zero_rejected", "grounding.refs_out_of_range_rejected", "grounding.refs_negative_rejected", "grounding.refs_bare_hash_rejected", "grounding.refs_fullwidth_rejected", "grounding.refs_leading_zero_rejected", "grounding.refs_suffix_not_checked", "grounding.refs_decimal_suffix_not_checked", "grounding.refs_double_hash_rejected", "grounding.protocol_valid_fixture", "grounding.protocol_duplicate_excerpt_rejected", "grounding.protocol_wrong_excerpt_rejected", "grounding.protocol_reworded_excerpt_rejected", "grounding.protocol_invented_number_rejected", "grounding.protocol_invalid_reference_rejected", "grounding.protocol_does_not_verify_semantics", "grounding.empty_source_bounds", "grounding.no_host_calls"],
+    "envelope": ["envelope.normal_open_started_turn", "envelope.nil_data_handled_without_runtime_error", "envelope.nil_data_never_publishes_routes", "envelope.host_allowlist"]
   }
 }

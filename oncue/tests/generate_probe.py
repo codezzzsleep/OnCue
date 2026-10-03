@@ -2,7 +2,7 @@
 """Generate, never execute, a full-page OctoScript production-code probe.
 
 Python only packages source and literal fixtures. It does not implement OnCue's
-parser, pagination, retry state machine, or deadline.
+parser, pagination, retry/deadline, playback, storage, or grounding logic.
 """
 from __future__ import annotations
 
@@ -15,13 +15,20 @@ import sys
 
 HERE = Path(__file__).resolve().parent
 DEFAULT_SOURCE = HERE.parent / "bundle" / "main.splash"
-SUITES = ("parser", "pagination", "retry", "deadline")
+SUITES = ("parser", "pagination", "retry", "deadline", "playback", "storage", "grounding", "envelope")
 REQUIRED_FUNCTIONS = {
     "cue_split_blocks", "cue_validate_blocks", "cue_paginate",
     "cue_rehearse", "cue_start_turn", "cue_accept_reply", "cue_deadline",
     "cue_invalidate", "cue_stop_wait", "cue_edit_trial", "cue_prompt",
     "cue_select_preview", "cue_ws_text", "cue_choose_route",
+    "cue_source_excerpt", "cue_numeric_tokens", "cue_numbers_grounded",
+    "cue_references_valid", "cue_validate_protocol", "cue_protocol_markers",
+    "cue_toggle_playback", "cue_pause_playback", "cue_play_pulse",
+    "cue_advance_playback", "cue_next_line", "cue_restart_playback",
+    "cue_keep_draft", "cue_restore_draft", "cue_save_text", "cue_keep_take",
+    "cue_refresh_takes", "cue_read_take", "cue_restore_take",
 }
+STORAGE_FIXTURES = {"draft.txt": "draft", "take-a.txt": "take_a", "take-b.txt": "take_b"}
 INITIALIZER = re.compile(
     r"(?m)^start_timeout\(0\.05,\s*fn\(\)\{\s*"
     r"cue_show_demo\(\)\s+cue_refresh_takes\(\)\s*\}\)\s*$"
@@ -124,7 +131,15 @@ def build_probe(source: str, fixture_bytes: bytes, harness: str, suite: str) -> 
     fixtures = json.loads(fixture_bytes)
     if fixtures.get("schema") != 1:
         raise ValueError("Unsupported fixtures schema")
+    if suite not in SUITES:
+        raise ValueError(f"Unknown probe suite: {suite}")
     functions = extract_functions(source)
+    harness_mask = lexical_mask(harness)
+    if re.search(r"\b(?:let|fn)\s+(?:fs|start_timeout|time_now|ui)\b", harness_mask):
+        raise ValueError("Harness must not shadow real filesystem, timer, clock, or UI APIs")
+    called = set(re.findall(r"\b(cue_\w+)\s*\(", harness_mask))
+    if called - functions.keys():
+        raise ValueError(f"Production API changed; missing harness calls: {sorted(called - functions.keys())}")
     starts = list(INITIALIZER.finditer(source))
     if len(starts) != 1:
         raise ValueError("Expected exactly one known demo initializer; review startup changes before adapting")
@@ -143,6 +158,13 @@ def build_probe(source: str, fixture_bytes: bytes, harness: str, suite: str) -> 
         "natural_model_test": False,
         "production_functions_unchanged": True,
         "real_deadline_seconds": 90,
+        "real_playback_interval_seconds": 1.4,
+        "filesystem": "real card-host jail; fs is not shadowed",
+        "semantic_fact_verification": False,
+        "storage_file_sha256": {
+            name: digest(fixtures["storage"][key].encode("utf-8"))
+            for name, key in STORAGE_FIXTURES.items()
+        } if suite == "storage" else {},
     }
     header = (
         "// TEST-ONLY controlled host. No native host service is forwarded.\n"

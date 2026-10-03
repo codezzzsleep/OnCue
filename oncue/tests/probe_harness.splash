@@ -78,7 +78,10 @@ fn probe_count_service(service){
 fn probe_reset(case_id){
     cue_invalidate()
     cue_demo = false
-    cue_sources = [{sender: "受控夹具", body: "中午以后，预算待确认；不要发消息。"}]
+    cue_sources = [{sender: "受控夹具", body: "明早9点出发，预算500。"},
+        {sender: "受控夹具", body: "中午才能走。"},
+        {sender: "受控夹具", body: "希望当天回来。"},
+        {sender: "受控夹具", body: "先定人数，不要发消息。"}]
     cue_scene = "受控 OctoScript 测试，非自然模型"
     cue_msg_index = 0
     cue_msg_page = 0
@@ -94,7 +97,7 @@ fn probe_begin(case_id){
 }
 fn probe_routes_match(){
     let expected = probe_fixtures.canonical_blocks
-    if cue_summary != expected[0] || cue_routes.len() != 3 { return false }
+    if cue_summary != cue_source_excerpt(expected[0]) || cue_routes.len() != 3 { return false }
     if cue_routes[0].title != "顺着这句" || cue_routes[1].title != "换个问法" || cue_routes[2].title != "换个玩法" { return false }
     for i in 3 {
         if cue_routes[i].body != expected[1 + i * 2] || cue_routes[i].draft != expected[2 + i * 2] { return false }
@@ -112,6 +115,7 @@ fn probe_parser(){
         probe_assert("parser." + fixture.id, passed, {expected_valid: fixture.valid,
             actual_valid: valid, actual_blocks: blocks, expected_blocks: fixture.blocks})
     }
+    probe_reset("parser.protocol_validation")
     let canonical = cue_split_blocks(probe_good_reply().data.text)
     let protocol_ok = cue_validate_protocol(canonical)
     let swapped = canonical[1]
@@ -119,6 +123,10 @@ fn probe_parser(){
     canonical[3] = swapped
     probe_assert("parser.protocol_order_rejects_swap", protocol_ok && !cue_validate_protocol(canonical), {swapped: canonical})
     probe_assert("parser.protocol_requires_markers", !cue_validate_protocol(probe_fixtures.canonical_blocks), {unmarked: true})
+    probe_assert("parser.excerpt_exact", cue_source_excerpt("#2\n#3") == "原文摘录（逐字核对，不代表群内共识）：\n#2 中午才能走。\n#3 希望当天回来。", {})
+    probe_assert("parser.excerpt_rejects_rewording", cue_source_excerpt("#2 杭州") == "" && cue_source_excerpt("#99") == "" && cue_source_excerpt("#2\n#2") == "", {})
+    probe_assert("parser.rejects_invented_price", !cue_numbers_grounded("青旅人均80元") && cue_numbers_grounded("预算500，依据#1"), {})
+    probe_assert("parser.rejects_invalid_citation", !cue_references_valid("依据#99") && cue_references_valid("依据#2、#3"), {})
     probe_reset("parser.output_order_and_markers")
     cue_set_busy(true)
     cue_accept_reply(probe_good_reply(), cue_revision, 0)
@@ -140,7 +148,7 @@ fn probe_parser(){
         }
     }
     cue_show_summary()
-    mapping = mapping && probe_join(cue_ws_pages, "") == probe_fixtures.canonical_blocks[0]
+    mapping = mapping && probe_join(cue_ws_pages, "") == cue_source_excerpt(probe_fixtures.canonical_blocks[0])
     probe_assert("parser.output_order_and_markers", mapping && !cue_busy,
         {state: probe_snapshot(), rendered: rendered, selected: selected})
     probe_finish()
@@ -298,6 +306,229 @@ fn probe_deadline(){
     probe_deadline_observe()
 }
 
+// Direct calls exercise the same handlers as buttons; real timers are untouched.
+fn probe_playback_state(){
+    {index: cue_play_index, count: cue_play_count, playing: cue_playing,
+     epoch: cue_play_epoch, mode: cue_read_mode, page: cue_ws_page,
+     lines: cue_play_lines, pages: cue_ws_pages, text: cue_ws_text(),
+     button: ui.cue_play_button.text()}
+}
+fn probe_playback(){
+    probe_reset("playback")
+    cue_show_dialogue()
+    cue_toggle_playback()
+    cue_next_line()
+    cue_restart_playback()
+    probe_assert("playback.empty_route_controls", !cue_playing && cue_play_count == 0 && cue_ws_text() == "" && cue_routes.len() == 0, probe_playback_state())
+    cue_routes = probe_fixtures.playback_routes
+    cue_select_preview(0)
+    probe_assert("playback.select_starts_hidden", cue_play_index == 0 && cue_play_count == 0 && !cue_playing && cue_read_mode == 0 && cue_ws_page == 0 && cue_play_lines.len() == 5 && cue_ws_text().search("点击") >= 0, probe_playback_state())
+    let before_invalid = probe_playback_state().to_json()
+    cue_select_preview(-1)
+    cue_select_preview(cue_routes.len())
+    probe_assert("playback.invalid_selection_unchanged", before_invalid == probe_playback_state().to_json(), probe_playback_state())
+    cue_toggle_playback()
+    let first_epoch = cue_play_epoch
+    probe_assert("playback.play_first_line", cue_playing && cue_play_count == 1 && cue_ws_text() == "A甲：第一句。" && ui.cue_play_button.text() == "暂停", probe_playback_state())
+    cue_toggle_playback()
+    let paused = probe_playback_state().to_json()
+    cue_play_pulse(first_epoch)
+    probe_assert("playback.pause_invalidates_epoch", !cue_playing && cue_play_count == 1 && cue_play_epoch > first_epoch && paused == probe_playback_state().to_json() && ui.cue_play_button.text() == "播放", probe_playback_state())
+    probe_checkpoint(false)
+    // Wait beyond the real 1.4s timer to prove a queued paused pulse is inert.
+    start_timeout(1.8, fn(){
+        probe_assert("playback.paused_timer_inert", paused == probe_playback_state().to_json(), probe_playback_state())
+        cue_toggle_playback()
+        probe_assert("playback.resume_preserves_progress", cue_playing && cue_play_count == 2 && cue_ws_text() == "A甲：第一句。\nA乙：第二句。", probe_playback_state())
+        probe_checkpoint(false)
+        start_timeout(1.8, fn(){
+            // This count is driven by production start_timeout, not a fake clock.
+            probe_assert("playback.real_timer_advances", cue_playing && cue_play_count == 3, probe_playback_state())
+            let resumed_epoch = cue_play_epoch
+            cue_next_line()
+            let after_next = probe_playback_state().to_json()
+            cue_play_pulse(resumed_epoch)
+            probe_assert("playback.next_line_pauses", !cue_playing && cue_play_count == 4 && cue_play_epoch > resumed_epoch && after_next == probe_playback_state().to_json(), probe_playback_state())
+            cue_next_line()
+            let expected = probe_fixtures.playback_routes[0].body + "\n建议台词：" + probe_fixtures.playback_routes[0].draft
+            probe_assert("playback.complete_exact_text", cue_play_count == 5 && !cue_playing && cue_ws_text() == expected && probe_join(cue_ws_pages, "") == expected, probe_playback_state())
+            cue_next_line()
+            cue_next_line()
+            probe_assert("playback.next_line_upper_bound", cue_play_count == 5 && cue_ws_text() == expected, probe_playback_state())
+            cue_restart_playback()
+            probe_assert("playback.restart_hidden_zero", cue_play_count == 0 && cue_ws_page == 0 && !cue_playing && cue_ws_text().search("点击") >= 0, probe_playback_state())
+            cue_toggle_playback()
+            let route_a_epoch = cue_play_epoch
+            cue_select_preview(1)
+            probe_assert("playback.route_switch_resets", cue_play_index == 1 && cue_play_count == 0 && !cue_playing && cue_play_epoch > route_a_epoch && cue_play_lines.len() == 3, probe_playback_state())
+            cue_toggle_playback()
+            let route_b = probe_playback_state().to_json()
+            // B is PLAYING: !playing alone cannot make this test pass.
+            cue_play_pulse(route_a_epoch)
+            probe_assert("playback.old_epoch_ignored_while_new_playing", cue_playing && cue_play_index == 1 && cue_play_count == 1 && route_b == probe_playback_state().to_json(), probe_playback_state())
+            probe_checkpoint(false)
+            start_timeout(1.8, fn(){
+                probe_assert("playback.switched_route_timer_isolated", cue_playing && cue_play_index == 1 && cue_play_count == 2 && cue_ws_text() == "B甲：另一路线。\nB乙：等待核实🙂。", probe_playback_state())
+                // Let the next genuine pulse complete and pause automatically.
+                start_timeout(1.4, fn(){
+                    let full_b = probe_fixtures.playback_routes[1].body + "\n建议台词：" + probe_fixtures.playback_routes[1].draft
+                    probe_assert("playback.timer_completes_and_pauses", !cue_playing && cue_play_count == 3 && cue_ws_text() == full_b && ui.cue_play_button.text() == "播放", probe_playback_state())
+                    cue_toggle_playback()
+                    probe_assert("playback.play_after_end_restarts", cue_playing && cue_play_count == 1 && cue_ws_text() == "B甲：另一路线。", probe_playback_state())
+                    cue_pause_playback()
+                    probe_assert("playback.no_host_calls", probe_requests.len() == 0 && probe_unexpected == 0, {calls: probe_requests.len()})
+                    probe_finish()
+                })
+            })
+        })
+    })
+}
+
+fn probe_storage_state(){
+    {routes: cue_routes.len(), mode: cue_read_mode, slot: cue_take_read,
+     draft: ui.cue_draft.text(), take_a: cue_take_a, take_b: cue_take_b,
+     pages: cue_ws_pages, text: cue_ws_text(), status: ui.cue_status.text()}
+}
+fn probe_storage(){
+    probe_reset("storage_real_jail")
+    cue_show_dialogue()
+    let fresh = !fs.exists("draft.txt") && !fs.exists("take-a.txt") && !fs.exists("take-b.txt")
+    probe_assert("storage.fresh_jail_required", fresh, {fs: "real card-host jail API; no fs shadow or mock"})
+    if !fresh { probe_finish() return }
+    cue_refresh_takes()
+    ui.cue_draft.set_text("保留编辑框")
+    cue_restore_draft()
+    cue_restore_take(0)
+    cue_restore_take(1)
+    cue_read_take(0)
+    cue_read_take(1)
+    probe_assert("storage.empty_restore_preserves_editor", ui.cue_draft.text() == "保留编辑框" && cue_take_a == "" && cue_take_b == "" && cue_routes.len() == 0, probe_storage_state())
+    ui.cue_draft.set_text(probe_fixtures.storage.blank)
+    cue_keep_draft()
+    cue_keep_take(0)
+    cue_keep_take(1)
+    probe_assert("storage.blank_never_creates_files", !fs.exists("draft.txt") && !fs.exists("take-a.txt") && !fs.exists("take-b.txt") && ui.cue_draft.text() == probe_fixtures.storage.blank, probe_storage_state())
+    ui.cue_draft.set_text(probe_fixtures.storage.draft)
+    cue_keep_draft()
+    probe_assert("storage.draft_exact_save_read", fs.exists("draft.txt") && fs.read("draft.txt") == probe_fixtures.storage.draft && ui.cue_status.text().search("回读确认") >= 0, probe_storage_state())
+    ui.cue_draft.set_text("临时未保存")
+    cue_restore_draft()
+    probe_assert("storage.draft_exact_restore", ui.cue_draft.text() == probe_fixtures.storage.draft, probe_storage_state())
+    ui.cue_draft.set_text(probe_fixtures.storage.take_a)
+    cue_keep_take(0)
+    probe_assert("storage.take_a_no_routes_exact_save", cue_routes.len() == 0 && cue_read_mode == 2 && cue_take_read == 0 && cue_take_a == probe_fixtures.storage.take_a && fs.exists("take-a.txt") && fs.read("take-a.txt") == probe_fixtures.storage.take_a && cue_ws_text() == probe_fixtures.storage.take_a && probe_join(cue_ws_pages, "") == probe_fixtures.storage.take_a, probe_storage_state())
+    ui.cue_draft.set_text(probe_fixtures.storage.take_b)
+    cue_keep_take(1)
+    probe_assert("storage.take_b_no_routes_exact_save", cue_routes.len() == 0 && cue_read_mode == 2 && cue_take_read == 1 && cue_take_b == probe_fixtures.storage.take_b && fs.exists("take-b.txt") && fs.read("take-b.txt") == probe_fixtures.storage.take_b && cue_ws_text() == probe_fixtures.storage.take_b && probe_join(cue_ws_pages, "") == probe_fixtures.storage.take_b && fs.read("take-a.txt") == probe_fixtures.storage.take_a, probe_storage_state())
+    // Clear only in-memory state, then use production refresh/read/restore.
+    // This is NOT a process restart or a Rinx account-isolation test.
+    cue_invalidate()
+    cue_take_a = ""
+    cue_take_b = ""
+    cue_refresh_takes()
+    probe_assert("storage.refresh_from_real_files", cue_take_a == probe_fixtures.storage.take_a && cue_take_b == probe_fixtures.storage.take_b && cue_routes.len() == 0, probe_storage_state())
+    cue_read_take(0)
+    let read_a = cue_read_mode == 2 && cue_take_read == 0 && cue_ws_text() == probe_fixtures.storage.take_a && probe_join(cue_ws_pages, "") == probe_fixtures.storage.take_a
+    let pages = cue_ws_pages.len()
+    for i in pages { cue_page_next() }
+    read_a = read_a && cue_ws_page == pages - 1
+    for i in pages { cue_page_prev() }
+    probe_assert("storage.take_a_read_and_page_bounds", read_a && cue_ws_page == 0 && cue_routes.len() == 0, probe_storage_state())
+    cue_read_take(1)
+    probe_assert("storage.take_b_read_exact", cue_read_mode == 2 && cue_take_read == 1 && cue_ws_page == 0 && cue_ws_text() == probe_fixtures.storage.take_b && probe_join(cue_ws_pages, "") == probe_fixtures.storage.take_b && cue_routes.len() == 0, probe_storage_state())
+    ui.cue_draft.set_text("临时未保存")
+    cue_restore_take(0)
+    probe_assert("storage.take_a_restore_exact", ui.cue_draft.text() == probe_fixtures.storage.take_a, probe_storage_state())
+    cue_restore_take(1)
+    probe_assert("storage.take_b_restore_exact", ui.cue_draft.text() == probe_fixtures.storage.take_b, probe_storage_state())
+    ui.cue_draft.set_text(probe_fixtures.storage.blank)
+    cue_keep_draft()
+    cue_keep_take(0)
+    cue_keep_take(1)
+    probe_assert("storage.blank_never_overwrites_files", fs.read("draft.txt") == probe_fixtures.storage.draft && fs.read("take-a.txt") == probe_fixtures.storage.take_a && fs.read("take-b.txt") == probe_fixtures.storage.take_b && ui.cue_draft.text() == probe_fixtures.storage.blank, probe_storage_state())
+    probe_assert("storage.no_host_calls", probe_requests.len() == 0 && probe_unexpected == 0, {calls: probe_requests.len(), fs: "real jail files retained for independent Python byte comparison"})
+    probe_finish()
+}
+
+fn probe_mark_blocks(blocks){
+    let marked = []
+    let markers = cue_protocol_markers()
+    for i in blocks.len() { marked.push(markers[i] + "\n" + blocks[i]) }
+    marked
+}
+fn probe_grounding(){
+    probe_reset("grounding_bounded_checks")
+    cue_sources = probe_fixtures.grounding.sources
+    ui.cue_trial.set_text(probe_fixtures.grounding.trial)
+    for i in probe_fixtures.grounding.excerpts.len() {
+        let fixture = probe_fixtures.grounding.excerpts[i]
+        let actual = cue_source_excerpt(fixture.selection)
+        probe_assert("grounding." + fixture.id, actual == fixture.expected, {selection: fixture.selection, actual: actual, expected: fixture.expected})
+    }
+    for i in probe_fixtures.grounding.tokens.len() {
+        let fixture = probe_fixtures.grounding.tokens[i]
+        let actual = cue_numeric_tokens(fixture.text)
+        probe_assert("grounding." + fixture.id, probe_equal_strings(actual, fixture.expected), {text: fixture.text, actual: actual, expected: fixture.expected})
+    }
+    for i in probe_fixtures.grounding.numbers.len() {
+        let fixture = probe_fixtures.grounding.numbers[i]
+        let actual = cue_numbers_grounded(fixture.text)
+        probe_assert("grounding." + fixture.id, actual == fixture.expected, {text: fixture.text, actual: actual, expected: fixture.expected, semantic_verification: false})
+    }
+    for i in probe_fixtures.grounding.references.len() {
+        let fixture = probe_fixtures.grounding.references[i]
+        let actual = cue_references_valid(fixture.text)
+        probe_assert("grounding." + fixture.id, actual == fixture.expected, {text: fixture.text, actual: actual, expected: fixture.expected, semantic_verification: false})
+    }
+    let blocks = probe_mark_blocks(probe_fixtures.grounding.protocol_blocks)
+    probe_assert("grounding.protocol_valid_fixture", cue_validate_protocol(blocks), {blocks: blocks})
+    blocks[0] = "【摘要】\n#1\n#1"
+    probe_assert("grounding.protocol_duplicate_excerpt_rejected", !cue_validate_protocol(blocks), {summary: blocks[0]})
+    blocks[0] = "【摘要】\n#99"
+    probe_assert("grounding.protocol_wrong_excerpt_rejected", !cue_validate_protocol(blocks), {summary: blocks[0]})
+    blocks[0] = "【摘要】\n#2 大家已同意"
+    probe_assert("grounding.protocol_reworded_excerpt_rejected", !cue_validate_protocol(blocks), {summary: blocks[0]})
+    blocks = probe_mark_blocks(probe_fixtures.grounding.protocol_blocks)
+    blocks[2] = "【A建议】\n青旅80元，可以吗？"
+    probe_assert("grounding.protocol_invented_number_rejected", !cue_validate_protocol(blocks), {suggestion: blocks[2]})
+    blocks = probe_mark_blocks(probe_fixtures.grounding.protocol_blocks)
+    blocks[1] = "【A对白】\n依据#0。"
+    probe_assert("grounding.protocol_invalid_reference_rejected", !cue_validate_protocol(blocks), {body: blocks[1]})
+    // A deliberately false-sounding but digit-free hypothetical passes the
+    // bounded production checks. This records a limitation, not factual truth.
+    blocks = probe_mark_blocks(probe_fixtures.grounding.protocol_blocks)
+    blocks[1] = "【A对白】\n大家已经同意，已经替全员订票。依据#2。"
+    probe_assert("grounding.protocol_does_not_verify_semantics", cue_validate_protocol(blocks), {body: blocks[1], semantic_verification: false})
+    cue_sources = []
+    probe_assert("grounding.empty_source_bounds", cue_source_excerpt("#1") == "" && !cue_references_valid("#1") && cue_references_valid("没有引用") && cue_numbers_grounded("77") && !cue_numbers_grounded("500"), {source_count: cue_sources.len(), trial_is_still_allowed: true})
+    probe_assert("grounding.no_host_calls", probe_requests.len() == 0 && probe_unexpected == 0, {calls: probe_requests.len()})
+    probe_finish()
+}
+
+fn probe_envelope(){
+    probe_begin("envelope_nil_data")
+    probe_assert("envelope.normal_open_started_turn", cue_busy && probe_count_service("octos.turn.start") == 1, probe_snapshot())
+    // This catch is harness-only: never fix or replace cue_accept_reply.
+    // The robustness assertion is intentionally NOT an expected-failure bypass.
+    let threw = false
+    let returned = try {
+        probe_deliver(1, {is_ok: true, data: nil, error: ""})
+        true
+    } catch {
+        threw = true
+        false
+    }
+    let state_after = probe_snapshot()
+    let handled = !cue_busy || probe_count_service("octos.turn.start") == 2
+    probe_assert("envelope.nil_data_handled_without_runtime_error", returned && !threw && handled,
+        {threw: threw, returned: returned, handled: handled, state: state_after, boundary: "malicious is_ok:true/data:nil; exception or silently stranded request is a real failed assertion"})
+    probe_assert("envelope.nil_data_never_publishes_routes", cue_routes.len() == 0 && cue_summary == "", state_after)
+    probe_assert("envelope.host_allowlist", probe_unexpected == 0, {unexpected: probe_unexpected})
+    // Clean up the controlled pending request after recording the real result.
+    if cue_busy { cue_stop_wait() }
+    probe_finish()
+}
+
 fn probe_boot(){
     probe_started_at = time_now()
     probe_checkpoint(false)
@@ -305,6 +536,10 @@ fn probe_boot(){
     if probe_meta.suite == "pagination" { probe_pagination() return }
     if probe_meta.suite == "retry" { probe_retry() return }
     if probe_meta.suite == "deadline" { probe_deadline() return }
+    if probe_meta.suite == "playback" { probe_playback() return }
+    if probe_meta.suite == "storage" { probe_storage() return }
+    if probe_meta.suite == "grounding" { probe_grounding() return }
+    if probe_meta.suite == "envelope" { probe_envelope() return }
     probe_assert("harness.unknown_suite", false, {suite: probe_meta.suite})
     probe_finish()
 }

@@ -1,0 +1,12 @@
+Suite: retry | controlled injection, NOT natural model evidence
+Production SHA256: 54e25d567ca0c606bb9ba73198e7cfea20604bab6300213be9136e3e5a18ac17
+Runtime interval: 0.004s | collector monotonic wait: 0.000s
+PASS retry.first_malformed_second_valid
+PASS retry.duplicate_after_success_ignored
+PASS retry.both_malformed
+PASS retry.stop_during_second
+PASS retry.edit_during_second
+PASS retry.old_callback_new_request
+PASS retry.host_error_no_format_retry
+PASS retry.host_allowlist
+PASS: 8 assertions; source/provenance/assertion inventory verified

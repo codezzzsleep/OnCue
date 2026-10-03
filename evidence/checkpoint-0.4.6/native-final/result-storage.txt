@@ -1,0 +1,21 @@
+Real jail bytes: draft.txt | 92 bytes | SHA256 4bf1da45b4c2a5f5db2a532f1e10d438aa45dc8b29ef8d466fb05e2522be27ec
+Real jail bytes: take-a.txt | 77 bytes | SHA256 2855e3997808cd5049620e645aca4f2e467fa17d3263f62db9be155b81a153b6
+Real jail bytes: take-b.txt | 95 bytes | SHA256 7a24a74983409ccf7b7f12c22f853918f8074f96051b93735de0d9a798f8a3ba
+Suite: storage | controlled injection, NOT natural model evidence
+Production SHA256: 54e25d567ca0c606bb9ba73198e7cfea20604bab6300213be9136e3e5a18ac17
+Runtime interval: 0.003s | collector monotonic wait: 0.000s
+PASS storage.fresh_jail_required
+PASS storage.empty_restore_preserves_editor
+PASS storage.blank_never_creates_files
+PASS storage.draft_exact_save_read
+PASS storage.draft_exact_restore
+PASS storage.take_a_no_routes_exact_save
+PASS storage.take_b_no_routes_exact_save
+PASS storage.refresh_from_real_files
+PASS storage.take_a_read_and_page_bounds
+PASS storage.take_b_read_exact
+PASS storage.take_a_restore_exact
+PASS storage.take_b_restore_exact
+PASS storage.blank_never_overwrites_files
+PASS storage.no_host_calls
+PASS: 14 assertions; source/provenance/assertion inventory verified

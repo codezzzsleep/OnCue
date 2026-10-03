@@ -8,6 +8,7 @@ from __future__ import annotations
 import copy
 import json
 from pathlib import Path
+import re
 import sys
 import unittest
 
@@ -38,6 +39,7 @@ class InfrastructureTests(unittest.TestCase):
                 for name in before:
                     self.assertEqual(before[name]["source"], after[name]["source"])
                 self.assertIn("start_timeout(90.0", after["cue_deadline"]["source"])
+                self.assertIn("start_timeout(1.4", after["cue_play_pulse"]["source"])
                 self.assertEqual(provenance["source_sha256"], generate_probe.digest(self.source.encode("utf-8")))
                 self.assertFalse(provenance["natural_model_test"])
                 self.assertEqual(generated.count("let host = {request:"), 1)
@@ -103,6 +105,80 @@ class InfrastructureTests(unittest.TestCase):
         changes.append(changed)
         for changed in changes:
             self.assertTrue(check_result.validate_result(changed, provenance))
+
+    def test_all_new_assertion_ids_have_one_oracle(self):
+        # IDs are reviewed fixture literals, not generated from the harness at run time.
+        self.assertEqual(set(self.fixtures["assertion_ids"]), set(generate_probe.SUITES))
+        literal = re.findall(r'probe_assert\("((?:playback|storage|grounding|envelope)\.[^"\n]+)"', self.harness)
+        self.assertEqual(len(literal), len(set(literal)))
+        expected_grounding = {"grounding." + case["id"]
+                              for group in ("excerpts", "tokens", "numbers", "references")
+                              for case in self.fixtures["grounding"][group]}
+        for suite in ("playback", "storage", "grounding", "envelope"):
+            defined = {name for name in literal if name.startswith(suite + ".")}
+            if suite == "grounding":
+                self.assertFalse(defined & expected_grounding)
+                defined |= expected_grounding
+            self.assertEqual(defined, set(self.fixtures["assertion_ids"][suite]))
+            self.assertIn(f'if probe_meta.suite == "{suite}" {{ probe_{suite}() return }}', self.harness)
+
+    def test_production_api_drift_and_shadowing_refused(self):
+        for name in ("cue_source_excerpt", "cue_keep_take", "cue_play_pulse"):
+            with self.subTest(function=name), self.assertRaises(ValueError):
+                generate_probe.build_probe(self.source.replace("fn " + name + "(", "fn renamed_" + name + "("),
+                                           self.fixture_bytes, self.harness, "storage")
+        for name in ("fs", "start_timeout", "time_now", "ui"):
+            with self.subTest(shadow=name), self.assertRaises(ValueError):
+                generate_probe.build_probe(self.source, self.fixture_bytes,
+                                           self.harness + "\nlet " + name + " = {}\n", "storage")
+        with self.assertRaises(ValueError):
+            generate_probe.build_probe(self.source, self.fixture_bytes, self.harness, "unknown")
+
+    def test_storage_literal_byte_checker(self):
+        _, provenance = generate_probe.build_probe(self.source, self.fixture_bytes, self.harness, "storage")
+        # Synthetic bytes exist ONLY in memory; this is not a successful jail run.
+        files = {name: self.fixtures["storage"][key].encode("utf-8")
+                 for name, key in generate_probe.STORAGE_FIXTURES.items()}
+        self.assertEqual(check_result.validate_storage_bytes(files, provenance), [])
+        for name in files:
+            for mutate in (lambda data: data.strip(), lambda data: data + b"x"):
+                changed = dict(files)
+                changed[name] = mutate(changed[name])
+                self.assertTrue(check_result.validate_storage_bytes(changed, provenance))
+            changed = dict(files)
+            del changed[name]
+            self.assertTrue(check_result.validate_storage_bytes(changed, provenance))
+        self.assertTrue(check_result.validate_storage_bytes(files, {}))
+
+    def test_envelope_failure_is_not_xfail(self):
+        _, provenance = generate_probe.build_probe(self.source, self.fixture_bytes, self.harness, "envelope")
+        sample = {"schema": 1, "complete": True, "meta": copy.deepcopy(provenance),
+                  "passed": True, "unexpected_host_requests": 0,
+                  "started_at": 1000, "observed_at": 1001,
+                  "assertions": [{"id": name, "passed": True, "detail": {"synthetic_checker_unit_input": True}}
+                                 for name in provenance["expected_assertion_ids"]]}
+        self.assertEqual(check_result.validate_result(sample, provenance), [])
+        for entry in sample["assertions"]:
+            if entry["id"] == "envelope.nil_data_handled_without_runtime_error":
+                entry["passed"] = False
+                entry["detail"] = {"threw": True, "synthetic_checker_unit_input": True}
+        errors = check_result.validate_result(sample, provenance)
+        self.assertTrue(any("FAIL envelope.nil_data_handled_without_runtime_error" in error for error in errors))
+
+    def test_new_metadata_and_playback_window_checked(self):
+        _, provenance = generate_probe.build_probe(self.source, self.fixture_bytes, self.harness, "playback")
+        sample = {"schema": 1, "complete": True, "meta": copy.deepcopy(provenance),
+                  "passed": True, "unexpected_host_requests": 0,
+                  "started_at": 1000, "observed_at": 1007,
+                  "assertions": [{"id": name, "passed": True, "detail": {"synthetic_checker_unit_input": True}}
+                                 for name in provenance["expected_assertion_ids"]]}
+        self.assertEqual(check_result.validate_result(sample, provenance), [])
+        for key in ("real_playback_interval_seconds", "filesystem", "semantic_fact_verification", "storage_file_sha256"):
+            changed = copy.deepcopy(sample)
+            changed["meta"][key] = "incorrect"
+            self.assertTrue(check_result.validate_result(changed, provenance))
+        sample["observed_at"] = 1001
+        self.assertTrue(check_result.validate_result(sample, provenance))
 
     def test_no_native_host_forwarding(self):
         self.assertNotIn("mod.host", self.harness)

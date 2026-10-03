@@ -1,0 +1,8 @@
+Suite: envelope | controlled injection, NOT natural model evidence
+Production SHA256: 54e25d567ca0c606bb9ba73198e7cfea20604bab6300213be9136e3e5a18ac17
+Runtime interval: 0.001s | collector monotonic wait: 0.000s
+PASS envelope.normal_open_started_turn
+PASS envelope.nil_data_handled_without_runtime_error
+PASS envelope.nil_data_never_publishes_routes
+PASS envelope.host_allowlist
+PASS: 4 assertions; source/provenance/assertion inventory verified

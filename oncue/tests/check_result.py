@@ -22,7 +22,9 @@ def validate_result(result: dict, provenance: dict) -> list[str]:
     meta = result.get("meta", {})
     for key in ("suite", "source_sha256", "fixtures_sha256", "harness_sha256",
                 "expected_assertion_ids", "controlled_injection", "natural_model_test",
-                "production_functions_unchanged", "real_deadline_seconds"):
+                "production_functions_unchanged", "real_deadline_seconds",
+                "real_playback_interval_seconds", "filesystem",
+                "semantic_fact_verification", "storage_file_sha256"):
         if meta.get(key) != provenance.get(key):
             errors.append(f"Provenance mismatch: {key}")
     if meta.get("controlled_injection") is not True or meta.get("natural_model_test") is not False:
@@ -50,6 +52,22 @@ def validate_result(result: dict, provenance: dict) -> list[str]:
         errors.append("Invalid runtime timestamps")
     elif meta.get("suite") == "deadline" and observed - started < 92.5:
         errors.append("Deadline probe did not run for the full real-time observation window")
+    elif meta.get("suite") == "playback" and observed - started < 6.5:
+        errors.append("Playback probe did not run for the real-timer observation window")
+    return errors
+
+
+def validate_storage_bytes(files: dict[str, bytes], provenance: dict) -> list[str]:
+    """Compare literal fixture hashes, not a Python copy of production storage logic."""
+    expected = provenance.get("storage_file_sha256", {})
+    if set(expected) != {"draft.txt", "take-a.txt", "take-b.txt"}:
+        return ["Storage provenance must identify all three real jail files"]
+    errors = []
+    for name, expected_hash in expected.items():
+        if name not in files:
+            errors.append(f"Missing real jail file: {name}")
+        elif sha256(files[name]) != expected_hash:
+            errors.append(f"Real jail bytes differ from literal fixture: {name}")
     return errors
 
 
@@ -88,6 +106,18 @@ def collect(run_dir: Path, wait_seconds: float, current_source: Path | None) -> 
         print(f"Inspect {result_path} and {run_dir / 'app-data' / 'card-host.log'}", file=sys.stderr)
         return 2
     errors = validate_result(result, provenance)
+    if provenance["suite"] == "storage":
+        # Inspect actual host-created files independently of the Splash assertions.
+        files = {}
+        for name in ("draft.txt", "take-a.txt", "take-b.txt"):
+            path = result_path.parent / name
+            if path.is_symlink() or path.resolve().parent != result_path.parent:
+                errors.append(f"Storage path is not a direct real jail file: {name}")
+            elif path.is_file():
+                files[name] = path.read_bytes()
+        errors.extend(validate_storage_bytes(files, provenance))
+        for name, data in files.items():
+            print(f"Real jail bytes: {name} | {len(data)} bytes | SHA256 {sha256(data)}")
     print(f"Suite: {provenance['suite']} | controlled injection, NOT natural model evidence")
     print(f"Production SHA256: {provenance['source_sha256']}")
     print(f"Runtime interval: {result['observed_at'] - result['started_at']:.3f}s | collector monotonic wait: {elapsed:.3f}s")

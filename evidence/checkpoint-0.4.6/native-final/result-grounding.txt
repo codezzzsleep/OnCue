@@ -1,0 +1,53 @@
+Suite: grounding | controlled injection, NOT natural model evidence
+Production SHA256: 54e25d567ca0c606bb9ba73198e7cfea20604bab6300213be9136e3e5a18ac17
+Runtime interval: 0.003s | collector monotonic wait: 0.000s
+PASS grounding.excerpt_one_id_current_behavior
+PASS grounding.excerpt_selection_order
+PASS grounding.excerpt_whitespace_crlf
+PASS grounding.excerpt_four_ids
+PASS grounding.excerpt_duplicate_rejected
+PASS grounding.excerpt_zero_rejected
+PASS grounding.excerpt_out_of_range_rejected
+PASS grounding.excerpt_leading_zero_rejected
+PASS grounding.excerpt_negative_rejected
+PASS grounding.excerpt_rewording_rejected
+PASS grounding.excerpt_same_line_ids_rejected
+PASS grounding.excerpt_empty_rejected
+PASS grounding.excerpt_internal_blank_rejected
+PASS grounding.excerpt_five_ids_rejected
+PASS grounding.tokens_ascii_runs_only
+PASS grounding.tokens_keep_leading_zeros
+PASS grounding.numbers_source_allowed
+PASS grounding.numbers_invented_rejected
+PASS grounding.numbers_substring_rejected
+PASS grounding.numbers_trial_allowed_not_fact
+PASS grounding.numbers_source_id_allowed_not_fact
+PASS grounding.numbers_same_digits_not_semantics
+PASS grounding.numbers_leading_zero_rejected
+PASS grounding.numbers_decimal_parts_not_value
+PASS grounding.numbers_negative_sign_not_checked
+PASS grounding.numbers_fullwidth_outside_scope
+PASS grounding.numbers_chinese_outside_scope
+PASS grounding.numbers_no_digits_not_semantics
+PASS grounding.refs_valid_bounds
+PASS grounding.refs_duplicates_allowed
+PASS grounding.refs_no_hash_not_semantics
+PASS grounding.refs_zero_rejected
+PASS grounding.refs_out_of_range_rejected
+PASS grounding.refs_negative_rejected
+PASS grounding.refs_bare_hash_rejected
+PASS grounding.refs_fullwidth_rejected
+PASS grounding.refs_leading_zero_rejected
+PASS grounding.refs_suffix_not_checked
+PASS grounding.refs_decimal_suffix_not_checked
+PASS grounding.refs_double_hash_rejected
+PASS grounding.protocol_valid_fixture
+PASS grounding.protocol_duplicate_excerpt_rejected
+PASS grounding.protocol_wrong_excerpt_rejected
+PASS grounding.protocol_reworded_excerpt_rejected
+PASS grounding.protocol_invented_number_rejected
+PASS grounding.protocol_invalid_reference_rejected
+PASS grounding.protocol_does_not_verify_semantics
+PASS grounding.empty_source_bounds
+PASS grounding.no_host_calls
+PASS: 49 assertions; source/provenance/assertion inventory verified
