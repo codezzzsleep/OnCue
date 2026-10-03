@@ -1,6 +1,6 @@
 Suite: playback | controlled injection, NOT natural model evidence
 Production SHA256: 4b2fd02fb3e893dd15214a22f7ce173eed3d11c5cab1cbda4c72ef8038e472b5
-Runtime interval: 6.797s | collector monotonic wait: 4.810s
+Runtime interval: 6.798s | collector monotonic wait: 4.811s
 PASS playback.empty_route_controls
 PASS playback.select_starts_hidden
 PASS playback.invalid_selection_unchanged
