@@ -17,10 +17,8 @@
   <sub>同一应用在 <b>990×613</b>（宽屏）与 <b>412×892</b>（窄屏）两个视口下的排版</sub>
 </p>
 
-队伍 **OnCue** · 成员 **YCOROY** · 赛道 **OctoSense 即时消息 · Rinx**。
-
 参赛作品是 [`oncue/bundle/`](oncue/bundle/)：一个在 OctoSense / Rinx 宿主内运行的
-**OctoScript 小程序**，按 App Hub 流程准备发布；当前尚未官方收录。
+**OctoScript 小程序**。
 
 ## 一分钟怎么玩
 
@@ -42,7 +40,28 @@
 
 ## 在 Rinx 里运行
 
-开发复现用[未签名副本工具](<oncue/tools/prepare_dev_bundle.py>)生成独立副本（不直接导入仓库里的签名包）：在已登录的 Rinx 中打开 **Discover → Mini apps → Import an app**，填入副本路径与**你自己的测试房间**，Review 后 Run。
+装这个应用有两条途径。
+
+**途径一：App Hub（正式途径）**
+
+在 Rinx 里打开 **Discover → Mini apps**，进入 App Hub 应用库（Recent / My apps / Browse），找到 OnCue 后 **Add** 安装已审核版本，再点 **Open**。打开时 Rinx 会列出这个应用申请的六项服务和唯一允许的房间，确认后才为本次运行授权。这条路目前走不通：上架审核还在进行（[App Hub #57](https://github.com/OctoSense-org/OctoSense-App-Hub/issues/57)），装不到属正常。
+
+**途径二：本地导入（自测 / 评审复现途径）**
+
+适合现在就想跑一遍的人。Rinx 的开发者导入有两个前提，先说明再给步骤：
+
+- **不收带签名的包。** 仓库里的正式包带发布签名，而开发者导入按官方设计（ADR 0006/0008）故意拒绝签名包——防止本地文件夹冒充"已过商店审核"的应用。所以要先生成一份去掉签名的副本，内容与原包一致。
+- **房间必须是你自己的。** 应用只读导入时选定的那个房间的消息。我们的测试房间你不在其中，填了也读不到。
+
+步骤：
+
+1. 生成去签名副本（一条命令）：
+   `python3 oncue/tools/prepare_dev_bundle.py /tmp/my-oncue`
+2. Rinx 里打开 **Discover → Mini apps → Import an app**。
+3. 包路径填 `/tmp/my-oncue/bundle`，房间填**你自己的 Matrix 房间 ID**。
+4. **Review** 核对服务清单与房间 → **Run**。
+
+每次打开都要为当前账号和所选房间重新授权，关闭应用即撤销。
 
 <p align="center">
   <img src="evidence/screenshots/rinx-flow.png" width="100%"
@@ -53,7 +72,7 @@
   <sub>左：Developer 入口填入包路径与测试房间 · 右：Review 通过后在宿主内运行</sub>
 </p>
 
-当前版本已在 Rinx 外窗 **412×892** 与 **990×613** 下逐页读取真实三路线与摘录；实际应用嵌入区分别为 **376×727** 与 **954×448**，滚动可达、无裁切。
+当前版本已在 Rinx 外窗 **412×892** 与 **990×613** 下逐页读取真实三路线与摘录；实际应用嵌入区分别为 **376×727** 与 **954×448**。逐项验证记录见 [VERIFICATION.md](oncue/VERIFICATION.md)。
 
 ## 数据与边界
 
