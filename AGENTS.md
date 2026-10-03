@@ -2,27 +2,27 @@
 
 > **作用**：把赛事要求、官方流程、环境事实、当前进度**固化在仓库里**，避免上下文变长或换 agent 接手时反复返工。
 > **每次开工先读本文件；每次状态变化后更新第 8/9 节。**
-> 依据：用户转述的最新官方群通知，以及 6 个相关仓库的**本地文件原文与针对性源码核对**。
-> 仓库：`hackathon-agenticapp26`、`OctoScript-App-Design-Flow`、`OctoSense-App-Hub`、
-> `OctoSense`、`Octoscript`、`Rinx`。**不声称逐字通读了全部仓库源码。**
-> 2026-10-02 晚核对发现其中 5 个原为浅克隆，现已直连 Git 补全历史并同步；
-> 阅读范围、精确提交、冲突与检查结果见[最新通知核对记录](<evidence/review/OFFICIAL-NOTICE-2026-10-02.md>)。
+> ## 📌 组委会强调的官方资料（每次开工先看，均已核实可达）
+>
+> **初赛交三样，截止 2026-10-06 23:59**：自己的代码仓库 + App Hub 提交 + 自己的 app 录屏。
+> 不符合要求的当弃赛处理；张老师原话："不符合这个要求的，当弃赛处理了啊"、"连我发的资料都不看"。
+>
+> | 资料 | 链接 |
+> | --- | --- |
+> | **OctoSense 应用开发到发布（app flow）** | <https://github.com/OctoSense-org/OctoScript-App-Design-Flow/blob/main/README.zh-CN.md> |
+> | **Rinx 赛道参考文档（Matrix 注册与使用说明）** | <https://github.com/gosimfoundation/hackathon-agenticapp26/blob/main/docs/rinx-guide.md> |
+> | **App Hub 发布契约** | <https://github.com/OctoSense-org/OctoSense-App-Hub/blob/main/docs/PUBLISHING.md> |
+> | **第一个 Hub 应用演练** | <https://github.com/OctoSense-org/OctoSense-App-Hub/blob/main/docs/FIRST-APP.md> |
+> | **App Hub 提交指南（赛事侧）** | <https://github.com/gosimfoundation/hackathon-agenticapp26/blob/main/docs/app-hub-submission.md> |
+> | **Rinx 小程序基线** | <https://github.com/gosimfoundation/hackathon-agenticapp26/blob/main/docs/rinx-miniapps.md> |
+> | **黑客松官网** | <https://create.gosim.org/agenticapp26/> |
+>
+> 本地完整克隆在 `/root/hackthon/refs/`（六仓，非浅克隆）。**必须读仓库里的原文与源码，不许用网页摘要代替。**
+>
+> 形态判定：**包根目录有 `main.splash` 即 OctoScript script app**（`app-contract/src/entry.rs#SCRIPT_ENTRY`）。
+> 我们的参赛作品就是 `oncue/bundle/`；仓库内 `.py` 只是测试与原生驱动工具，不是作品。
 
-> **✅ 2026-10-02 晚：按最新官方通知执行**
-> 1. **初赛只做可在 OctoSense / Rinx 中运行、可经 App Hub 发布的 OctoScript 应用**。
->    Rinx 小程序同样基于 OctoScript；不转独立 Rust / 原生应用 / ROM，扩展留初赛后。
-> 2. **先基本功能 → 再 octos 运行时 Agent → 最后 UI**。必要的可读性/操作修复属于基本可用性，
->    不做无关美化或为凑“闭环”擅自增加发送。OnCue 维持**私人排练与草稿、不发送**的现有边界。
-> 3. **初赛延后两天：按原 10/4 23:59 推至 10/6 23:59（北京时间）**。
->    本次通知未确认后续评审/晋级节点如何调整；旧 10/6 20:00 晋级早于新截止，不能同时当新安排。
->    “10/5 前准备稳定候选”只是内部风险控制目标，**不是新增的官方截止**。
-> 4. “明天 OctoSense 更新”按本次通知日期指 **2026-10-03**；先拉源码、读差异、报告，**不自动重建或换装宿主**。
->    本次已同步到 OctoSense `b221f7b`；这是 10/2 已有提交，不能代称明日预告版本。
-> 5. **App Hub 发布不能省略**。开发态用未签名副本，最终发布按签名/校验/tag/issue/维护者审核流程；
->    “已开 issue”不等于“已上架”。首次提交的 unsigned 技术例外不作为本项目绕过已选签名流程的理由。
-> 6. **初赛门槛与复赛方向分开**：初赛为可运行最小原型、一次操作及可核对结果、失败或空态。
->    通用 Agentic/复赛强调完整任务自动化；“回写原会话”是消息场景方向，不是所有初赛作品强制发送条款。
-
+> 依据：用户转述的最新官方群通知，以及 6 个相关仓库的本地文件原文与针对性源码核对。
 ---
 
 ## 1. 项目概况

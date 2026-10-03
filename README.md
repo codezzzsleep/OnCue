@@ -2,6 +2,28 @@
 
 **先试着说，再决定要不要发。**
 
+> ## 📌 组委会强调的官方资料（逐一标记，均已核实可达）
+>
+> **初赛交三样，截止 2026-10-06 23:59**：① 自己的代码仓库 ② App Hub 提交 ③ 自己的 app 录屏。
+> 不符合要求的当弃赛处理。以下每份都逐字读过，不是只看了摘要。
+>
+> | 资料 | 链接 | 用它做什么 |
+> | --- | --- | --- |
+> | **OctoSense 应用开发到发布（app flow）** | <https://github.com/OctoSense-org/OctoScript-App-Design-Flow/blob/main/README.zh-CN.md> | **主入口**。从制作到发布的全部说明：快速上手、`tools/octo`、脚本 API、设计流程、发布 |
+> | **Rinx 赛道参考文档** | <https://github.com/gosimfoundation/hackathon-agenticapp26/blob/main/docs/rinx-guide.md> | 张老师点名"做 rinx 赛道参考这个文档"：Rinx 的 Matrix 注册与使用说明 |
+> | **App Hub 发布契约** | <https://github.com/OctoSense-org/OctoSense-App-Hub/blob/main/docs/PUBLISHING.md> | 应用包格式、准入检查、签名、提交与商店的完整规范 |
+> | **第一个 Hub 应用演练** | <https://github.com/OctoSense-org/OctoSense-App-Hub/blob/main/docs/FIRST-APP.md> | 从空仓库到过门禁的完整走法 |
+> | **App Hub 提交指南（赛事侧）** | <https://github.com/gosimfoundation/hackathon-agenticapp26/blob/main/docs/app-hub-submission.md> | 作品提交与运行验收：材料 6 项、按形态交付、验收六项 |
+> | **Rinx 小程序基线** | <https://github.com/gosimfoundation/hackathon-agenticapp26/blob/main/docs/rinx-miniapps.md> | Rinx 小程序的授权机制、选手起步 5 步、基线提交 |
+> | **黑客松官网** | <https://create.gosim.org/agenticapp26/> | 赛事规则、日程与报名 |
+>
+> **比赛登记入口（赛事仓库 issues）**：#5《请在这里提交每支队伍的参赛主题》✅ 已提交；
+> #13《请在这里提交每支队伍的初赛仓库地址》✅ 已提交（含 MiniMax 团队 ID）。
+>
+> **我们的形态**：OctoScript 脚本应用（判定依据是包根目录有 `main.splash`，见上面 app flow 的发布契约），
+> 跑在 Rinx 小程序宿主内，经 App Hub 发布。**参赛作品就是 [`oncue/bundle/`](oncue/bundle/)** ——
+> 仓库里其余的 `.py` 只是测试与原生驱动工具，不是作品，也不是网页或独立 Rust 应用。
+
 > **当前 main：0.4.7。** 助手不再撰写事实摘要，只选原消息编号，应用取回原文逐字展示并拒绝改写；真实 Rinx 主机两个外窗尺寸下的阅读、播放、草稿恢复，以及 138 项真实 OctoScript 受控测试均已通过。实现边界与未覆盖项见[验证摘要](oncue/VERIFICATION.md)。
 
 把一句还没发出去的话放进私人排练场，看三个不同的下一幕：
