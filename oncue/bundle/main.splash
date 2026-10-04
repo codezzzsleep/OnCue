@@ -22,7 +22,7 @@ let cue_msg_index = 0
 let cue_msg_page = 0
 let cue_ws_page = 0
 let cue_page_cols = 32
-let cue_page_rows = 3
+let cue_page_rows = 6
 let cue_msg_rows = 3
 let cue_msg_pages = [""]
 let cue_ws_pages = [""]
@@ -1075,7 +1075,7 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 4 new_batch: t
                     if shown > total { shown = total }
                     Label{text: "第 " + shown + " 页 / 共 " + total + " 页" width: Fill draw_text.color: cue_muted draw_text.text_style.font_size: 11}
                 }}
-                RoundedView{width: Fill height: Fit min_height: 70 flow: Down padding: 6 new_batch: true draw_bg.color: #ffffff
+                RoundedView{width: Fill height: Fit min_height: 130 flow: Down padding: 6 new_batch: true draw_bg.color: #ffffff
                     readout := View{width: Fill height: Fit flow: Down spacing: 4 on_render: || {
                         let idx = cue_ws_page
                         if idx >= cue_ws_pages.len() { idx = 0 }
