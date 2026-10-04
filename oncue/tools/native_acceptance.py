@@ -348,13 +348,13 @@ class Recorder:
         return {"rect": boxes[0], "text": "\n".join(r.get("t", "") for r in labels)}
 
     def collect_pages(self, name, all_screens=True, *, capture=True):
-        self.b.app_scroll(5000)
+        self.b.reveal(id="readout")
         current, total = self.result_index()
         for _ in range(current - 1):
             self.click_visible("上一页")
         result = []
         for i in range(total):
-            self.b.app_scroll(5000)
+            self.b.reveal(id="readout")
             require(self.result_index() == (i + 1, total), "Page did not advance or total changed")
             page = self.reader()
             result.append({"page": i + 1, **page})
@@ -366,7 +366,7 @@ class Recorder:
         return "".join(page["text"] for page in result)
 
     def playback_observation(self):
-        self.b.app_scroll(5000)
+        self.b.reveal(id="readout")
         return {"status": self.status(), "page": self.result_index(), "reader_text": self.reader()["text"]}
 
     def paused_progress(self):
