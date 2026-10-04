@@ -16,9 +16,9 @@
 
 ## 包检查
 
-已对当前内容运行 `hub stamp`。与当前包资源一致、只移除签名的开发副本通过 `hub check --allow-unsigned`。
+发布包已签名，`hub check oncue/bundle --publisher-key oncue.dev=50578fd7e0d8ac51a1e9e590835427ce8e71f46dba491860c75ae4e7c8c78042` 通过。
 
-发布包保留的旧签名不对应当前内容，签名检查尚未通过；本轮没有重新签名。
+只移除签名的开发副本通过 `hub check --allow-unsigned`，用于 card-host 和 Rinx 的本地导入。
 
 ## 逻辑测试
 

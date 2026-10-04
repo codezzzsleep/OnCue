@@ -65,7 +65,7 @@ python3 oncue/tools/prepare_dev_bundle.py "${DEV_ROOT}/bundle" --hub "$OCTO_HUB"
 
 ## 验证
 
-- **包检查**：当前内容已重算摘要；移除签名的开发副本通过 `hub check --allow-unsigned`。发布包旧签名待更新，本轮没有重新签名。
+- **包检查**：发布包已签名，`hub check --publisher-key` 通过。
 - **逻辑测试**：8 套共 149 项断言。测试把 `main.splash` 的函数原样放进 card-host 的脚本虚拟机运行，宿主服务的返回值由测试脚本模拟。覆盖回答格式解析、重试、90 秒超时、播放计时、存储和来源检查。结果文件和复核命令见[测试说明](oncue/tests/README.md)。CI 只跑测试工具自身的 91 项单元测试，不包含这 149 项。
 - **实机**：2026-10-04 在 Rinx（OctoSense `6c4746f` + Rinx `c515e5f`，Linux aarch64）上，990×613 与 412×892 两尺寸各跑四种验收模式：990×613 四种全部通过；412×892 的 routes、draft、reopen 通过，playback 记为未判定（暂停后剩余行数不足，三次尝试均如此）。连续 10 次真实试映为 7 次首轮通过、2 次自动重试后通过、1 次失败。逐项结果见[验证记录](oncue/VERIFICATION.md)。
 
