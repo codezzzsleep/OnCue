@@ -257,13 +257,27 @@ fn probe_retry(){
     probe_deliver(1, probe_bad_reply())
     let retry_wait = cue_busy && probe_count_service("octos.turn.start") == 2
     let same_prompt = false
-    if probe_requests.len() >= 3 { same_prompt = probe_requests[1].payload.text == probe_requests[2].payload.text }
+    if probe_requests.len() >= 3 {
+        let first_prompt = probe_requests[1].payload.text
+        let second_prompt = probe_requests[2].payload.text
+        same_prompt = second_prompt.search(first_prompt) == 0 && second_prompt.search("没有通过检查") >= 0
+    }
     probe_deliver(2, probe_good_reply())
     probe_assert("retry.first_malformed_second_valid", retry_wait && same_prompt && !cue_busy && cue_revision == revision && probe_routes_match(),
         {state: probe_snapshot(), turn_calls: probe_count_service("octos.turn.start"), same_prompt: same_prompt})
     let before_duplicate = probe_snapshot().to_json()
     probe_deliver(2, probe_reply("LATE\n@@@\nA\n@@@\nB\n@@@\nC\n@@@\nD\n@@@\nE\n@@@\nF"))
     probe_assert("retry.duplicate_after_success_ignored", before_duplicate == probe_snapshot().to_json(), {state: probe_snapshot()})
+
+    probe_begin("grounded_retry_hint")
+    probe_deliver(1, probe_reply("【摘要】\n#1\n@@@\n【A对白】\n虚构回应甲：人均 80 元。\n虚构回应乙：待确认。\n依据：#1\n待确认：预算\n@@@\n【A建议】\n几点出发比较方便？\n@@@\n【B对白】\n虚构回应甲：看 #1 的时间。\n虚构回应乙：待确认。\n依据：#1\n待确认：时间\n@@@\n【B建议】\n当天回来吗？\n@@@\n【C对白】\n虚构回应甲：按预算 500 排一版。\n虚构回应乙：待确认。\n依据：#1\n待确认：行程\n@@@\n【C建议】\n先按 9 点碰头可以吗？"))
+    let grounded_hint = false
+    if probe_count_service("octos.turn.start") == 2 && probe_requests.len() >= 3 {
+        grounded_hint = probe_requests[2].payload.text.search("都没有的数字") >= 0
+    }
+    probe_deliver(2, probe_good_reply())
+    probe_assert("retry.grounded_retry_hint", grounded_hint && !cue_busy && probe_routes_match(),
+        {state: probe_snapshot(), turn_calls: probe_count_service("octos.turn.start"), grounded_hint: grounded_hint})
 
     probe_begin("both_malformed")
     probe_deliver(1, probe_bad_reply())

@@ -6,6 +6,7 @@ let cue_revision = 0
 let cue_expires_at = 0.0
 let cue_attempt = 0
 let cue_last_prompt = ""
+let cue_reject_reason = ""
 let cue_scene = "样例舞台 · 国庆搭子局"
 let cue_summary = ""
 let cue_take_a = ""
@@ -633,6 +634,7 @@ fn cue_has_commitment_claim(body){
     false
 }
 fn cue_validate_protocol(blocks){
+    cue_reject_reason = "没有按顺序写出完整的七节"
     if !cue_validate_blocks(blocks) { return false }
     let markers = cue_protocol_markers()
     for i in blocks.len() {
@@ -641,18 +643,23 @@ fn cue_validate_protocol(blocks){
         for j in markers.len() { if body.search(markers[j]) >= 0 { return false } }
     }
     let selected = blocks[0].strip_prefix(markers[0]).trim()
+    cue_reject_reason = "【摘要】一节只能写 1 到 4 个存在的消息编号，每行一个，例如 #2"
     if cue_source_excerpt(selected) == "" { return false }
     for i in 6 {
         let body = blocks[i + 1].strip_prefix(markers[i + 1]).trim()
-        if !cue_numbers_grounded(body) || !cue_references_valid(body) { return false }
+        cue_reject_reason = markers[i + 1] + " 里出现了群聊和台词里都没有的数字"
+        if !cue_numbers_grounded(body) { return false }
+        cue_reject_reason = markers[i + 1] + " 里引用了不存在的消息编号"
+        if !cue_references_valid(body) { return false }
+        cue_reject_reason = markers[i + 1] + " 里把没有确认的事写成了已经同意或已经完成"
         if cue_has_commitment_claim(body) { return false }
         if i == 1 || i == 3 || i == 5 {
+            cue_reject_reason = markers[i + 1] + " 必须是一行、150 字以内的问句"
             if body.to_chars().len() > 150 || body.search("\n") >= 0 { return false }
             if body.search("？") < 0 && body.search("?") < 0 { return false }
         }
     }
-    // Source excerpts are exact. These bounded checks reject invented numeric
-    // values and invalid references, but do NOT prove every hypothetical claim.
+    cue_reject_reason = ""
     true
 }
 
@@ -694,7 +701,8 @@ fn cue_accept_reply(reply, request_revision, attempt){
     }
     if attempt < 1 {
         cue_set_status("剧本结构或来源核对未通过，正在自动重试一次…")
-        cue_start_turn(cue_last_prompt, request_revision, attempt + 1)
+        let hint = "\n\n你上一次的回答没有通过检查：" + cue_reject_reason + "。请严格按上面的要求重新写出完整的七节。"
+        cue_start_turn(cue_last_prompt + hint, request_revision, attempt + 1)
         return
     }
     cue_set_busy(false)

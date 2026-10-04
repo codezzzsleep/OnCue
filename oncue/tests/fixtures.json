@@ -672,6 +672,7 @@
     ],
     "retry": [
       "retry.first_malformed_second_valid",
+      "retry.grounded_retry_hint",
       "retry.both_malformed",
       "retry.stop_during_second",
       "retry.edit_during_second",
