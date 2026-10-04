@@ -1,57 +1,78 @@
-# OnCue 真实 OctoScript 受控测试
+# 测试说明
 
-8 套共 146 项断言在真实 card-host OctoScript VM 中执行，宿主回调受控注入。历史运行与当前发布包源码哈希一致（`4b2fd02f…`），[原始 run 与逐条结果](<../../evidence/checkpoint-0.4.7-recovered/README.md>)已恢复，可用下方 checker 逐套只读复核。
+仓库里有三种测试。
 
-Python 只负责生成探针、字节校验与结果检查，不移植生产算法；探针内生产函数逐字节保留（65 个），90 秒与 1.4 秒定时器为真实计时。
+| 测试 | 测什么 | 怎么跑 | 数量 |
+| --- | --- | --- | --- |
+| 逻辑测试 | `main.splash` 里的函数 | card-host 的脚本虚拟机，本地运行 | 8 套 146 项 |
+| 工具单元测试 | 测试包生成器、结果检查器、实机验收脚本 | Python，CI 每次提交都跑 | 91 项 |
+| 实机验收 | 应用在 Rinx 里的完整流程 | 脚本驱动一个正在运行的 Rinx | 4 种模式 |
 
-## 套件与覆盖
+CI 只跑第二种，不运行应用的代码。
 
-| 套件 | 断言 | 覆盖 |
-| --- | --- | --- |
-| parser | 30 | 七节协议、包装/行末分隔、歧义混合拒绝、无分隔符标记切分 |
-| pagination | 15 | 字符守恒、组合字符/emoji/CRLF、长文本跨页 |
-| retry | 8 | 格式重试一次、停止/编辑/新请求隔离、服务错误不重试 |
-| deadline | 6 | 完整 90 秒期限（含 session 与重试），超时实测 90.0476 秒 |
-| playback | 18 | 1.4 秒定时器、暂停/续播/重播、切路线旧计时器隔离 |
-| storage | 14 | 真实 jail 写读、空白不覆盖、三份文件字节哈希 |
-| grounding | 51 | 原文摘录、数字/编号核查、承诺词门禁（明确不证明语义） |
-| envelope | 4 | `data:nil` 畸形回调不抛错、不发布结果 |
+## 逻辑测试
 
-## 离线基础设施自检
+`generate_probe.py` 把 `main.splash` 的 65 个函数原样复制进一个测试包，加上测试脚本 `probe_harness.splash` 和测试数据 `fixtures.json`。测试包在 card-host 里运行，宿主服务的返回值由测试脚本模拟。超时和播放用的是真实计时，deadline 一套要等 90 多秒。
 
-```sh
-PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s oncue/tests -p 'selftest_*.py' -v
-```
+各套的内容见[验证记录](../VERIFICATION.md)。最近一次的结果在 [evidence/logic-tests](../../evidence/logic-tests/README.md)。
 
-91 项（11 生成器/checker + 28 验收工具 + 51 helper），不连宿主。CI 跑同一套，不运行 VM 断言。
+### 重跑
 
-## 评审复跑（VM 断言）
-
-前置：card-host 二进制（App Hub `0f332112` 构建）、Python 3.9+、独立 X display（如 `:101`，与宿主分离）。从 `/root/hackthon` 操作：
+需要：按 OctoScript-App-Design-Flow 的 QUICKSTART 构建好 `hub` 和 `card-host`，`tools/octo doctor` 通过；Python 3.9 以上；一个 X display。
 
 ```bash
-WORK="$(mktemp -d /tmp/oncue-octoscript-probe.XXXXXX)"
+export OCTO=/path/to/OctoScript-App-Design-Flow/tools/octo
+WORK="$(mktemp -d)"
 for SUITE in parser pagination retry deadline playback storage grounding envelope; do
-  PYTHONDONTWRITEBYTECODE=1 python3 OnCue/oncue/tests/generate_probe.py --workdir "$WORK" --suite "$SUITE" || exit $?
+  python3 oncue/tests/generate_probe.py --workdir "$WORK" --suite "$SUITE" || exit $?
 done
-. /root/hackthon/refs/octo-env.sh
-: "${DISPLAY:?独立 display}"
 ```
 
-每次只跑一个 suite（串行，端口可复用；`envelope` 放最后）：
+一次跑一套，`envelope` 放最后：
 
 ```bash
 SUITE=parser; PORT=8197; RUN="$WORK/$SUITE"; WAIT=15
 [ "$SUITE" = deadline ] && WAIT=105
 [ "$SUITE" = playback ] && WAIT=25
-python3 /root/hackthon/refs/OctoScript-App-Design-Flow/tools/octo run \
-  "$RUN/bundle" --port "$PORT" --hidden --detach --timeout 20 --app-data "$RUN/app-data" \
-&& PYTHONDONTWRITEBYTECODE=1 python3 OnCue/oncue/tests/check_result.py \
-  --run-dir "$RUN" --wait-seconds "$WAIT" \
-  --current-source /root/hackthon/OnCue/oncue/bundle/main.splash
-TEST=$?
+python3 "$OCTO" run "$RUN/bundle" --port "$PORT" --hidden --detach --timeout 20 --app-data "$RUN/app-data" \
+&& python3 oncue/tests/check_result.py --run-dir "$RUN" --wait-seconds "$WAIT" \
+     --current-source oncue/bundle/main.splash
+echo "suite=$SUITE exit=$?"
 curl --fail --silent --show-error "http://127.0.0.1:$PORT/quit"
-echo "suite=$SUITE test_exit=$TEST"
 ```
 
-产物：`$WORK/<suite>/` 下 `bundle/`、`provenance.json`、生产快照、`app-data/oncue-probe-<suite>/probe-result.json`。`complete:true` 且全部断言 PASS 才算通过；storage 套 checker 额外逐字节复核三份真实落盘文件。源码改动后用新的 `WORK` 重新生成，`--current-source` 防止旧快照冒充新结果。
+每套输出 `PASS: N assertions` 才算通过。`--current-source` 用来确认结果对应的是当前源码。改了 `main.splash` 之后要用新的 `WORK` 目录重新生成。
+
+## 工具单元测试
+
+```sh
+python3 -m unittest discover -s oncue/tests -p 'selftest_*.py' -v
+```
+
+91 项：生成器和检查器 11 项，实机验收脚本 28 项，底层工具 52 项。不需要宿主和网络。
+
+## 实机验收
+
+`oncue/tools/native_acceptance.py` 驱动一个已经在运行的 Rinx：导入应用包、授权、按模式执行操作、读取界面文字核对、保存截图和记录。它会关闭当前打开的小程序，会调用一次助手，会覆盖草稿，所以每一类操作都要用开关显式允许。
+
+```sh
+python3 oncue/tools/native_acceptance.py \
+  --port 8771 --out /path/to/new-output-dir \
+  --bundle "$DEV_ROOT/bundle" --release-bundle oncue/bundle --hub "$OCTO_HUB" \
+  --account '@you:matrix.rinx.chat' --data-dir /path/to/rinx-data \
+  --room '!yourRoomId:matrix.rinx.chat' \
+  --host-binary /path/to/octosense \
+  --display :99 --xauthority /path/to/xauthority \
+  --mode routes --allow-import --allow-real-turn --trial '那我们中午出发、当天回来，先确认预算可以吗？'
+```
+
+| 模式 | 做什么 | 需要的开关 |
+| --- | --- | --- |
+| `routes` | 读取房间，试映一次，读完三种说法和相关原文 | `--allow-import --allow-real-turn --trial` |
+| `playback` | 同上，再检查播放、暂停、切换路线 | `--allow-import --allow-real-turn --trial` |
+| `draft` | 保存草稿 A、B 并读回来比对 | `--allow-import --allow-draft-write` |
+| `reopen` | 关闭后重新导入，检查草稿是否还在 | `--allow-import --allow-draft-write` |
+
+脚本靠界面上的状态文案判断成功和失败。改了 `main.splash` 里的文案，要同步改 `native_acceptance.py` 和 `selftest_native_acceptance.py`。
+
+`native_bridge.py`、`rinx_session.py`、`collect_native_reading.py` 是它用到的底层工具。`prepare_dev_bundle.py` 生成未签名副本，`stamp_bundle.py` 计算包摘要。

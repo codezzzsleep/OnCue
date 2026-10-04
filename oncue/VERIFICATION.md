@@ -1,53 +1,78 @@
-# 验证摘要 — OnCue 0.4.7
+# 验证记录
 
-## 版本与包
+版本 `TODO(作者)：最终版本号`，`oncue.dev` 签名，标签 `TODO(作者)`。
 
-- 版本 0.4.7，`oncue.dev` 签名（2026-10-04 重签）；`hub check --publisher-key` 通过。
-- manifest 的 `bundle_blake3` 是**全包目录摘要**：各文件的相对路径、长度与内容依次入哈希（不含 manifest.json），由 `hub stamp` 写入、每次 `hub check` 重算——不是单个 `main.splash` 的哈希；验证digest 用 `hub check` 或 `oncue/tools/stamp_bundle.py --check`。
-- 生产入口 SHA256 `4b2fd02fb3e893dd15214a22f7ce173eed3d11c5cab1cbda4c72ef8038e472b5`，65 个生产函数。
-- 钉定宿主：OctoSense `6c4746f` + Rinx `c515e5f` + octos `fe08d8e6`，宿主二进制 SHA256 `87ed4dccd14bac51222f40c38d4db086911790786b688a68a503002ada64ba25`。平台 Linux aarch64，X11 + 软件渲染；赛事服务器 `matrix.rinx.chat`，模型 MiniMax-M2.7。
+## 测试环境
 
-## 受控测试：146 项
+| 项 | 值 |
+| --- | --- |
+| OctoSense | `6c4746f` |
+| Rinx | `c515e5f`，官方提交，没有本地补丁 |
+| octos 内核 | `fe08d8e6` |
+| App Hub / card-host | `0f332112` |
+| 平台 | Linux aarch64，X11，软件渲染 |
+| Matrix 服务器 | `matrix.rinx.chat`（比赛服务器） |
+| 模型 | MiniMax-M2.7，由宿主配置 |
 
-8 套断言在真实 card-host OctoScript VM 中执行，宿主回调受控注入；生产函数逐字节保留，生成器校验哈希。源码与夹具哈希同当前发布包一致，[原始 run 与逐条结果](<../evidence/checkpoint-0.4.7-recovered/README.md>)可复核。
+## 包检查
 
-| 套件 | 断言 | 覆盖 |
+```sh
+hub check oncue/bundle --publisher-key oncue.dev=50578fd7e0d8ac51a1e9e590835427ce8e71f46dba491860c75ae4e7c8c78042
+```
+
+输出 `oncue-screening-room TODO(作者)：版本 — PASSED`。
+
+## 逻辑测试
+
+8 套共 146 项断言。测试把 `main.splash` 的 65 个函数原样放进测试包，在 card-host 的脚本虚拟机里运行。宿主服务的返回值由测试脚本模拟，不调用模型。
+
+| 套件 | 断言数 | 测什么 |
 | --- | --- | --- |
-| parser | 30 | 七节协议、包装与行末分隔、歧义混合拒绝、无分隔符标记切分 |
-| pagination | 15 | 字符守恒、组合字符/emoji/CRLF、长文本跨页 |
-| retry | 8 | 格式重试一次、停止/编辑/新请求隔离、服务错误不重试 |
-| deadline | 6 | 完整 90 秒期限（含 session 与重试），实测超时 90.0476 秒 |
-| playback | 18 | 1.4 秒定时器、暂停/续播/重播、切路线旧计时器隔离 |
-| storage | 14 | 真实 jail 写读、空白不覆盖、三份文件字节哈希 |
-| grounding | 51 | 原文摘录、数字/编号核查、承诺词门禁 |
-| envelope | 4 | `data:nil` 畸形回调不抛错、不发布结果 |
+| parser | 30 | 七段格式的解析，各种分隔写法，缺段、重复、乱序时拒绝 |
+| pagination | 15 | 长文本分页不丢字，不切断 emoji 和组合字符 |
+| retry | 8 | 格式不对时重试一次；停止、改台词、发新请求后，旧回答不生效 |
+| deadline | 6 | 90 秒超时，包含打开会话和重试的时间 |
+| playback | 18 | 逐句播放的计时，暂停、继续、重播，切换路线 |
+| storage | 14 | 草稿写入和读取，空白内容不覆盖 |
+| grounding | 51 | 相关原文的取出，编号、数字、固定用语的检查 |
+| envelope | 4 | 宿主返回的数据结构异常时不报错、不显示结果 |
 
-## 真实宿主验收
+结果文件和复核命令在 [evidence/logic-tests](../evidence/logic-tests/README.md)，重跑方法在[测试说明](tests/README.md)。
 
-钉定宿主上的原生输入驱动，逐页读取内容核对（非仅“按钮有响应”）。
+这些测试对应的 `main.splash` SHA-256：`4b2fd02fb3e893dd15214a22f7ce173eed3d11c5cab1cbda4c72ef8038e472b5`。改了 `main.splash` 就要重跑并更新这一行。
 
-| 项目 | 990×613 | 412×892 |
+## 实机检查
+
+用脚本在 Rinx 里模拟点击和输入，每一步读取界面上的文字来核对。最近一次：`TODO(作者)：日期和版本`。
+
+| 检查 | 990×613 | 412×892 |
 | --- | --- | --- |
-| 授权房间读取（12 条） | 通过 | 通过 |
-| 长消息分页 | 通过 | 通过 |
-| 真实助手回合（七节协议） | 通过 | 通过 |
-| 三路线逐页阅读 | 通过 | 通过 |
-| 播放/暂停/切路线隔离 | 通过 | 通过 |
-| 草稿 A/B 保存与独立回读 | 通过 | 通过 |
-| 关闭重开自动恢复 | 通过 | 通过 |
-| 无绑定房间拒绝 | 通过（另一账号 `Allowed room: None`） | — |
+| 读取授权房间的 12 条消息 | 通过 | 通过 |
+| 长消息翻页 | 通过 | 通过 |
+| 助手按七段格式返回三种说法 | 通过 | 通过 |
+| 三种说法和相关原文都能读完 | 通过 | 通过 |
+| 播放、暂停、切换路线 | 通过 | 通过 |
+| 草稿 A、B 保存后读取一致 | 通过 | 通过 |
+| 关闭后重新打开，草稿还在 | 通过 | 通过 |
 
-记录：`build/current/` 动作与截图；演示录屏见 [DEMO-0.4.7](<../evidence/submission/DEMO-0.4.7.md>)。
+记录在 `TODO(作者)：把本机 build/validation-2026-10-04/ 去掉账号目录和绝对路径后放进 evidence/host-checks/，这里写链接；不放就删掉这一行`。
 
-## 2026-10-04 复验
+## 授权和失败状态
 
-修复开发工具后，用本机钉定宿主对 0.4.7 开发副本重新执行四模式验收，全部通过：真实读房（12 条）、真实 MiniMax-M2.7 回合、三路线与摘要逐页读取、播放计时推进（A/B 两路线）、草稿 A/B 字节回读、Back 关闭重导入后草稿自动恢复。逐项动作、状态与截图在 `build/validation-2026-10-04/{routes,playback,draft,reopen}/`。
+| 检查 | 结果 | 测试版本 | 截图 |
+| --- | --- | --- | --- |
+| 打开时没有选房间，点「载入群聊」 | 宿主拒绝，状态行显示“没有读到群聊：this mini-app is not attached to a room” | 0.4.4 | [截图](../evidence/screenshots/rinx-5-room-denied.png) |
+| 用另一个账号打开同一个应用 | 授权面板显示 `Allowed room: None`，没有沿用第一个账号的房间授权 | 0.4.4 | [截图](../evidence/screenshots/recipient-2-own-consent.png) |
+| 另一个账号点「取 A」 | 显示“版本 A 还没有内容”，读不到第一个账号的草稿 | 0.4.4 | [截图](../evidence/screenshots/recipient-4-draft-isolated.png) |
+| 点 Back | 应用关闭，回到小程序列表，Rinx 继续运行 | 0.4.4 | [截图](../evidence/screenshots/rinx-2-back-closed.png) |
+| 关闭后重新导入 | 草稿还在 | 0.4.4 | [截图](../evidence/screenshots/rinx-4-draft-after-reopen.png) |
+| 在 card-host 里点「载入群聊」 | 状态行显示“没有读到群聊：no service answers "matrix" on this device” | 0.4.4 | [截图](../evidence/screenshots/bridge-1-error-state.png) |
 
-环境说明：宿主重启后复用钉定组合；octos 内核数据目录换用干净目录并恢复 `_main` profile（旧目录的宿主 token 状态与新实例不匹配，会导致 `peer_host_token_mismatch`）。
+`TODO(作者)`：这六项是在 0.4.4 上测的，截图是旧界面。用最终版本重测后替换截图，并把“测试版本”一列改掉。
 
 ## 未验证
 
-- 语义级事实核验（形式核查通过不代表内容真实）
-- macOS / Windows / 移动端
-- 接收者授权链路的完整展示（deny、租约到期）
-- App Hub 上架后的商店安装路径
+- 助手的回答是否符合事实。应用只检查编号、数字和几个固定用语。
+- macOS、Windows、移动端。
+- 用户在授权面板点拒绝、授权满一小时到期、回答进行中关闭应用。
+- 从 App Hub 商店安装。
