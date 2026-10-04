@@ -44,4 +44,4 @@
 1. 依赖 Rinx 宿主服务（`matrix.*` 仅 Rinx 提供；`octos.*` 由宿主或托管内核提供），card-host 两者皆无，须在 Rinx 复核。
 2. 已测试：没有选择房间时读取被拒绝；另一个账号打开时没有继承房间授权。未测试：用户点拒绝、授权到期。
 3. 数据范围：全部载入消息 sender/body 和你的台词进入宿主配置模型；草稿按账号+应用存储、不按房间；没有删除草稿的入口。
-4. 证据：146 项逻辑测试的结果在 [evidence/logic-tests](<../evidence/logic-tests/README.md>)，实机检查记录在[验证记录](<../oncue/VERIFICATION.md>)。包检查通过。
+4. 证据：149 项逻辑测试的结果在 [evidence/logic-tests](<../evidence/logic-tests/README.md>)，实机检查记录在[验证记录](<../oncue/VERIFICATION.md>)。包检查通过。
