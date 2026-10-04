@@ -936,17 +936,17 @@ let cue_muted = #x53675a
 let cue_green = #x136c47
 let CueButton = ButtonFlat{
     height: 28 padding: Inset{left: 8 right: 8}
-    draw_bg +: {border_radius: 7.0 color: #xe5eee7 color_hover: #xd7e7db color_down: #xc7dccd border_size: 0.0}
-    draw_text +: {color: cue_ink color_hover: cue_ink color_down: cue_ink text_style.font_size: 11}
+    draw_bg +: {border_radius: 7.0 color: #xe5eee7 color_hover: #xd7e7db color_down: #xc7dccd color_focus: #xe5eee7 border_size: 0.0}
+    draw_text +: {color: cue_ink color_hover: cue_ink color_down: cue_ink color_focus: cue_ink text_style.font_size: 11}
 }
 let CuePrimary = CueButton{
-    draw_bg +: {color: cue_green color_hover: cue_green color_down: #x0b5536}
-    draw_text +: {color: #xffffff color_hover: #xffffff color_down: #xffffff}
+    draw_bg +: {color: cue_green color_hover: cue_green color_down: #x0b5536 color_focus: cue_green}
+    draw_text +: {color: #xffffff color_hover: #ffffff color_down: #ffffff color_focus: #xffffff}
 }
 let CueLink = CueButton{
     padding: Inset{left: 6 right: 6}
-    draw_bg +: {color: #xffffff color_hover: #xe5eee7 color_down: #xd7e7db}
-    draw_text +: {color: cue_green color_hover: cue_green color_down: cue_green}
+    draw_bg +: {color: #xffffff color_hover: #xe5eee7 color_down: #xd7e7db color_focus: #ffffff}
+    draw_text +: {color: cue_green color_hover: cue_green color_down: cue_green color_focus: cue_green}
 }
 let CueText = P{
     width: Fill height: Fit draw_text.color: cue_ink
@@ -971,7 +971,7 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
                 CueCard{
                     View{width: Fill height: Fit flow: Right spacing: 8 align: Align{y: 0.5}
                         CueCap{text: "我想说"}
-                        cue_trial := TextInput{width: Fill height: 40 is_multiline: true empty_text: "写一句想接的话" on_change: |text| cue_edit_trial(text)
+                        cue_trial := TextInput{width: Fill height: 56 is_multiline: true empty_text: "写一句想接的话" on_change: |text| cue_edit_trial(text)
                             draw_bg +: {color: #xf5f7f3 color_hover: #xf5f7f3 color_focus: #xf5f7f3 color_empty: #xf5f7f3 border_radius: 7.0}
                             draw_text +: {color: cue_ink color_hover: cue_ink color_focus: cue_ink color_empty: cue_muted color_empty_hover: cue_muted text_style.font_size: 12}
                         }
@@ -1047,7 +1047,7 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
                         if idx >= cue_ws_pages.len() { idx = 0 }
                         if cue_read_mode == 0 {
                             if cue_routes.len() == 0 {
-                                CueText{text: "先写一句想接的话，点试映下一幕。再选 A / B / C，翻到最后一页看完整假设路线。"}
+                                CueText{text: "先写一句想接的话，点「试映下一幕」。再点 A、B、C，逐句看三种说法。"}
                             } else {
                                 CueText{text: cue_ws_pages[idx]}
                             }

@@ -9,7 +9,7 @@
   },
   "id": "oncue-probe-deadline",
   "integrity": {
-    "bundle_blake3": "5e14b0bc06b03886f5ee641f446f7df1b99c3fab4a6dc72dedc2096cd75965fe"
+    "bundle_blake3": "f40d11c155e634de1d1875e64dbbefb4b5fe05c43bee1117fa93751a61e59b6b"
   },
   "name": "OnCue controlled deadline probe",
   "network": {
@@ -19,5 +19,5 @@
   "storage": {
     "max_bytes": 4194304
   },
-  "version": "0.4.7"
+  "version": "0.4.8"
 }

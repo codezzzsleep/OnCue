@@ -1,8 +1,8 @@
 {
   "date": "2026-10-04",
-  "source_commit": "ba67007",
-  "bundle_version": "0.4.7",
-  "source_sha256": "a42e0216d1b81caccb486f57b7c60bec994f0e631da3c1f78a4d388c7cf89d58",
+  "package_version": "0.4.8",
+  "source_commit": "4b67d9e",
+  "source_sha256": "973f4764b2c5b6060577d49fedd6542e7cf50bd3d443be8662341cbe768ffcb9",
   "unit_tests": {
     "passed": 91,
     "total": 91
@@ -38,7 +38,7 @@
         892
       ],
       "passed": false,
-      "error": "Need at least two remaining lines to distinguish play from timer"
+      "error": "real rehearsal ended as failure: 助手的回答没通过检查，已丢弃。请再试一次。"
     },
     {
       "run": "412x892-playback-try3",
@@ -104,10 +104,10 @@
       "error": null
     }
   ],
-  "playback_note": "412x892 playback attempted 3 times; all stopped at Need at least two remaining lines because the assistant returned 3-line routes that run, so recorded as indeterminate, neither pass nor fail.",
-  "native_adapter": "412x892 used a private wrapper to choose the measured current frame as argparse default; no --size, no repository script or assertion changes beyond the three reveal() scroll fixes",
+  "playback_note": "412x892 playback: attempt 1 and 3 stopped at Need at least two remaining lines (paused at line 3 of 4, so fewer than two lines remained to distinguish timed playback), attempt 2 ended with the assistant reply rejected; recorded as indeterminate per rule",
+  "narrow_size": "passed via stock --size 412x892, no adapter",
   "rehearsals": {
-    "source_sha256": "a42e0216d1b81caccb486f57b7c60bec994f0e631da3c1f78a4d388c7cf89d58",
+    "source_sha256": "973f4764b2c5b6060577d49fedd6542e7cf50bd3d443be8662341cbe768ffcb9",
     "frame": [
       990,
       613
@@ -116,19 +116,15 @@
     "runs": [
       {
         "round": 1,
-        "result": "retry-pass",
-        "seconds": 38.623,
+        "result": "first-pass",
+        "seconds": 12.333,
         "events": [
           {
-            "seconds": 0.067,
+            "seconds": 0.072,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 28.308,
-            "text": "助手的回答没通过检查，正在自动重试一次…"
-          },
-          {
-            "seconds": 38.623,
+            "seconds": 12.333,
             "text": "三种说法已生成，点 A、B、C 查看。"
           }
         ]
@@ -136,14 +132,14 @@
       {
         "round": 2,
         "result": "first-pass",
-        "seconds": 12.538,
+        "seconds": 16.917,
         "events": [
           {
-            "seconds": 0.065,
+            "seconds": 0.068,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 12.538,
+            "seconds": 16.917,
             "text": "三种说法已生成，点 A、B、C 查看。"
           }
         ]
@@ -151,14 +147,14 @@
       {
         "round": 3,
         "result": "first-pass",
-        "seconds": 25.744,
+        "seconds": 15.684,
         "events": [
           {
-            "seconds": 0.054,
+            "seconds": 0.055,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 25.744,
+            "seconds": 15.684,
             "text": "三种说法已生成，点 A、B、C 查看。"
           }
         ]
@@ -166,14 +162,14 @@
       {
         "round": 4,
         "result": "first-pass",
-        "seconds": 20.626,
+        "seconds": 14.185,
         "events": [
           {
-            "seconds": 0.076,
+            "seconds": 0.054,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 20.626,
+            "seconds": 14.185,
             "text": "三种说法已生成，点 A、B、C 查看。"
           }
         ]
@@ -181,14 +177,14 @@
       {
         "round": 5,
         "result": "first-pass",
-        "seconds": 12.74,
+        "seconds": 12.43,
         "events": [
           {
-            "seconds": 0.059,
+            "seconds": 0.065,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 12.74,
+            "seconds": 12.43,
             "text": "三种说法已生成，点 A、B、C 查看。"
           }
         ]
@@ -196,33 +192,29 @@
       {
         "round": 6,
         "result": "first-pass",
-        "seconds": 12.425,
+        "seconds": 17.229,
         "events": [
           {
-            "seconds": 0.053,
+            "seconds": 0.051,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 12.425,
+            "seconds": 17.229,
             "text": "三种说法已生成，点 A、B、C 查看。"
           }
         ]
       },
       {
         "round": 7,
-        "result": "retry-pass",
-        "seconds": 27.385,
+        "result": "first-pass",
+        "seconds": 8.329,
         "events": [
           {
-            "seconds": 0.052,
+            "seconds": 0.059,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 17.704,
-            "text": "助手的回答没通过检查，正在自动重试一次…"
-          },
-          {
-            "seconds": 27.385,
+            "seconds": 8.329,
             "text": "三种说法已生成，点 A、B、C 查看。"
           }
         ]
@@ -230,14 +222,14 @@
       {
         "round": 8,
         "result": "first-pass",
-        "seconds": 17.697,
+        "seconds": 14.157,
         "events": [
           {
-            "seconds": 0.062,
+            "seconds": 0.065,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 17.697,
+            "seconds": 14.157,
             "text": "三种说法已生成，点 A、B、C 查看。"
           }
         ]
@@ -245,14 +237,14 @@
       {
         "round": 9,
         "result": "first-pass",
-        "seconds": 16.608,
+        "seconds": 9.86,
         "events": [
           {
-            "seconds": 0.066,
+            "seconds": 0.064,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 16.608,
+            "seconds": 9.86,
             "text": "三种说法已生成，点 A、B、C 查看。"
           }
         ]
@@ -260,20 +252,20 @@
       {
         "round": 10,
         "result": "first-pass",
-        "seconds": 8.872,
+        "seconds": 8.143,
         "events": [
           {
-            "seconds": 0.052,
+            "seconds": 0.058,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 8.872,
+            "seconds": 8.143,
             "text": "三种说法已生成，点 A、B、C 查看。"
           }
         ]
       }
     ]
   },
-  "auth_retests_previous_round": "no-room, Back, reopen, card-host missing service retested on 271e79d; cross-account rows remain 0.4.4 history",
+  "auth_retests": "no-room, Back, reopen, card-host missing service retested on 271e79d; cross-account rows remain 0.4.4 history",
   "cross_account_retested": false
 }
