@@ -3,12 +3,12 @@
   "notice": "Literal controlled fixtures, not natural model results. Pagination expectations are conservation/cluster assertions, not a Python implementation.",
   "canonical_blocks": [
     "#2\n#3",
-    "A1|假设回应甲。\nA1b|依据：#2，待确认。",
-    "A2|建议：中午之后？",
-    "B1|假设回应乙。\nB1b|依据：#3，新提议。",
-    "B2|建议：当天往返？",
-    "C1|假设回应丙。\nC1b|依据：#4，待核实。",
-    "C2|建议：来个半日小游戏？"
+    "Aa|假设回应甲。\nAb|依据：#2，待确认。",
+    "Ac|建议：中午之后？",
+    "Ba|假设回应乙。\nBb|依据：#3，新提议。",
+    "Bc|建议：当天往返？",
+    "Ca|假设回应丙。\nCb|依据：#4，待核实。",
+    "Cc|建议：来个半日小游戏？"
   ],
   "parser": [
     {
