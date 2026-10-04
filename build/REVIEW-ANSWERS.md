@@ -1,4 +1,4 @@
-# `hub scan` 七问回答 — oncue-screening-room TODO(作者)：最终版本号
+# `hub scan` 七问回答 — oncue-screening-room 0.4.8（v0.4.8）
 
 依据当前入口源码、manifest、listing 与 scan packet 核对。对应标签 `TODO(作者)：最终标签`。
 

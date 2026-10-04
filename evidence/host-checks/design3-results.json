@@ -1,8 +1,8 @@
 {
   "date": "2026-10-04",
   "package_version": "0.4.8",
-  "source_commit": "4b67d9e",
-  "source_sha256": "973f4764b2c5b6060577d49fedd6542e7cf50bd3d443be8662341cbe768ffcb9",
+  "source_commit": "e12d63c",
+  "source_sha256": "71c9fe59b92a12755d1810ba70e2278e7b092235c13efcdd9ce63bcab3961031",
   "unit_tests": {
     "passed": 91,
     "total": 91
@@ -38,7 +38,7 @@
         892
       ],
       "passed": false,
-      "error": "real rehearsal ended as failure: 助手的回答没通过检查，已丢弃。请再试一次。"
+      "error": "Need at least two remaining lines to distinguish play from timer"
     },
     {
       "run": "412x892-playback-try3",
@@ -104,10 +104,10 @@
       "error": null
     }
   ],
-  "playback_note": "412x892 playback: attempt 1 and 3 stopped at Need at least two remaining lines (paused at line 3 of 4, so fewer than two lines remained to distinguish timed playback), attempt 2 ended with the assistant reply rejected; recorded as indeterminate per rule",
-  "narrow_size": "passed via stock --size 412x892, no adapter",
+  "playback_note": "412x892 playback attempted 3 times; all stopped at Need at least two remaining lines (pause left fewer than two lines to distinguish timed playback); recorded as indeterminate per rule",
+  "narrow_size": "stock --size 412x892, no adapter",
   "rehearsals": {
-    "source_sha256": "973f4764b2c5b6060577d49fedd6542e7cf50bd3d443be8662341cbe768ffcb9",
+    "source_sha256": "71c9fe59b92a12755d1810ba70e2278e7b092235c13efcdd9ce63bcab3961031",
     "frame": [
       990,
       613
@@ -116,45 +116,57 @@
     "runs": [
       {
         "round": 1,
-        "result": "first-pass",
-        "seconds": 12.333,
+        "result": "failed",
+        "seconds": 41.318,
         "events": [
           {
-            "seconds": 0.072,
+            "seconds": 0.058,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 12.333,
-            "text": "三种说法已生成，点 A、B、C 查看。"
+            "seconds": 31.903,
+            "text": "助手的回答没通过检查，正在自动重试一次…"
+          },
+          {
+            "seconds": 41.318,
+            "text": "助手的回答没通过检查，已丢弃。请再试一次。"
           }
         ]
       },
       {
         "round": 2,
-        "result": "first-pass",
-        "seconds": 16.917,
+        "result": "retry-pass",
+        "seconds": 25.541,
         "events": [
           {
-            "seconds": 0.068,
+            "seconds": 0.057,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 16.917,
+            "seconds": 14.94,
+            "text": "助手的回答没通过检查，正在自动重试一次…"
+          },
+          {
+            "seconds": 25.541,
             "text": "三种说法已生成，点 A、B、C 查看。"
           }
         ]
       },
       {
         "round": 3,
-        "result": "first-pass",
-        "seconds": 15.684,
+        "result": "retry-pass",
+        "seconds": 22.799,
         "events": [
           {
-            "seconds": 0.055,
+            "seconds": 0.067,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 15.684,
+            "seconds": 15.064,
+            "text": "助手的回答没通过检查，正在自动重试一次…"
+          },
+          {
+            "seconds": 22.799,
             "text": "三种说法已生成，点 A、B、C 查看。"
           }
         ]
@@ -162,14 +174,14 @@
       {
         "round": 4,
         "result": "first-pass",
-        "seconds": 14.185,
+        "seconds": 34.921,
         "events": [
           {
-            "seconds": 0.054,
+            "seconds": 0.07,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 14.185,
+            "seconds": 34.921,
             "text": "三种说法已生成，点 A、B、C 查看。"
           }
         ]
@@ -177,14 +189,14 @@
       {
         "round": 5,
         "result": "first-pass",
-        "seconds": 12.43,
+        "seconds": 37.833,
         "events": [
           {
-            "seconds": 0.065,
+            "seconds": 0.089,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 12.43,
+            "seconds": 37.833,
             "text": "三种说法已生成，点 A、B、C 查看。"
           }
         ]
@@ -192,14 +204,14 @@
       {
         "round": 6,
         "result": "first-pass",
-        "seconds": 17.229,
+        "seconds": 37.075,
         "events": [
           {
-            "seconds": 0.051,
+            "seconds": 0.077,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 17.229,
+            "seconds": 37.075,
             "text": "三种说法已生成，点 A、B、C 查看。"
           }
         ]
@@ -207,14 +219,14 @@
       {
         "round": 7,
         "result": "first-pass",
-        "seconds": 8.329,
+        "seconds": 15.644,
         "events": [
           {
-            "seconds": 0.059,
+            "seconds": 0.051,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 8.329,
+            "seconds": 15.644,
             "text": "三种说法已生成，点 A、B、C 查看。"
           }
         ]
@@ -222,14 +234,14 @@
       {
         "round": 8,
         "result": "first-pass",
-        "seconds": 14.157,
+        "seconds": 37.025,
         "events": [
           {
-            "seconds": 0.065,
+            "seconds": 0.066,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 14.157,
+            "seconds": 37.025,
             "text": "三种说法已生成，点 A、B、C 查看。"
           }
         ]
@@ -237,14 +249,14 @@
       {
         "round": 9,
         "result": "first-pass",
-        "seconds": 9.86,
+        "seconds": 17.959,
         "events": [
           {
-            "seconds": 0.064,
+            "seconds": 0.052,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 9.86,
+            "seconds": 17.959,
             "text": "三种说法已生成，点 A、B、C 查看。"
           }
         ]
@@ -252,19 +264,33 @@
       {
         "round": 10,
         "result": "first-pass",
-        "seconds": 8.143,
+        "seconds": 15.93,
         "events": [
           {
-            "seconds": 0.058,
+            "seconds": 0.054,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 8.143,
+            "seconds": 15.93,
             "text": "三种说法已生成，点 A、B、C 查看。"
           }
         ]
       }
     ]
+  },
+  "rehearsal_summary": {
+    "first_pass": 7,
+    "retry_pass": 2,
+    "failed": 1,
+    "failed_note": "round 1: the assistant reply failed the app checks on both the first attempt and the automatic retry, so the app discarded it; no app fault observed"
+  },
+  "layout_measurements": {
+    "frame": "990x613",
+    "embedded_app": "954x448",
+    "draft_card": "[80,358,466,111] bottom 469",
+    "routes_card": "[552,243,466,381] bottom 624",
+    "app_scroll_bottom": 631,
+    "page": "第 1 页 / 共 1 页"
   },
   "auth_retests": "no-room, Back, reopen, card-host missing service retested on 271e79d; cross-account rows remain 0.4.4 history",
   "cross_account_retested": false
