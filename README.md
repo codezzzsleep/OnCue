@@ -7,7 +7,7 @@ OnCue 是一个运行在 Rinx 里的 OctoScript 小程序。在群里发言之�
 演示录屏：[2 分 TODO 秒](evidence/demo/oncue-demo.mp4)
 
 <p align="center">
-  <img src="evidence/screenshots/hero.png" width="100%"
+  <img src="evidence/screenshots/hero.png"
        alt="OnCue 在宽窗口和窄窗口下的界面">
 </p>
 <p align="center">
@@ -24,7 +24,7 @@ OnCue 是一个运行在 Rinx 里的 OctoScript 小程序。在群里发言之�
 4. 播放、暂停或逐句查看假设对白，把喜欢的建议放进草稿；改两种写法，分别存 A、存 B，再取回对照。
 
 <p align="center">
-  <img src="evidence/screenshots/app-row.png" width="62%"
+  <img src="evidence/screenshots/app-row.png"
        alt="左侧：打开样例并试映下一幕；右侧：逐句播放假设对白">
 </p>
 <p align="center">
