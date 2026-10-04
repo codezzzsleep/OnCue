@@ -1,25 +1,30 @@
 name: test-infrastructure
 
-# Scope note (honest): this workflow validates the TEST INFRASTRUCTURE ONLY
-# (generator extraction, checker, fixture/inventory consistency). The 146
-# runtime assertions execute inside the real card-host OctoScript VM and need
-# a built card-host binary + X display; they are archived under
-# evidence/ and re-run locally per oncue/tests/README.md. Do not read a green
-# run here as app-level coverage.
+# Offline only: generator/checker plus native-tool safety tests using mocks and
+# synthetic temporary files. No Matrix, model, running host, display or signing.
+# The 146 app-runtime assertions require card-host's OctoScript VM and a display;
+# they are a separate local run. A green workflow is not Rinx end-to-end coverage.
 
 on:
   push:
-    paths: ['oncue/tests/**', 'oncue/bundle/main.splash', '.github/workflows/**']
+    paths: ['oncue/tests/**', 'oncue/tools/**', 'oncue/bundle/**', '.github/workflows/**']
   pull_request:
-    paths: ['oncue/tests/**', 'oncue/bundle/main.splash']
+    paths: ['oncue/tests/**', 'oncue/tools/**', 'oncue/bundle/**', '.github/workflows/**']
 
 jobs:
   selftest:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.11']
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-      - name: Infrastructure self-test (no card-host required)
-        run: python3 oncue/tests/selftest_infrastructure.py
+          python-version: ${{ matrix.python-version }}
+      - name: Offline infrastructure and tool safety tests
+        run: python3 -m unittest discover -s oncue/tests -p 'selftest_*.py' -v
+      - name: Verify recorder guards under optimized Python
+        run: python3 -O oncue/tests/selftest_native_acceptance.py

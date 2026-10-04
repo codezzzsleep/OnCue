@@ -1,0 +1,23 @@
+{
+  "agent": null,
+  "capabilities": [
+    "storage"
+  ],
+  "compute": {
+    "instruction_budget": 8000000,
+    "memory_bytes": 33554432
+  },
+  "id": "oncue-probe-parser",
+  "integrity": {
+    "bundle_blake3": "5ad1bac0298c42e9f0981ecfcfda3ded189c7194600a85dd827308316765ef38"
+  },
+  "name": "OnCue controlled parser probe",
+  "network": {
+    "hosts": []
+  },
+  "schema": 1,
+  "storage": {
+    "max_bytes": 4194304
+  },
+  "version": "0.4.7"
+}

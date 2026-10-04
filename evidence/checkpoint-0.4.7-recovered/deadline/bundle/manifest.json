@@ -1,0 +1,23 @@
+{
+  "agent": null,
+  "capabilities": [
+    "storage"
+  ],
+  "compute": {
+    "instruction_budget": 8000000,
+    "memory_bytes": 33554432
+  },
+  "id": "oncue-probe-deadline",
+  "integrity": {
+    "bundle_blake3": "724301ead5fc0241fb8885a44ae4a7146c246c007771872a749241342e4ee80a"
+  },
+  "name": "OnCue controlled deadline probe",
+  "network": {
+    "hosts": []
+  },
+  "schema": 1,
+  "storage": {
+    "max_bytes": 4194304
+  },
+  "version": "0.4.7"
+}

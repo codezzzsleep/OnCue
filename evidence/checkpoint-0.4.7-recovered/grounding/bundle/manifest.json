@@ -1,0 +1,23 @@
+{
+  "agent": null,
+  "capabilities": [
+    "storage"
+  ],
+  "compute": {
+    "instruction_budget": 8000000,
+    "memory_bytes": 33554432
+  },
+  "id": "oncue-probe-grounding",
+  "integrity": {
+    "bundle_blake3": "96bb75c90cd7990c442e5df258e2be4115d59f4444afa6ddfefba30e09a4070a"
+  },
+  "name": "OnCue controlled grounding probe",
+  "network": {
+    "hosts": []
+  },
+  "schema": 1,
+  "storage": {
+    "max_bytes": 4194304
+  },
+  "version": "0.4.7"
+}

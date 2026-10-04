@@ -2,23 +2,17 @@
 
 **先试着说，再决定要不要发。**
 
-> **当前 main：0.4.7。** 助手不再撰写事实摘要，只选原消息编号，应用取回原文逐字展示并拒绝改写；真实 Rinx 主机两个外窗尺寸下的阅读、播放、草稿恢复，以及 138 项真实 OctoScript 受控测试均已通过。实现边界与未覆盖项见[验证摘要](oncue/VERIFICATION.md)。
-
-把一句还没发出去的话放进私人排练场，看三个不同的下一幕：
-**顺着这句 / 换个问法 / 换个玩法**。回看原消息，逐句播放匿名的假设接话，
-把喜欢的建议放进草稿，再对照两种写法。
+OnCue 是一个运行在 Rinx 里的 OctoScript 小程序：把还没发出去的一句话放进私人排练场，读取授权房间的消息作为线索，请设备助手生成三个不同方向的假设下一幕——顺着这句、换个问法、换个玩法。逐句播放查看，把喜欢的建议存成草稿 A/B 对照修改。**应用自身不发送任何消息。**
 
 <p align="center">
   <img src="evidence/screenshots/hero.png" width="100%"
        alt="OnCue 在 990×613 与 412×892 两个视口下的界面">
 </p>
-
 <p align="center">
   <sub>同一应用在 <b>990×613</b>（宽屏）与 <b>412×892</b>（窄屏）两个视口下的排版</sub>
 </p>
 
-参赛作品是 [`oncue/bundle/`](oncue/bundle/)：一个在 OctoSense / Rinx 宿主内运行的
-**OctoScript 小程序**。
+参赛作品是 [`oncue/bundle/`](oncue/bundle/)（manifest、listing、入口、图标、两张真实截图）。
 
 ## 一分钟怎么玩
 
@@ -31,7 +25,6 @@
   <img src="evidence/screenshots/app-row.png" width="62%"
        alt="左侧：打开样例并试映下一幕；右侧：逐句播放假设对白">
 </p>
-
 <p align="center">
   <sub>左：打开虚构样例、回看原消息 · 右：逐句播放「顺着这句」的假设对白</sub>
 </p>
@@ -40,57 +33,50 @@
 
 ## 在 Rinx 里运行
 
-装这个应用有两条途径。
-
 **途径一：App Hub（正式途径）**
 
-在 Rinx 里打开 **Discover → Mini apps**，进入 App Hub 应用库（Recent / My apps / Browse），找到 OnCue 后 **Add** 安装已审核版本，再点 **Open**。打开时 Rinx 会列出这个应用申请的六项服务和唯一允许的房间，确认后才为本次运行授权。这条路目前走不通：上架审核还在进行（[App Hub #57](https://github.com/OctoSense-org/OctoSense-App-Hub/issues/57)），装不到属正常。
+在 Rinx 的 **Discover → Mini apps** 进入 App Hub 应用库，找到 OnCue 后 **Add** 安装、**Open** 打开；打开时宿主会列出应用申请的六项服务和所选房间，确认后为本次运行授权。上架审核中（[App Hub #57](https://github.com/OctoSense-org/OctoSense-App-Hub/issues/57)）。
 
-**途径二：本地导入（自测 / 评审复现途径）**
+**途径二：本地导入（开发/复现途径）**
 
-适合现在就想跑一遍的人。Rinx 的开发者导入有两个前提，先说明再给步骤：
+Rinx 的 Developer 导入按设计拒绝带签名的包，所以先生成未签名副本：
 
-- **不收带签名的包。** 仓库里的正式包带发布签名，而开发者导入按官方设计（ADR 0006/0008）故意拒绝签名包——防止本地文件夹冒充"已过商店审核"的应用。所以要先生成一份去掉签名的副本，内容与原包一致。
-- **房间必须是你自己的。** 应用只读导入时选定的那个房间的消息。我们的测试房间你不在其中，填了也读不到。
+```sh
+. /root/hackthon/refs/octo-env.sh
+DEV_ROOT="$(mktemp -d /tmp/oncue-dev.XXXXXX)"
+python3 oncue/tools/prepare_dev_bundle.py "${DEV_ROOT}/bundle" --hub "$OCTO_HUB"
+```
 
-步骤：
+1. Rinx 里打开 **Discover → Mini apps → Import an app**。
+2. 包路径填打印出的目录（destination 本身就是包目录，直接含 `manifest.json`，不要再加一层 `bundle`）；房间填你自己的 Matrix 房间 ID。
+3. **Review** 核对名称、版本、六项服务与 Allowed room → **Run**。
 
-1. 生成去签名副本（一条命令）：
-   `python3 oncue/tools/prepare_dev_bundle.py /tmp/my-oncue`
-2. Rinx 里打开 **Discover → Mini apps → Import an app**。
-3. 包路径填 `/tmp/my-oncue/bundle`，房间填**你自己的 Matrix 房间 ID**。
-4. **Review** 核对服务清单与房间 → **Run**。
+每次打开都要为当前账号和所选房间重新授权，关闭即撤销。详见[原生工作流](oncue/docs/NATIVE-WORKFLOW.md)。
 
-每次打开都要为当前账号和所选房间重新授权，关闭应用即撤销。
+## 数据与权限
 
-<p align="center">
-  <img src="evidence/screenshots/rinx-flow.png" width="100%"
-       alt="左侧：Import an app 表单；右侧：应用在 Rinx 宿主内运行">
-</p>
+- **不发送任何消息**：没有发送能力，产物是本地草稿。
+- **六项能力**对应六个真实功能：`storage`（草稿 A/B）、`matrix.room_info` 与 `matrix.read_messages`（载入授权房间消息）、`octos.session.open` / `octos.turn.start` / `octos.turn.interrupt`（助手试映与停止）。
+- **试映的数据范围**：点击「试映下一幕」时，全部已载入消息的编号、发送者、正文和你的台词会交给宿主配置的助手；应用本身不直连网络（`network.hosts` 为空），但宿主助手可能是远程服务——见[数据说明](oncue/PRIVACY.md)。
+- 草稿按账号 + 应用存储；原文摘录逐字取回，数字与编号引用有界核查——这些是形式核查，语义真实性仍需使用者判断。
 
-<p align="center">
-  <sub>左：Developer 入口填入包路径与测试房间 · 右：Review 通过后在宿主内运行</sub>
-</p>
+## 验证
 
-当前版本已在 Rinx 外窗 **412×892** 与 **990×613** 下逐页读取真实三路线与摘录；实际应用嵌入区分别为 **376×727** 与 **954×448**。逐项验证记录见 [VERIFICATION.md](oncue/VERIFICATION.md)。
+- **包检查**：`hub check --publisher-key` 通过（0.4.7，`oncue.dev` 签名）。
+- **受控测试**：8 套共 146 项断言在真实 card-host OctoScript VM 中通过，覆盖协议解析、分页、重试、90 秒期限、播放计时、存储字节、来源核查与畸形回调；源码哈希与发布包一致，[原始证据](evidence/checkpoint-0.4.7-recovered/README.md)可逐套复核。146 项 VM 断言与 91 项工具离线单测互不重叠——CI 只跑后者。
+- **真实宿主**：在钉定宿主（OctoSense `6c4746f` + Rinx `c515e5f`）上完成授权读房、真实助手回合、三路线逐页阅读、播放控制、草稿保存恢复与关闭重开，宽窗 990×613 与窄窗 412×892 两个尺寸；逐条记录见[验证摘要](oncue/VERIFICATION.md)。
 
-## 数据与边界
+## 尚未验证
 
-- **不发送任何消息**。排练与草稿都只在本地，保存由使用者主动触发。
-- **不携带凭据**。Matrix 登录留在宿主、模型凭据留在内核；应用只申请
-  `matrix.room_info`、`matrix.read_messages`、`octos.session.open`、`octos.turn.start`、
-  `octos.turn.interrupt` 与本地 `storage`，且 `hosts` 为空（不访问任何网络主机）。
-- 房间名为空时显示「已授权群聊」，**不回落到完整房间 ID**。
-- 来源核对不能保证所有假设或建议符合事实；取材与存储范围见[数据说明](oncue/PRIVACY.md)。
+语义级事实核验（形式核查通过不代表内容真实）、其他平台（macOS/Windows/移动端）、接收者授权链路的完整展示（deny、租约到期）。应用运行平台为 Linux aarch64。
 
 ## 文档
 
-- [产品说明](oncue/PRODUCT.md) — 目标、流程与状态反馈
-- [数据说明](oncue/PRIVACY.md) — 数据来源、权限与隐私
-- [原生工作流](oncue/docs/NATIVE-WORKFLOW.md) — 在宿主里装载与运行
-- [宿主环境与复现](oncue/docs/DEPENDENCIES.md) — 宿主版本、支持平台、依赖
-- [验证摘要](oncue/VERIFICATION.md) — 当前版本的实测结果与未覆盖项
-- **当前版截图**：[包内两张](<oncue/bundle/screenshots/>)——真实 Rinx 主机、真实授权房间与真实助手回合的同版截图，已逐张打开查看。
-- [当前版演示](<evidence/submission/DEMO-0.4.7.md>) — 2 分 58 秒真实连续录屏、时间轴与解说词
-- [App Hub 材料](evidence/apphub/) — `hub check` 输出与 `hub scan` 七问回答
+- [产品说明](oncue/PRODUCT.md) — 流程与状态反馈
+- [数据说明](oncue/PRIVACY.md) — 数据来源、模型请求与本地存储
+- [原生工作流](oncue/docs/NATIVE-WORKFLOW.md) — 装载、运行与记录步骤
+- [宿主环境与复现](oncue/docs/DEPENDENCIES.md) — 钉定版本组合与平台
+- [验证摘要](oncue/VERIFICATION.md) — 测试矩阵与证据索引
+- [演示录屏](evidence/demo/oncue-demo-0.4.7-subtitled.mp4) — 90 秒实录配中文字幕，[时间轴与解说](evidence/submission/DEMO-0.4.7.md)
+- [七问回答](build/REVIEW-ANSWERS.md) — `hub scan` 审核材料
 - [Apache License 2.0](oncue/LICENSE)

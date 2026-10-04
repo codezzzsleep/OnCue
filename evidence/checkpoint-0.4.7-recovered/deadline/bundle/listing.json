@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "subtitle": "先试着说，再决定要不要发",
+  "description": "把一句还没发出去的话放进群聊试映室，私下展开顺着这句、换个问法、换个玩法三条假设路线。选一条逐句播放、暂停或重播，再把建议放进自己的编辑框。草稿可以分别保存为 A 和 B，取回修改并上下对照。原消息是事实线索，假设对白与新提议仍需自己判断。",
+  "category": "productivity",
+  "keywords": [
+    "群聊",
+    "试映",
+    "排练",
+    "草稿",
+    "隐私",
+    "假设对白"
+  ],
+  "screenshots": [
+    "screenshots/01-native-rinx.png",
+    "screenshots/02-real-room-and-agent.png"
+  ],
+  "icon": "assets/icon.svg",
+  "platforms": [
+    "linux"
+  ],
+  "publisher": {
+    "name": "OnCue / YCOROY",
+    "support": "https://github.com/codezzzsleep/OnCue/issues",
+    "privacy_policy_url": "https://github.com/codezzzsleep/OnCue/blob/main/oncue/PRIVACY.md"
+  },
+  "release_notes": "0.4.7：事实摘录改为逐字引用——助手只选原消息编号，应用取回原文并拒绝改写、错号、越界与重复；新增数字与引用编号的有界核查，并明确不证明语义；协议在无分隔符时按唯一有序标记严格切分，缺节、重节、空块一律拒绝；建议限为单行问句；畸形回调不再卡住界面。已在真实 Rinx 主机的 990×613 与 412×892 两个外窗逐页读取三路线与原文摘录，播放/暂停/切路线计时隔离，以及含多行、组合字符、emoji 的草稿精确保存与恢复；138 项真实 OctoScript 受控断言全部通过。假设内容仍需使用者对照原消息判断。",
+  "age_rating": "all",
+  "license": "Apache-2.0"
+}

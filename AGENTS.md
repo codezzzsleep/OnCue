@@ -34,7 +34,7 @@
 | 赛道 | OctoSense 12 场景之 **即时消息**（官方明确：即时消息场景**绑定 Rinx**） |
 | 包路径 | `oncue/bundle/` —— **只有 `bundle/` 会被提交** |
 | 应用 id | `oncue-screening-room`（`[a-z0-9.-]{1,64}`，不以保留名结尾 ✓） |
-| 版本 / digest | **0.4.7** / `07bd1f237b90f58e069da4e9ba6fbe9fd83d5bdbcae4d60f0cd2fbe813292afe`，`oncue.dev` 已签名，`hub check --publisher-key` **PASSED**。App Hub #57 仍是 0.4.4 申请，本版尚未上架。 |
+| 版本 / digest | **0.4.7** / `8e2d9b779cdbf73d4a4d9e68cdae1cb07ae08990979586af2d1523b6a3163669`，`oncue.dev` 已签名（2026-10-04 晚重签，公钥验签 **PASSED**；listing 修正为 146 项后 stamp+sign）。App Hub #57 本地记录仍是 0.4.4 申请，未联网核查。digest 是全包目录摘要（各文件路径+长度+内容的 blake3，不含 manifest.json），以 `hub stamp/check` 为准，非单文件哈希。 |
 | 队伍 / 成员 | **单人队：队伍 OnCue，队长兼唯一成员 YCOROY**（用户 2026-10-02 确认） |
 | 许可 | Apache-2.0（`oncue/LICENSE`） |
 
@@ -432,18 +432,19 @@ OctoSense [原生依赖](<../refs/OctoSense/native-apps.json>)锁 Rinx `4b89097d
 
 **issue #13 就是"初赛作品提交到指定 github 仓库"的那个仓库**，建于 `2026-09-30T11:34:48Z`。
 
-### 6.3 #13已填团队ID，冻结版本待补
+### 6.3 #13已填团队ID，无需补冻结版
 
 晚间只读核对[原评论](<https://github.com/gosimfoundation/hackathon-agenticapp26/issues/13#issuecomment-5925966622>)：
 队名、仓库及**MiniMax团队ID已填**，此前“只有两行/ID未填”过时，不再重复询问。
-尚未标明冻结tag/commit；版本准备好并获用户确认后可补充，**本轮不公开修改**。
+**用户 2026-10-04 明确：完全不需要补充冻结 tag/commit**，登记保持原样，不再列为待办。
 
 ### 6.4 比赛登记与App Hub发布都要处理
 
 最新群通知明确AppCard经App Hub发布。旧赛事文档“参赛无需等待上架”是9/21基线，
 **不能用于省略发布流程**；是否必须初赛截止前已审核入目录，通知未给明确时点，不臆断。
 比赛#13已登记；[App Hub #57](<https://github.com/OctoSense-org/OctoSense-App-Hub/issues/57>)
-仍为 `Submit oncue-screening-room 0.4.4`，OPEN、无评论，未取得上架证据；需用最终修复版本更新申请。
+仍为 `Submit oncue-screening-room 0.4.4`，OPEN、无评论，未取得上架证据。
+**用户 2026-10-04 明确：官方未发通知前不更新 #57**；将来如需提交，按 §3.6 清单走签名/tag/审核流程。
 
 ### 6.5 其他赛事口径（张老师群里原文）
 - **"初赛代码只要求 octoscript 的应用"**；**"初赛作品不要太复杂，能传达你应用基本功能即可"**
@@ -499,15 +500,17 @@ OctoSense [原生依赖](<../refs/OctoSense/native-apps.json>)锁 Rinx `4b89097d
 
 ## 8. 当前状态（**每次状态变化后更新本节**）
 
-### 8.0 当前状态（2026-10-03，0.4.7）
+### 8.0 当前状态（2026-10-04：文档重写 + 真实复验进行中）
 
-- **事实摘录改为逐字引用**：助手只选原消息编号，应用取回原文展示；拒绝改写、错号、越界、重复编号；另加数字与 `#编号` 有界核查（明确不证明语义）。
-- **协议**：七节固定标记；无分隔符时按唯一有序标记严格切分；缺节、重节、空块、混合写法一律拒绝；畸形回调不卡界面。
-- **测试**：8 个套件 **146 项真实 OctoScript 受控断言全部通过**（64 个生产函数逐字节保留）；完整 90 秒期限实测超时 90.04 秒。含无分隔符七标记正/反例（5 项）、长文本分页（1 项）与共识承诺门禁（2 项）。
-- **真实主机**：两个外窗尺寸（990×613 / 412×892）逐页读取三路线与摘录、播放与切路线计时隔离（含 B 路线实际播放验证）、含多行/组合字符/emoji 的草稿精确保存恢复、**关闭重开草稿自动恢复**（`cue_boot_state` 从 jail 读取）、接收者 `Allowed room: None` 与房间绑定拒绝，全部通过。
-- **同版演示已录**：`evidence/demo/oncue-demo-047.mp4` 184.7 秒（3 分 04 秒）连续实录，未裁切；无旁白，解说词与时间轴见 `evidence/submission/DEMO-0.4.7.md`。
-- **仍缺**：语义级事实核验、读房 sheet/deny/租约撤销/迟回复的独立计量、App Hub 上架（#57 仍是 0.4.4 申请）、`build/REVIEW-ANSWERS.md` 七问按 0.4.7 重写。
-- **宿主未升级**：用户决定暂不跟进 2026-10-03 的 OctoSense/App Hub 更新；当前二进制 sha256 `87ed4dcc…`。
+- **最新用户边界（2026-10-04 晚）**：用户批准「重签 + 文档防误解小改」，明确**不要提交**（不 commit/push/tag、不公开 Issue）；签名用私钥已获本次授权并完成。真实验收、录屏、读房与模型用量的许可此前已批；不换装宿主。
+- **应用包**：保持 0.4.7 已签名字节不变；生产 SHA256 `4b2fd02fb3e893dd15214a22f7ce173eed3d11c5cab1cbda4c72ef8038e472b5`，65 个生产函数。七节协议、逐字摘录、有限数字/编号/承诺词门禁及保存回读实现不变；不保证语义事实。prompt 请求 2–4 编号，实际接受 1–4。
+- **工具修复**：[原生验收](<oncue/tools/native_acceptance.py>)去掉硬编码开发包/账号/房间，要求显式导入/模型/草稿操作许可；逐文件验证开发副本与发布包一致（签名除外），重开使用同一路径。只一次排练点击，正确等待内部重试，记录失败；严格尺寸、双轴可见/已知遮罩检查，保存字节比对和不可被 `-O` 移除的条件检查。工具使用与证明边界见[工具指南](<oncue/docs/TEST-TOOLS.md>)；本轮未连接真实宿主回归。
+- **离线检查**：已执行 91 项测试（11 生成器/checker、28 验收工具、52 helper），全部通过；验收工具 28 项在 `python -O` 下也通过。CI 同步覆盖 tools、tests、bundle 和 workflow 变更，仅离线测试，不冒充 VM/真实模型运行。开发副本脚本另用本机真实Hub完成stamp/check并核对资源一致，原发布包未改。
+- **原始证据恢复**：从已存在 `/tmp/oncue-full5.MzauQ6` 恢复 8 套 146 项[原件](<evidence/checkpoint-0.4.7-recovered/README.md>)，source/fixtures/harness 与当前字节一致，原 run 与归档逐套 checker 均退出 0。是北京时间 10/4 01:50–01:52 的既有受控运行，不是本轮重跑；当前原件 deadline 超时 90.047595 秒。按隐私边界不复制真实房间截图，归档能只读核验结果，但不是可完整 admission 的 bundle。
+- **文档修复**：复现命令、隐私数据范围、摘要编号契约、旧测试计数、七问、实际窗口尺寸和视频时间轴已校正；不改历史原件。已签名 listing 的 138 文案已于 10-04 授权重签时一并修正为 146（stamp+sign，验签 PASSED）。
+- **演示已更新**：[字幕版](<evidence/demo/oncue-demo-0.4.7-subtitled.mp4>)（2026-10-04 录制，中文字幕，实测 90.4 秒、无音轨）为当前正式提交视频；184.7 秒旧版与同版 raw 保留溯源。注意：90.4 秒低于官方「2–3 分钟」下限，风险与补救见 §8.2#7。
+- **宿主与授权边界**：既有钉定组合 `6c4746f`+官方 Rinx `c515e5f`；新组合 `a3098486`+依赖覆盖到官方 Rinx `c515e5f`+内核 `056173e8`，不是修改 Rinx 源码。新窄窗实际412×850、嵌入376×685，草稿脚本未通过，人工通过仅既有说明；不扩写为全矩阵兼容。授权 deny/跨已授权房间/租约撤销/到期/宿主迟回复尚缺独立实测。
+- **发布状态**：0.4.7 已重签（digest `8e2d9b77…`），公钥验签 PASSED；commit+push 已获授权并执行（2026-10-04）。**外部 Issue 一律不动**：比赛 #13 用户明确不需要补冻结版；App Hub #57 等官方通知（用户 2026-10-04 明确两项都不需要）。
 
 ### 8.1 已有成果与前轮核对（历史）
 
@@ -519,7 +522,7 @@ OctoSense [原生依赖](<../refs/OctoSense/native-apps.json>)锁 Rinx `4b89097d
 - [x] [远程桥三态](<evidence/submission/BRIDGE-DRIVEN-STATES.md>)、[Back/键盘/关闭重开](<evidence/submission/RINX-LIFECYCLE.md>)、
   [无绑定房间拒绝](<evidence/submission/CROSS-ROOM-AND-REVOCATION.md>)有历史证据，非全部授权机制实测。
 - [x] [179.334秒视频](<evidence/demo/oncue-demo-2min59.mp4>)与两张包内截图存在且已跟踪；视频无旁白/字幕。
-- [x] [0.4.5修复](<evidence/submission/RELIABILITY-FIX-0.4.5.md>)在main；标签 v0.4.4（#57 提交）与 v0.4.7（HEAD `f363d4b`）并存。
+- [x] [0.4.5修复](<evidence/submission/RELIABILITY-FIX-0.4.5.md>)在main；标签 v0.4.4（#57 提交）与 v0.4.7（`f363d4b`）并存，二者发布包相同；其后的文档/工具修复已提交 main，发布包字节不变。
 - [x] 比赛#5/#13已登记，MiniMax团队ID已填；App Hub #57已开，但旧版且未证实上架。
 - [x] 本轮六参考仓全部直连同步、补全历史；OctoSense `c19da8d → b221f7b`，其他main不变。
 - [x] 本轮完整阅读制作/发布/AI/赛事关键指南并核对相关实现，修正阶段混淆、发送误读和超时混用。
@@ -529,13 +532,13 @@ OctoSense [原生依赖](<../refs/OctoSense/native-apps.json>)锁 Rinx `4b89097d
 
 | # | 缺口 | 处理边界 |
 | --- | --- | --- |
-| 1 | **0.4.6检查点尚非最终验收** | 包已重签检查；仍须解决模型事实边界、完成全量同版验证和最终材料。 |
-| 2 | **当前版端到端与结果证据未对齐** | 授权房间→octos排练→人查看修改→草稿保存回读；来源可追溯、明确未发送，不增发送。 |
-| 3 | **状态/授权回归不全** | 当前版空/错误/重启、无房间拒绝、两账号隔离、停止/应用90秒/迟回调；宿主机制按§4.3分别验证。 |
-| 4 | **App Hub申请为旧0.4.4** | 最终新版本准备好后补充或新开Submit，须人确认；issue不是上架完成。 |
-| 5 | **#13未注明冻结版** | 最终tag/commit与证据准备好后，经人确认补充；团队ID无需再问。 |
-| 6 | **文档与版本漂移** | 验证摘要、依赖、七问与演示脚本需统一；历史证据不能写成当前通过。 |
-| 7 | ~~视频/截图仍为历史状态~~ → 已更新为 0.4.7 同版截图与 178.1 秒实录；旧录屏保留溯源。 |
+| 1 | **0.4.7候选不是最终验收** | 当前包验签通过；146项原始受控结果已恢复并校验，但本轮不重跑VM/真实宿主。 |
+| 2 | **当前版端到端证据需统一** | 授权房间→octos排练→人修改→草稿保存回读；既有不同轮次材料不合称新的一次全量验收。 |
+| 3 | **状态/授权回归不全** | VM内停止/90秒/迟回调已具原始记录；真实账号/租约/跨房间机制按§4.3分别验证，不相互替代。 |
+| 4 | **App Hub申请为旧0.4.4** | 用户 2026-10-04 明确：官方未发通知前不更新 #57；issue不是上架完成。 |
+| 5 | ~~**#13未注明冻结版**~~ → 用户明确不需要 | 用户 2026-10-04：完全不需要补充冻结 tag/commit；团队ID已填，不再列为待决。 |
+| 6 | ~~**发布包旧文案待下次发布**~~ → 已解决 | listing 138→146 已于 10-04 授权重签时修正并 stamp+sign，验签 PASSED。 |
+| 7 | **视频时长与覆盖仍待补** | 已换 90.4 秒字幕版（无音轨），但仍低于官方「2–3 分钟」下限，且缺失败/完整接收者授权片段；待赛务确认口径或重录补齐。 |
 | 8 | **延期下游时点未明** | 仅初赛延期两天已知，不机械顺延其他赛段，不虚构已确认。 |
 | 9 | **正式安装路径复核** | Developer导入不替代App Hub签名目录安装/审核，分别记录。 |
 | 10 | **复赛扩展** | 队外试用、完整任务自动化及可选技术贡献留初赛后，日期跟随后续官方口径。 |
@@ -547,9 +550,9 @@ OctoSense [原生依赖](<../refs/OctoSense/native-apps.json>)锁 Rinx `4b89097d
 
 ## 9. 人工检查点与待明确事项
 
-1. **本轮签名与Git授权已明确**：可对检查点/最终包签名、正常提交push main。新的外部Issue/评论和代交比赛仍禁止，由用户检查材料后处理。
-2. **App Hub #57更新方式**：最终修复版通过后补充原issue或新开Submit，不预定新issue编号。
-3. **#13冻结版补充**：经用户确认才公开改；MiniMax团队ID已填，不再列为未决。
+1. **当前边界（2026-10-04 晚）**：签名与重签已完成；**commit+push 已获授权并执行**；**外部 Issue 一律不动**——#13 用户明确不需要补冻结版、App Hub #57 等官方通知。不公开代交、不联网刷新外部状态。
+2. **App Hub #57**：官方未发通知前不更新、不新提（用户 2026-10-04 明确）；将来如需提交，按 §3.6 清单补充原 issue 或新开 Submit。
+3. **#13**：用户 2026-10-04 明确完全不需要补充冻结版；MiniMax团队ID已填，不再列为待决。
 4. **延期后的评审/晋级/名单锁定与上架审核时点**：取得新官方原文时更新，不从旧赛程推断。
 5. **未来宿主升级**：读差异和锁定组合后再由用户决定重建/换装，保留现有可运行环境。
 
@@ -571,31 +574,20 @@ OctoSense [原生依赖](<../refs/OctoSense/native-apps.json>)锁 Rinx `4b89097d
 
 ## 11. 常用命令
 
+从 OnCue 仓库根目录执行，签名包不直接用于 Developer/card-host；不用固定路径删除旧副本。
+
 ```sh
-# 官方工具链
+# 本地工具与离线检查
 . /root/hackthon/refs/octo-env.sh
-cd /root/hackthon/refs/OctoScript-App-Design-Flow
-python3 tools/octo doctor
-python3 tools/octo package-help
-python3 tools/octo run /root/hackthon/OnCue/oncue/bundle --port 8141 --hidden --detach
-curl -s "127.0.0.1:8141/snap?q=Button" | head -c 400
-curl -s "127.0.0.1:8141/click?x=150&y=140&wait=1"
-curl -s 127.0.0.1:8141/quit
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s oncue/tests -p 'selftest_*.py' -v
+"${OCTO_HUB:?}" check oncue/bundle --publisher-key oncue.dev=50578fd7e0d8ac51a1e9e590835427ce8e71f46dba491860c75ae4e7c8c78042
 
-# 未签名副本（回访已签名版本时必须）
-rm -rf /tmp/oncue-unsigned && mkdir -p /tmp/oncue-unsigned
-cp -a oncue/bundle /tmp/oncue-unsigned/bundle
-python3 -c "import json,pathlib;p=pathlib.Path('/tmp/oncue-unsigned/bundle/manifest.json');d=json.loads(p.read_text());d['integrity'].pop('signature',None);p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+chr(10))"
-python3 tools/octo check /tmp/oncue-unsigned/bundle     # → PASSED
-
-# 重新 stamp + 签名（内容改动后）
-$OCTO_HUB stamp oncue/bundle
-$OCTO_HUB sign-manifest oncue/bundle --key /srv/oncue-runtime/dev/keys/working.key --key-id oncue.dev
-$OCTO_HUB check oncue/bundle --publisher-key oncue.dev=50578fd7e0d8ac51a1e9e590835427ce8e71f46dba491860c75ae4e7c8c78042
-
-# 审核包
-$OCTO_HUB scan <未签名副本>/bundle --packet build/review.json
+# 全新未签名开发副本；不删除、不覆盖历史证据
+DEV_ROOT="$(mktemp -d /tmp/oncue-dev.XXXXXX)"
+python3 oncue/tools/prepare_dev_bundle.py "${DEV_ROOT:?}/bundle" --hub "${OCTO_HUB:?}"
 ```
+
+真实宿主导入/模型/草稿验收见[工具指南](<oncue/docs/TEST-TOOLS.md>)，需要显式目标及相应许可，不据此自动执行。**当前状态（2026-10-04）：已重签并验签 PASSED；commit+push 已执行；外部 Issue 一律不动（见§9）。**
 
 ---
 

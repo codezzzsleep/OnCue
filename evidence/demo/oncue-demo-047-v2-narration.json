@@ -1,0 +1,122 @@
+[
+ {
+  "t": 0.27,
+  "label": "geometry",
+  "narr": "Rinx 窗口就位"
+ },
+ {
+  "t": 0.27,
+  "label": "recording_started",
+  "narr": "OnCue · 群聊试映室：先试着说，再决定要不要发。"
+ },
+ {
+  "t": 4.5,
+  "label": "import_form",
+  "narr": "在 Rinx 的 Mini apps 里导入应用包，填入测试房间。"
+ },
+ {
+  "t": 10.48,
+  "label": "review_shown",
+  "narr": "Review 列出六项服务和 Allowed room。"
+ },
+ {
+  "t": 12.55,
+  "label": "run_app",
+  "narr": "确认后 Run，为本次运行授权。"
+ },
+ {
+  "t": 14.42,
+  "label": "load_room",
+  "narr": null
+ },
+ {
+  "t": 15.94,
+  "label": "room_loaded",
+  "narr": "载入授权房间，消息按编号逐条回看。"
+ },
+ {
+  "t": 16.78,
+  "label": "next_1",
+  "narr": null
+ },
+ {
+  "t": 18.89,
+  "label": "next_2",
+  "narr": null
+ },
+ {
+  "t": 21.03,
+  "label": "prev_1",
+  "narr": null
+ },
+ {
+  "t": 22.83,
+  "label": "rehearse",
+  "narr": "输入想接的话，请助手排演三个不同的下一幕。"
+ },
+ {
+  "t": 22.83,
+  "label": "turn_waiting",
+  "narr": "全部已载入消息与台词发给宿主配置的助手，等待真实。"
+ },
+ {
+  "t": 52.4,
+  "label": "turn_done",
+  "narr": "七节协议通过：原文摘录逐字核对。"
+ },
+ {
+  "t": 54.01,
+  "label": "open_excerpt",
+  "narr": "「摘要」不是模型写的总结——只选编号，应用取回原文。"
+ },
+ {
+  "t": 59.47,
+  "label": "excerpt_page2",
+  "narr": null
+ },
+ {
+  "t": 60.19,
+  "label": "route_A",
+  "narr": "三条路线：顺着这句、换个问法、换个玩法。"
+ },
+ {
+  "t": 66.83,
+  "label": "paused",
+  "narr": "逐句播放、暂停、续播；切路线后旧计时器不推进新路线。"
+ },
+ {
+  "t": 72.41,
+  "label": "route_B",
+  "narr": null
+ },
+ {
+  "t": 74.12,
+  "label": "into_draft",
+  "narr": "把建议放进草稿，存 A、存 B，保存经过写入回读比对。"
+ },
+ {
+  "t": 77.85,
+  "label": "save_A",
+  "narr": "版本 A 已保存并回读确认；关闭后可以取回。"
+ },
+ {
+  "t": 81.75,
+  "label": "save_B",
+  "narr": "版本 B 已保存并回读确认；关闭后可以取回。"
+ },
+ {
+  "t": 85.71,
+  "label": "restore_A",
+  "narr": "清空后取回，内容逐字一致。"
+ },
+ {
+  "t": 88.16,
+  "label": "final",
+  "narr": "全程私人排练与本地草稿，应用不发送任何消息。"
+ },
+ {
+  "t": 90.72,
+  "label": "recording_stopped",
+  "narr": null
+ }
+]
