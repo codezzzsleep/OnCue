@@ -117,7 +117,9 @@ class NativeAcceptanceTests(unittest.TestCase):
         self.assertEqual(native.turn_state("unrecognized production contract"), "unknown")
 
     def test_room_empty_errors_and_pending_are_distinct(self):
-        for text in ("这个群聊暂时没有可读取的文本消息。", "没有读到群聊：denied", "消息读取失败：offline"):
+        for text in ("这个群聊暂时没有可读取的文本消息。", "没有读到群聊：denied", "消息读取失败：offline",
+                     "这次打开没有选房间。请关闭应用，导入时填上房间再打开。",
+                     "宿主没有授权读取这个房间。", "当前宿主不提供群聊服务，请在 Rinx 里打开。"):
             self.assertEqual(native.room_state(text), "failure")
         self.assertEqual(native.room_state("读取本次附加群聊的最近 12 条文本消息…"), "pending")
         self.assertEqual(native.room_state("原消息已载入，可逐条翻看"), "success")

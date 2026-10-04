@@ -368,6 +368,12 @@ fn cue_scene_idle(){
     cue_scene = "还没有载入群聊"
     ui.cue_scene_label.set_text(cue_scene)
 }
+fn cue_room_error(text){
+    if text.search("not attached to a room") >= 0 { return "这次打开没有选房间。请关闭应用，导入时填上房间再打开。" }
+    if text.search("not granted") >= 0 { return "宿主没有授权读取这个房间。" }
+    if text.search("no service answers") >= 0 { return "当前宿主不提供群聊服务，请在 Rinx 里打开。" }
+    "没有读到群聊：" + text
+}
 fn cue_import_room(){
     cue_invalidate()
     cue_demo = false
@@ -386,7 +392,7 @@ fn cue_import_room(){
         if !room.is_ok {
             cue_set_busy(false)
             cue_scene_idle()
-            cue_set_status("没有读到群聊：" + room.error)
+            cue_set_status(cue_room_error("" + room.error))
             return
         }
         cue_scene = "" + room.data.room_name

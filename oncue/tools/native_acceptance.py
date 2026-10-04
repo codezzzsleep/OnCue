@@ -146,7 +146,8 @@ def room_state(status):
         return "success"
     if status.startswith("读取本次附加群聊"):
         return "pending"
-    if status.startswith(("没有读到群聊", "消息读取失败", "这个群聊暂时没有", "已停止等待")) or "等待超过 90 秒" in status:
+    if status.startswith(("没有读到群聊", "这次打开没有选房间", "宿主没有授权读取这个房间",
+                          "当前宿主不提供群聊服务", "消息读取失败", "这个群聊暂时没有", "已停止等待")) or "等待超过 90 秒" in status:
         return "failure"
     return "unknown"
 
