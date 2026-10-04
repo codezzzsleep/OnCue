@@ -62,6 +62,7 @@ python3 oncue/tools/prepare_dev_bundle.py "$(mktemp -d)/bundle" --hub "$OCTO_HUB
 - 没做的事统一写在“未验证”里，每件事写一次。不要在别处反复写“不代表”“不等于”“不证明”。
 - 不写本机路径、完整的账号和房间号、进程号。这些放在 `.private/ENV.md`，不入库。
 - 不引用仓库里不存在的文件。
+- 不把 TODO 和给作者的留言写进 `oncue/bundle/` 和 `oncue/PRIVACY.md`，这两处的内容会公开发布。
 - 不新增文档，除非作者要求。状态变化写进 `CHANGELOG.md`。
 
 ## 提交规则

@@ -2,7 +2,7 @@ name: test-infrastructure
 
 # Offline only: generator/checker plus native-tool safety tests using mocks and
 # synthetic temporary files. No Matrix, model, running host, display or signing.
-# The 146 app-runtime assertions require card-host's OctoScript VM and a display;
+# The app-level logic tests require card-host's OctoScript VM and a display;
 # they are a separate local run. A green workflow is not Rinx end-to-end coverage.
 
 on:

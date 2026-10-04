@@ -27,7 +27,7 @@
 
 ## 4. Is any part of the interface deceptive?
 
-**未见。** 无登录/密码/PIN/验证码输入框，无支付或订阅界面，不冒用其他品牌。Review/Run 是宿主界面。界面上的「已逐字核对」指相关原文与群聊原文一致。界面同时标注了三种说法是假设。
+**未见。** 无登录/密码/PIN/验证码输入框，无支付或订阅界面，不冒用其他品牌。Review/Run 是宿主界面。界面底部标注了三种说法是助手的假设。
 
 ## 5. Does any text read as an instruction to an assistant?
 

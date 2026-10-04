@@ -71,7 +71,7 @@ python3 oncue/tools/prepare_dev_bundle.py "${DEV_ROOT}/bundle" --hub "$OCTO_HUB"
 
 ## 尚未验证
 
-- 助手的回答是否符合事实。应用只检查编号、数字和几个固定用语。
+- 助手的回答是否符合事实。应用只检查编号、阿拉伯数字和几个固定用语，中文写的数字不检查。
 - macOS、Windows 和移动端。目前只在 Linux aarch64 上运行过。
 - 用户拒绝授权、授权到期时应用的表现。
 
