@@ -44,6 +44,6 @@ if __name__=='__main__':
             if '全部' in state:break
         else:raise RuntimeError('Too many dialogue lines')
         records[title]={'pages':pages(b),'status':state}
-    b.click(text='摘要');records['摘要']={'pages':pages(b)}
+    b.click(text='相关原文');records['相关原文']={'pages':pages(b)}
     a.out.parent.mkdir(parents=True,exist_ok=True);a.out.write_text(json.dumps(records,ensure_ascii=False,indent=2)+'\n')
     print(json.dumps({k:''.join(p['text'] for p in v['pages']) for k,v in records.items()},ensure_ascii=False,indent=2))
