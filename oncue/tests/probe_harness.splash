@@ -569,6 +569,9 @@ fn probe_grounding(){
     blocks = probe_mark_blocks(probe_fixtures.grounding.protocol_blocks)
     blocks[1] = "【A对白】\n虚构回应甲：住一晚还是当天回？\n待确认：大家已同意了吗？依据#2。"
     probe_assert("grounding.protocol_commitment_question_allowed", cue_validate_protocol(blocks), {body: blocks[1]})
+    // A 待确认 line that STATES consent instead of asking about it is a claim,
+    // not a question, and stays rejected.
+    probe_assert("grounding.commitment_pending_line_rejected", cue_has_commitment_claim("待确认：大家已同意并已付款"), {line: "待确认：大家已同意并已付款"})
     // A deliberately false-sounding but digit-free, commitment-free hypothetical
     // still passes the bounded checks. This records a limitation, not truth.
     blocks = probe_mark_blocks(probe_fixtures.grounding.protocol_blocks)
