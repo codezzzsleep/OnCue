@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "suite": "storage",
-  "source_sha256": "1484213e75f0ffe9ecc5d1f18025ec6047216950f0ff0e8cbba2da689eaa9fc8",
+  "source_sha256": "a42e0216d1b81caccb486f57b7c60bec994f0e631da3c1f78a4d388c7cf89d58",
   "fixtures_sha256": "b5f1cdf2c1b783223417080bb4454a3aaebd8b619f132cb147e746a7696a7648",
   "harness_sha256": "2d8b546a51a5a05255d3d91ae8355a757e9388778cd8a5ea5d7601daca65235e",
   "expected_assertion_ids": [
@@ -32,7 +32,7 @@
     "take-a.txt": "2855e3997808cd5049620e645aca4f2e467fa17d3263f62db9be155b81a153b6",
     "take-b.txt": "7a24a74983409ccf7b7f12c22f853918f8074f96051b93735de0d9a798f8a3ba"
   },
-  "generated_sha256_before_stamp": "988c3f84f21fa11e2d064fedeaacb8e228cb5f288a8857fb3b3d987dc7f88df5",
+  "generated_sha256_before_stamp": "192bfa5d1f8ed429aebbd98f44cd423eb560b9f82676b099dcf163ca4b2f7aa6",
   "initializer_original": "start_timeout(0.05, fn(){ cue_show_demo() cue_boot_state() })\n",
   "initializer_source_line": 932,
   "functions": {

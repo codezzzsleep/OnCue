@@ -1,8 +1,8 @@
 {
   "date": "2026-10-04",
-  "source_commit": "271e79d",
+  "source_commit": "ba67007",
   "bundle_version": "0.4.7",
-  "source_sha256": "1484213e75f0ffe9ecc5d1f18025ec6047216950f0ff0e8cbba2da689eaa9fc8",
+  "source_sha256": "a42e0216d1b81caccb486f57b7c60bec994f0e631da3c1f78a4d388c7cf89d58",
   "unit_tests": {
     "passed": 91,
     "total": 91
@@ -20,13 +20,7 @@
         892
       ],
       "passed": true,
-      "error": null,
-      "real_turn_completed": false,
-      "independent_readback_slots": [
-        "A",
-        "B"
-      ],
-      "closed_reimport_exact": false
+      "error": null
     },
     {
       "run": "412x892-playback",
@@ -35,22 +29,25 @@
         892
       ],
       "passed": false,
-      "error": "Need at least two remaining lines to distinguish play from timer",
-      "real_turn_completed": true,
-      "independent_readback_slots": [],
-      "closed_reimport_exact": false
+      "error": "Need at least two remaining lines to distinguish play from timer"
     },
     {
-      "run": "412x892-playback-retry",
+      "run": "412x892-playback-try2",
       "measured_frame": [
         412,
         892
       ],
       "passed": false,
-      "error": "Need at least two remaining lines to distinguish play from timer",
-      "real_turn_completed": true,
-      "independent_readback_slots": [],
-      "closed_reimport_exact": false
+      "error": "Need at least two remaining lines to distinguish play from timer"
+    },
+    {
+      "run": "412x892-playback-try3",
+      "measured_frame": [
+        412,
+        892
+      ],
+      "passed": false,
+      "error": "Need at least two remaining lines to distinguish play from timer"
     },
     {
       "run": "412x892-reopen",
@@ -59,10 +56,7 @@
         892
       ],
       "passed": true,
-      "error": null,
-      "real_turn_completed": false,
-      "independent_readback_slots": [],
-      "closed_reimport_exact": true
+      "error": null
     },
     {
       "run": "412x892-routes",
@@ -70,11 +64,8 @@
         412,
         892
       ],
-      "passed": false,
-      "error": "Cannot reveal a unique widget fully inside app_scroll viewport",
-      "real_turn_completed": true,
-      "independent_readback_slots": [],
-      "closed_reimport_exact": false
+      "passed": true,
+      "error": null
     },
     {
       "run": "990x613-draft",
@@ -82,13 +73,8 @@
         990,
         613
       ],
-      "passed": false,
-      "error": "Result page counter is absent or ambiguous",
-      "real_turn_completed": false,
-      "independent_readback_slots": [
-        "A"
-      ],
-      "closed_reimport_exact": false
+      "passed": true,
+      "error": null
     },
     {
       "run": "990x613-playback",
@@ -96,11 +82,8 @@
         990,
         613
       ],
-      "passed": false,
-      "error": "Result page counter is absent or ambiguous",
-      "real_turn_completed": true,
-      "independent_readback_slots": [],
-      "closed_reimport_exact": false
+      "passed": true,
+      "error": null
     },
     {
       "run": "990x613-reopen",
@@ -109,10 +92,7 @@
         613
       ],
       "passed": true,
-      "error": null,
-      "real_turn_completed": false,
-      "independent_readback_slots": [],
-      "closed_reimport_exact": true
+      "error": null
     },
     {
       "run": "990x613-routes",
@@ -120,31 +100,14 @@
         990,
         613
       ],
-      "passed": false,
-      "error": "Result page counter is absent or ambiguous",
-      "real_turn_completed": true,
-      "independent_readback_slots": [],
-      "closed_reimport_exact": false
+      "passed": true,
+      "error": null
     }
   ],
-  "native_adapter": "412x892 used a private wrapper to choose the measured current frame as argparse default; no --size, no repository script or assertion changes",
-  "sample_layout": {
-    "frame": [
-      990,
-      613
-    ],
-    "embedded_app": [
-      954,
-      448
-    ],
-    "show_b_right": 976,
-    "button_container_right": 1008,
-    "draft_card_bottom": 630,
-    "app_scroll_bottom": 631,
-    "message_row_height": 38
-  },
+  "playback_note": "412x892 playback attempted 3 times; all stopped at Need at least two remaining lines because the assistant returned 3-line routes that run, so recorded as indeterminate, neither pass nor fail.",
+  "native_adapter": "412x892 used a private wrapper to choose the measured current frame as argparse default; no --size, no repository script or assertion changes beyond the three reveal() scroll fixes",
   "rehearsals": {
-    "source_sha256": "1484213e75f0ffe9ecc5d1f18025ec6047216950f0ff0e8cbba2da689eaa9fc8",
+    "source_sha256": "a42e0216d1b81caccb486f57b7c60bec994f0e631da3c1f78a4d388c7cf89d58",
     "frame": [
       990,
       613
@@ -154,18 +117,18 @@
       {
         "round": 1,
         "result": "retry-pass",
-        "seconds": 34.586,
+        "seconds": 38.623,
         "events": [
           {
-            "seconds": 0.05,
+            "seconds": 0.067,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 17.069,
+            "seconds": 28.308,
             "text": "助手的回答没通过检查，正在自动重试一次…"
           },
           {
-            "seconds": 34.586,
+            "seconds": 38.623,
             "text": "三种说法已生成，点 A、B、C 查看。"
           }
         ]
@@ -173,14 +136,14 @@
       {
         "round": 2,
         "result": "first-pass",
-        "seconds": 16.436,
+        "seconds": 12.538,
         "events": [
           {
-            "seconds": 0.064,
+            "seconds": 0.065,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 16.436,
+            "seconds": 12.538,
             "text": "三种说法已生成，点 A、B、C 查看。"
           }
         ]
@@ -188,14 +151,14 @@
       {
         "round": 3,
         "result": "first-pass",
-        "seconds": 30.421,
+        "seconds": 25.744,
         "events": [
           {
-            "seconds": 0.061,
+            "seconds": 0.054,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 30.421,
+            "seconds": 25.744,
             "text": "三种说法已生成，点 A、B、C 查看。"
           }
         ]
@@ -203,14 +166,14 @@
       {
         "round": 4,
         "result": "first-pass",
-        "seconds": 15.632,
+        "seconds": 20.626,
         "events": [
           {
-            "seconds": 0.057,
+            "seconds": 0.076,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 15.632,
+            "seconds": 20.626,
             "text": "三种说法已生成，点 A、B、C 查看。"
           }
         ]
@@ -218,14 +181,14 @@
       {
         "round": 5,
         "result": "first-pass",
-        "seconds": 16.582,
+        "seconds": 12.74,
         "events": [
           {
-            "seconds": 0.069,
+            "seconds": 0.059,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 16.582,
+            "seconds": 12.74,
             "text": "三种说法已生成，点 A、B、C 查看。"
           }
         ]
@@ -233,29 +196,33 @@
       {
         "round": 6,
         "result": "first-pass",
-        "seconds": 16.767,
+        "seconds": 12.425,
         "events": [
           {
-            "seconds": 0.059,
+            "seconds": 0.053,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 16.767,
+            "seconds": 12.425,
             "text": "三种说法已生成，点 A、B、C 查看。"
           }
         ]
       },
       {
         "round": 7,
-        "result": "first-pass",
-        "seconds": 16.796,
+        "result": "retry-pass",
+        "seconds": 27.385,
         "events": [
           {
             "seconds": 0.052,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 16.796,
+            "seconds": 17.704,
+            "text": "助手的回答没通过检查，正在自动重试一次…"
+          },
+          {
+            "seconds": 27.385,
             "text": "三种说法已生成，点 A、B、C 查看。"
           }
         ]
@@ -263,14 +230,14 @@
       {
         "round": 8,
         "result": "first-pass",
-        "seconds": 14.904,
+        "seconds": 17.697,
         "events": [
           {
-            "seconds": 0.064,
+            "seconds": 0.062,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 14.904,
+            "seconds": 17.697,
             "text": "三种说法已生成，点 A、B、C 查看。"
           }
         ]
@@ -278,14 +245,14 @@
       {
         "round": 9,
         "result": "first-pass",
-        "seconds": 16.215,
+        "seconds": 16.608,
         "events": [
           {
-            "seconds": 0.069,
+            "seconds": 0.066,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 16.215,
+            "seconds": 16.608,
             "text": "三种说法已生成，点 A、B、C 查看。"
           }
         ]
@@ -293,170 +260,20 @@
       {
         "round": 10,
         "result": "first-pass",
-        "seconds": 17.133,
+        "seconds": 8.872,
         "events": [
           {
-            "seconds": 0.053,
+            "seconds": 0.052,
             "text": "助手正在准备三种说法…"
           },
           {
-            "seconds": 17.133,
+            "seconds": 8.872,
             "text": "三种说法已生成，点 A、B、C 查看。"
           }
         ]
       }
     ]
   },
-  "authorization_retests": [
-    {
-      "check": "real_message_wrapping",
-      "frame": [
-        412,
-        892
-      ],
-      "rows": [
-        {
-          "message_id": "#1",
-          "body_height": 49,
-          "row_width": 235
-        },
-        {
-          "message_id": "#2",
-          "body_height": 24,
-          "row_width": 235
-        },
-        {
-          "message_id": "#3",
-          "body_height": 24,
-          "row_width": 235
-        },
-        {
-          "message_id": "#4",
-          "body_height": 49,
-          "row_width": 235
-        },
-        {
-          "message_id": "#5",
-          "body_height": 49,
-          "row_width": 235
-        },
-        {
-          "message_id": "#6",
-          "body_height": 24,
-          "row_width": 235
-        },
-        {
-          "message_id": "#7",
-          "body_height": 49,
-          "row_width": 235
-        },
-        {
-          "message_id": "#8",
-          "body_height": 49,
-          "row_width": 235
-        },
-        {
-          "message_id": "#9",
-          "body_height": 24,
-          "row_width": 235
-        },
-        {
-          "message_id": "#10",
-          "body_height": 49,
-          "row_width": 235
-        },
-        {
-          "message_id": "#11",
-          "body_height": 49,
-          "row_width": 235
-        }
-      ]
-    },
-    {
-      "check": "real_message_wrapping",
-      "frame": [
-        990,
-        613
-      ],
-      "rows": [
-        {
-          "message_id": "#1",
-          "body_height": 23,
-          "row_width": 381
-        },
-        {
-          "message_id": "#2",
-          "body_height": 24,
-          "row_width": 381
-        },
-        {
-          "message_id": "#3",
-          "body_height": 24,
-          "row_width": 381
-        },
-        {
-          "message_id": "#4",
-          "body_height": 24,
-          "row_width": 381
-        },
-        {
-          "message_id": "#5",
-          "body_height": 24,
-          "row_width": 381
-        },
-        {
-          "message_id": "#6",
-          "body_height": 24,
-          "row_width": 381
-        },
-        {
-          "message_id": "#7",
-          "body_height": 24,
-          "row_width": 381
-        },
-        {
-          "message_id": "#8",
-          "body_height": 24,
-          "row_width": 381
-        },
-        {
-          "message_id": "#9",
-          "body_height": 24,
-          "row_width": 381
-        },
-        {
-          "message_id": "#10",
-          "body_height": 24,
-          "row_width": 381
-        }
-      ]
-    },
-    {
-      "check": "no_room",
-      "passed": true,
-      "status": "这次打开没有选房间。请关闭应用，导入时填上房间再打开。",
-      "version": "0.4.7",
-      "source_commit": "271e79d"
-    },
-    {
-      "check": "back",
-      "passed": true,
-      "same_host": true,
-      "library_visible": true,
-      "version": "0.4.7",
-      "source_commit": "271e79d"
-    },
-    {
-      "check": "reopen",
-      "passed": true,
-      "exact_saved_bytes": true,
-      "version": "0.4.7",
-      "source_commit": "271e79d"
-    }
-  ],
-  "card_host_room_service": {
-    "passed": true,
-    "status": "当前宿主不提供群聊服务，请在 Rinx 里打开。"
-  },
+  "auth_retests_previous_round": "no-room, Back, reopen, card-host missing service retested on 271e79d; cross-account rows remain 0.4.4 history",
   "cross_account_retested": false
 }

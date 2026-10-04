@@ -9,7 +9,7 @@
   },
   "id": "oncue-probe-parser",
   "integrity": {
-    "bundle_blake3": "915b15d1a480a6f6cec9b2002eb9b2518c0fbd516d0847c5932b3a58d4edde01"
+    "bundle_blake3": "bf228479b52aeb4af6350e7fa041b048ee207edfe31eb55eea01e04f80e894cb"
   },
   "name": "OnCue controlled parser probe",
   "network": {
