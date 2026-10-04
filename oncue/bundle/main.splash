@@ -1074,13 +1074,12 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
                         }
                     }}
                     }
-                    View{width: Fill height: Fit flow: Right spacing: 2 align: Align{y: 0.5}
+                    View{width: Fill height: Fit flow: Right{wrap: true} spacing: 2 align: Align{y: 0.5}
                         cue_play_button := CueLink{text: "播放" on_click: || cue_toggle_playback()}
                         CueLink{text: "下一句" on_click: || cue_next_line()}
                         CueLink{text: "重播" on_click: || cue_restart_playback()}
                         CueLink{text: "上一页" on_click: || cue_page_prev()}
                         CueLink{text: "下一页" on_click: || cue_page_next()}
-                        Label{text: "" width: Fill}
                         CueLink{text: "对白" on_click: || cue_show_dialogue()}
                         CueLink{text: "相关原文" on_click: || cue_show_summary()}
                     }
