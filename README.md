@@ -4,7 +4,7 @@
 
 OnCue 是一个运行在 Rinx 里的 OctoScript 小程序。在群里发言之前，先把想说的话写在这里：它读取你授权的那个群的最近消息，请助手给出三种不同的说法（顺着说、换个问法、换个玩法），你挑一种改好，存成草稿。**应用自身不发送任何消息。**
 
-演示录屏：[2 分 TODO 秒](evidence/demo/oncue-demo.mp4)
+演示录屏：[2 分 08 秒](evidence/demo/oncue-demo.mp4)
 
 <p align="center">
   <img src="evidence/screenshots/hero.png"
