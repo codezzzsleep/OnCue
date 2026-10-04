@@ -1006,7 +1006,8 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 4 new_batch: t
     // No outer-window or host-size API is used by the application.
     app_scroll := ScrollYView{width: Fill height: Fill flow: Down spacing: 8
         content := View{width: Fill height: Fit flow: Right{wrap: true} spacing: 8
-            source_panel := View{width: "min(100%, max(320px, 50% - 4px))" height: Fit flow: Down spacing: 3
+            RoundedView{width: "min(100%, max(320px, 50% - 4px))" height: Fit flow: Down padding: 10 new_batch: true draw_bg.color: #ffffff
+            source_panel := View{width: Fill height: Fit flow: Down spacing: 3
                 View{width: Fill height: Fit flow: Right spacing: 4 align: Align{y: 0.5}
                     CueButton{text: "样例舞台" on_click: || cue_show_demo()}
                     CueButton{text: "载入群聊" on_click: || cue_import_room()}
@@ -1023,7 +1024,7 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 4 new_batch: t
                     CueButton{text: "下翻" on_click: || cue_msg_page_next()}
                     cue_msg_page_label := Label{text: "第 1 页 / 共 1 页" width: Fill draw_text.color: cue_muted draw_text.text_style.font_size: 11}
                 }
-                RoundedView{width: Fill height: Fit min_height: 52 flow: Down padding: 6 new_batch: true draw_bg.color: #xffffff
+                RoundedView{width: Fill height: Fit min_height: 52 flow: Down padding: 6 new_batch: true draw_bg.color: #xf5f7f3
                     cue_msg_head := CueText{text: "" draw_text.color: cue_muted draw_text.text_style.font_size: 11}
                     cue_msg_pager := View{width: Fill height: Fit flow: Down spacing: 2 on_render: || {
                         let idx = cue_msg_page
@@ -1046,7 +1047,9 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 4 new_batch: t
                     CueButton{text: "停止等待" on_click: || cue_stop_wait()}
                 }
             }
-            result_panel := View{width: "min(100%, max(320px, 50% - 4px))" height: Fit flow: Down spacing: 3
+            }
+            RoundedView{width: "min(100%, max(320px, 50% - 4px))" height: Fit flow: Down padding: 10 new_batch: true draw_bg.color: #ffffff
+            result_panel := View{width: Fill height: Fit flow: Down spacing: 3
                 Label{text: "三种说法" draw_text.color: cue_green draw_text.text_style.font_size: 11}
                 View{width: Fill height: Fit flow: Right spacing: 4
                     CueButton{text: "A 顺着说" on_click: || cue_select_preview(0)}
@@ -1075,7 +1078,7 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 4 new_batch: t
                     if shown > total { shown = total }
                     Label{text: "第 " + shown + " 页 / 共 " + total + " 页" width: Fill draw_text.color: cue_muted draw_text.text_style.font_size: 11}
                 }}
-                RoundedView{width: Fill height: Fit min_height: 130 flow: Down padding: 6 new_batch: true draw_bg.color: #ffffff
+                RoundedView{width: Fill height: Fit min_height: 130 flow: Down padding: 6 new_batch: true draw_bg.color: #xf5f7f3
                     readout := View{width: Fill height: Fit flow: Down spacing: 4 on_render: || {
                         let idx = cue_ws_page
                         if idx >= cue_ws_pages.len() { idx = 0 }
@@ -1140,6 +1143,7 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 4 new_batch: t
                     CueButton{text: "显示 A" on_click: || cue_read_take(0)}
                     CueButton{text: "显示 B" on_click: || cue_read_take(1)}
                 }
+            }
             }
         CueText{text: "三种说法是助手的假设。应用不会替你发送任何消息。" draw_text.color: cue_muted draw_text.text_style.font_size: 10}
     }
