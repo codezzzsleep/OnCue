@@ -331,7 +331,7 @@ class Recorder:
 
     def result_index(self):
         rows = [r for r in self.b.snap() if r.get("ty") == "Label" and
-                re.fullmatch(r"第 \d+ 页 / 共 \d+ 页", r.get("t", "")) and r.get("i") != "cue_msg_page_label"]
+                re.fullmatch(r"第 \d+ 页 / 共 \d+ 页", r.get("t", ""))]
         require(len(rows) == 1, "Result page counter is absent or ambiguous")
         current, total = map(int, re.findall(r"\d+", rows[0]["t"]))
         require(1 <= current <= total, "Invalid result page counter")

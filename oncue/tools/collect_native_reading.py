@@ -20,7 +20,7 @@ def pages(b):
     b.click(text='上一页')
     # Page indicator belongs to the result header, after the source pane.
     def index():
-        candidates=[r for r in b.snap() if r.get('ty')=='Label' and r.get('t','').startswith('第 ') and r.get('i')!='cue_msg_page_label']
+        candidates=[r for r in b.snap() if r.get('ty')=='Label' and r.get('t','').startswith('第 ')]
         text=candidates[-1]['t']; nums=[int(s) for s in text.split() if s.isdigit()]
         return nums[0],nums[1]
     cur,total=index()

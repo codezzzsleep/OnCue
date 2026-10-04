@@ -18,13 +18,9 @@ let cue_playing = false
 let cue_play_epoch = 0
 let cue_take_read = 0
 let cue_read_mode = 0
-let cue_msg_index = 0
-let cue_msg_page = 0
 let cue_ws_page = 0
 let cue_page_cols = 32
 let cue_page_rows = 10
-let cue_msg_rows = 3
-let cue_msg_pages = [""]
 let cue_ws_pages = [""]
 
 fn cue_set_status(text){ ui.cue_status.set_text(text) }
@@ -233,48 +229,11 @@ fn cue_paginate(text, page_rows){
     pages
 }
 
-// ---- 现场原消息：整条可分页 ----
-fn cue_sync_message(){
-    if cue_sources.len() == 0 {
-        ui.cue_msg_head.set_text("")
-        ui.cue_msg_counter.set_text("0 / 0")
-        cue_msg_pages = ["暂无原消息。请打开样例舞台，或在已授权的宿主里选择群聊读取。"]
-        cue_msg_page = 0
-        ui.cue_msg_page_label.set_text("第 1 页 / 共 1 页")
-        ui.cue_msg_pager.render()
-        return
-    }
-    let s = cue_sources[cue_msg_index]
-    ui.cue_msg_head.set_text("#" + (cue_msg_index + 1) + " " + s.sender)
-    ui.cue_msg_counter.set_text((cue_msg_index + 1) + " / " + cue_sources.len())
-    cue_msg_pages = cue_paginate(s.body, cue_msg_rows)
-    if cue_msg_page >= cue_msg_pages.len() { cue_msg_page = cue_msg_pages.len() - 1 }
-    if cue_msg_page < 0 { cue_msg_page = 0 }
-    ui.cue_msg_page_label.set_text("第 " + (cue_msg_page + 1) + " 页 / 共 " + cue_msg_pages.len() + " 页")
-    ui.cue_msg_pager.render()
+// ---- 群聊消息列表 ----
+fn cue_is_selected(index){
+    cue_summary.search("\n#" + (index + 1) + " ") >= 0
 }
-fn cue_message_prev(){
-    if cue_msg_index > 0 {
-        cue_msg_index -= 1
-        cue_msg_page = 0
-    }
-    cue_sync_message()
-}
-fn cue_message_next(){
-    if cue_msg_index < cue_sources.len() - 1 {
-        cue_msg_index += 1
-        cue_msg_page = 0
-    }
-    cue_sync_message()
-}
-fn cue_msg_page_prev(){
-    if cue_msg_page > 0 { cue_msg_page -= 1 }
-    cue_sync_message()
-}
-fn cue_msg_page_next(){
-    if cue_msg_page + 1 < cue_msg_pages.len() { cue_msg_page += 1 }
-    cue_sync_message()
-}
+fn cue_sync_message(){ ui.cue_msg_list.render() }
 fn cue_sync_reader(){
     ui.header.render()
     ui.readout.render()
@@ -357,8 +316,6 @@ fn cue_show_demo(){
         {sender: "阿柚", body: "含吧，吃饭另算就好。"},
         {sender: "七喜", body: "行，那先按 300 排一版看看。"}
     ]
-    cue_msg_index = 0
-    cue_msg_page = 0
     cue_summary = cue_source_excerpt("#2\n#3\n#5")
     ui.cue_scene_label.set_text(cue_scene)
     ui.cue_trial.set_text("那我们明早 9 点出发，在杭州住一晚？")
@@ -379,8 +336,6 @@ fn cue_import_room(){
     cue_invalidate()
     cue_demo = false
     cue_sources = []
-    cue_msg_index = 0
-    cue_msg_page = 0
     cue_sync_reader()
     cue_scene = "正在读取你选择并授权的群聊"
     ui.cue_scene_label.set_text(cue_scene)
@@ -407,13 +362,11 @@ fn cue_import_room(){
                 return
             }
             cue_sources = result.data.messages
-            cue_msg_index = 0
-            cue_msg_page = 0
             cue_sync_reader()
             if cue_sources.len() == 0 {
                 cue_set_status("这个群聊暂时没有可读取的文本消息。")
             } else {
-                cue_set_status("原消息已载入，可逐条翻看；长消息可用“上翻 / 下翻”逐页读完。")
+                cue_set_status("原消息已载入，共 " + cue_sources.len() + " 条。")
             }
         })
     })
@@ -446,6 +399,7 @@ fn cue_demo_routes(){
     // 样例路径必须自己产出摘要：cue_rehearse() 开头的 cue_invalidate() 会清掉旧摘要，
     // 而统一清旧结果的语义保留不动；真实 Agent 路径用 blocks[0] 写回，两者各自负责。
     cue_summary = cue_source_excerpt("#2\n#3\n#5")
+    cue_sync_message()
     cue_set_status("样例的三种说法已显示。")
 }
 fn cue_prompt(trial){
@@ -719,6 +673,7 @@ fn cue_accept_reply(reply, request_revision, attempt){
         ]
         cue_select_preview(0)
         cue_summary = cue_source_excerpt(blocks[0])
+        cue_sync_message()
         cue_set_status("三种说法已生成，点 A、B、C 查看。")
         return
     }
@@ -805,13 +760,6 @@ fn cue_show_summary(){
     if cue_summary == "" { cue_set_status("还没有相关原文：先点「试映下一幕」。") return }
     cue_set_status("这些是助手选出的相关原文。")
     cue_set_mode(1)
-}
-fn cue_show_takes(){
-    if cue_take_a == "" && cue_take_b == "" {
-        cue_set_status("先改好一句存 A，再改另一句存 B。关闭后仍可取回对照。")
-        return
-    }
-    cue_set_mode(2)
 }
 fn cue_select_preview(index){
     if index < 0 || index >= cue_routes.len() {
@@ -1027,26 +975,27 @@ SolidView{width: Fill height: Fill flow: Down padding: 12 spacing: 8 new_batch: 
                         CueButton{text: "载入群聊" on_click: || cue_import_room()}
                     }
                     CueCap{text: "群聊消息"}
-                    View{width: Fill height: Fit flow: Right spacing: 2 align: Align{y: 0.5}
-                        CueLink{text: "上一条" on_click: || cue_message_prev()}
-                        CueLink{text: "下一条" on_click: || cue_message_next()}
-                        cue_msg_counter := Label{text: "0 / 0" width: Fill draw_text.color: cue_muted draw_text.text_style.font_size: 11}
-                    }
-                    View{width: Fill height: Fit flow: Right spacing: 2 align: Align{y: 0.5}
-                        CueLink{text: "上翻" on_click: || cue_msg_page_prev()}
-                        CueLink{text: "下翻" on_click: || cue_msg_page_next()}
-                        cue_msg_page_label := Label{text: "第 1 页 / 共 1 页" width: Fill draw_text.color: cue_muted draw_text.text_style.font_size: 11}
-                    }
-                    RoundedView{width: Fill height: Fit min_height: 52 flow: Down padding: 8 new_batch: true draw_bg.color: #xf5f7f3
-                        cue_msg_head := CueText{text: "" draw_text.color: cue_muted draw_text.text_style.font_size: 11}
-                        cue_msg_pager := View{width: Fill height: Fit flow: Down spacing: 2 on_render: || {
-                        let idx = cue_msg_page
-                        if idx >= cue_msg_pages.len() { idx = 0 }
-                        for i in cue_msg_pages.len() {
-                            if i == idx { CueText{text: cue_msg_pages[i]} }
+                    cue_msg_list := View{width: Fill height: Fit flow: Down spacing: 2 on_render: || {
+                        if cue_sources.len() == 0 {
+                            CueText{text: "还没有消息。点「样例舞台」或「载入群聊」。" draw_text.color: cue_muted}
+                        } else {
+                            for i in cue_sources.len() {
+                                let s = cue_sources[i]
+                                if cue_is_selected(i) {
+                                    RoundedView{width: Fill height: Fit flow: Right spacing: 6 padding: Inset{left: 8 right: 8 top: 4 bottom: 4} new_batch: true draw_bg.color: #xe5eee7
+                                        Label{text: "#" + (i + 1) width: 28 draw_text.color: cue_green draw_text.text_style: theme.font_bold{font_size: 11}}
+                                        CueText{text: s.sender + "：" + s.body}
+                                    }
+                                } else {
+                                    View{width: Fill height: Fit flow: Right spacing: 6 padding: Inset{left: 8 right: 8 top: 4 bottom: 4}
+                                        Label{text: "#" + (i + 1) width: 28 draw_text.color: cue_muted draw_text.text_style.font_size: 11}
+                                        CueText{text: s.sender + "：" + s.body}
+                                    }
+                                }
+                            }
                         }
                     }}
-                    }
+                    CueText{text: "浅绿底色的几条是助手选出的相关原文。" draw_text.color: cue_muted draw_text.text_style.font_size: 11}
                 }
             }
             result_panel := View{width: "min(100%, max(320px, 50% - 4px))" height: Fit flow: Down spacing: 8

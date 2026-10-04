@@ -122,7 +122,7 @@ class NativeAcceptanceTests(unittest.TestCase):
                      "宿主没有授权读取这个房间。", "当前宿主不提供群聊服务，请在 Rinx 里打开。"):
             self.assertEqual(native.room_state(text), "failure")
         self.assertEqual(native.room_state("正在读取群聊最近 12 条消息…"), "pending")
-        self.assertEqual(native.room_state("原消息已载入，可逐条翻看"), "success")
+        self.assertEqual(native.room_state("原消息已载入，共 12 条。"), "success")
 
     def test_cli_permissions_fail_before_files_or_bridge(self):
         args = self.arguments()

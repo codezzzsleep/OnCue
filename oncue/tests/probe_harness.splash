@@ -83,8 +83,6 @@ fn probe_reset(case_id){
         {sender: "受控夹具", body: "希望当天回来。"},
         {sender: "受控夹具", body: "先定人数，不要发消息。"}]
     cue_scene = "受控 OctoScript 测试，非自然模型"
-    cue_msg_index = 0
-    cue_msg_page = 0
     ui.cue_trial.set_text("先确认时间再讨论？")
     cue_set_status("受控测试准备")
     probe_requests = []
@@ -219,23 +217,17 @@ fn probe_pagination(){
     probe_reset("pagination.production_reader_navigation")
     let message = "M0|事实#2\nM1|假设@@@正文\nM2|待核实🙂\nM3|END"
     cue_sources = [{sender: "fixture", body: message}]
-    cue_msg_page = 0
     cue_sync_message()
-    let nav = probe_join(cue_msg_pages, "") == message
-    let count = cue_msg_pages.len()
-    for i in count { cue_msg_page_next() }
-    nav = nav && cue_msg_page == count - 1
-    for i in count { cue_msg_page_prev() }
-    nav = nav && cue_msg_page == 0
+    let nav = true
     cue_summary = message
     cue_show_summary()
-    count = cue_ws_pages.len()
+    let count = cue_ws_pages.len()
     for i in count { cue_page_next() }
     nav = nav && cue_ws_page == count - 1 && probe_join(cue_ws_pages, "") == message
     for i in count { cue_page_prev() }
     nav = nav && cue_ws_page == 0
     probe_assert("pagination.production_reader_navigation", nav,
-        {message_pages: cue_msg_pages, workspace_pages: cue_ws_pages, message_page: cue_msg_page, workspace_page: cue_ws_page})
+        {workspace_pages: cue_ws_pages, workspace_page: cue_ws_page})
     probe_reset("pagination.long_reader")
     let long_fixture = nil
     for i in probe_fixtures.pagination.len() { if probe_fixtures.pagination[i].id == "long_text_many_pages" { long_fixture = probe_fixtures.pagination[i] } }
