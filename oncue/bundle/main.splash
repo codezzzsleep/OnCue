@@ -649,7 +649,9 @@ fn cue_has_commitment_claim(body){
     let lines = body.split("\n")
     for i in lines.len() {
         let line = lines[i]
-        if line.strip_prefix("待确认") != line && (line.search("？") >= 0 || line.search("?") >= 0) { continue }
+        if line.strip_prefix("待确认") != line {
+            if line.search("？") >= 0 || line.search("?") >= 0 { continue }
+        }
         for j in words.len() { if line.search(words[j]) >= 0 { return true } }
     }
     false
