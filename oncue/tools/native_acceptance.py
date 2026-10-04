@@ -27,7 +27,7 @@ from rinx_session import module, resize
 
 APP_ID = "oncue-screening-room"
 DEFAULT_RELEASE = Path(__file__).resolve().parents[1] / "bundle"
-SUCCESS = "原文摘录已逐字核对"
+SUCCESS = "三种说法已生成"
 
 
 def require(condition, message):
@@ -131,10 +131,10 @@ def turn_state(status):
     # An automatic retry is PENDING even though its text contains “未通过”.
     if status.startswith(SUCCESS):
         return "success"
-    if "正在自动重试一次" in status or status.startswith(("Agent 正在排练", "这一幕正在展开")):
+    if "正在自动重试一次" in status or status.startswith(("助手正在准备三种说法", "这一幕正在展开")):
         return "pending"
-    if status.startswith(("这次试映没有完成", "Agent 暂时不可用", "Agent 尚未形成",
-                          "剧本结构或来源核对未通过；", "已停止等待", "先写一句", "先把台词缩到", "先载入一个群聊")):
+    if status.startswith(("这次试映没有完成", "助手暂时不可用", "助手的回答不完整",
+                          "助手的回答没通过检查，已丢弃。", "已停止等待", "先写一句", "先把台词缩到", "先载入一个群聊")):
         return "failure"
     if "等待超过 90 秒" in status:
         return "failure"
@@ -144,7 +144,7 @@ def turn_state(status):
 def room_state(status):
     if status.startswith("原消息已载入"):
         return "success"
-    if status.startswith("读取本次附加群聊"):
+    if status.startswith("正在读取群聊"):
         return "pending"
     if status.startswith(("没有读到群聊", "这次打开没有选房间", "宿主没有授权读取这个房间",
                           "当前宿主不提供群聊服务", "消息读取失败", "这个群聊暂时没有", "已停止等待")) or "等待超过 90 秒" in status:
@@ -441,8 +441,8 @@ class Recorder:
                 raise RuntimeError("Dialogue did not finish within observation bound")
             result[label] = self.collect_pages(label, False)
         require(len(set(result.values())) == 3, "Three route texts are not distinct")
-        self.click("摘要")
-        result["摘要"] = self.collect_pages("摘要", True)
+        self.click("相关原文")
+        result["相关原文"] = self.collect_pages("相关原文", True)
         return result
 
     def saved_bytes(self, filename):
@@ -464,7 +464,7 @@ class Recorder:
         text = self.fresh_draft("take-" + label.lower() + ".txt", text)
         self.fill("cue_draft", text)
         self.click("存 " + label)
-        require("回读确认" in self.status(), "Save confirmation was not observed")
+        require("已保存" in self.status(), "Save confirmation was not observed")
         require(self.saved_bytes("take-" + label.lower() + ".txt") == text.encode("utf-8"), "Saved UTF-8 bytes differ")
         self.record("independent_readback", slot=label, exact=True, text_sha256=sha256(text.encode("utf-8")))
         self.click("显示 " + label)
@@ -480,7 +480,7 @@ class Recorder:
         text = self.fresh_draft("draft.txt", text)
         self.fill("cue_draft", text)
         self.click("保留这句")
-        require(self.status().startswith("草稿已保存并回读确认"), "This run did not confirm draft save")
+        require(self.status().startswith("草稿已保存"), "This run did not confirm draft save")
         require(self.saved_bytes("draft.txt") == text.encode("utf-8"), "Draft bytes differ before close")
         self.click("Back", id="close", shell=True)
         self.import_bundle()  # Same bundle, account, room and byte checks as initial import.

@@ -301,7 +301,7 @@ fn cue_stop_wait(){
     if !cue_busy { cue_set_status("当前没有正在等待的请求。") return }
     cue_invalidate()
     if !cue_demo && cue_sources.len() == 0 { cue_scene_idle() }
-    cue_set_status("已停止等待，可以重新载入或改一句再试。已经开始的模型回合仍可能完成。")
+    cue_set_status("已停止等待。")
 }
 fn cue_deadline(revision, subject){
     cue_expires_at = time_now() + 90.0
@@ -332,7 +332,7 @@ fn cue_boot_state(){
     if fs.exists("draft.txt") { ui.cue_draft.set_text(fs.read("draft.txt")) }
     else if cue_take_a != "" { ui.cue_draft.set_text(cue_take_a) }
     if cue_take_a != "" || cue_take_b != "" || fs.exists("draft.txt") {
-        cue_set_status("已恢复上次保存的草稿版本；仍未发送。")
+        cue_set_status("已恢复上次保存的草稿。")
     }
 }
 fn cue_edit_trial(text){
@@ -363,7 +363,7 @@ fn cue_show_demo(){
     ui.cue_scene_label.set_text(cue_scene)
     ui.cue_trial.set_text("那我们明早 9 点出发，在杭州住一晚？")
     cue_set_mode(0)
-    cue_set_status("虚构群聊与预设路线，仅供体验玩法。")
+    cue_set_status("这是内置样例，消息和三种说法都是虚构的。")
 }
 fn cue_scene_idle(){
     cue_scene = "还没有载入群聊"
@@ -387,7 +387,7 @@ fn cue_import_room(){
     cue_set_busy(true)
     let reading_revision = cue_revision
     cue_deadline(reading_revision, "消息读取")
-    cue_set_status("读取本次附加群聊的最近 12 条文本消息…")
+    cue_set_status("正在读取群聊最近 12 条消息…")
     host.request("matrix.room_info", {}, fn(room){
         if !cue_request_current(reading_revision) { return }
         if !room.is_ok {
@@ -446,7 +446,7 @@ fn cue_demo_routes(){
     // 样例路径必须自己产出摘要：cue_rehearse() 开头的 cue_invalidate() 会清掉旧摘要，
     // 而统一清旧结果的语义保留不动；真实 Agent 路径用 blocks[0] 写回，两者各自负责。
     cue_summary = cue_source_excerpt("#2\n#3\n#5")
-    cue_set_status("样例预设已展开；这些对白不是对真实群友的预测。")
+    cue_set_status("样例的三种说法已显示。")
 }
 fn cue_prompt(trial){
     let source_text = ""
@@ -551,7 +551,7 @@ fn cue_validate_blocks(blocks){
 fn cue_source_excerpt(selection){
     let lines = selection.trim().split("\n")
     let seen = []
-    let excerpt = "原文摘录（逐字核对，不代表群内共识）："
+    let excerpt = "相关原文："
     if lines.len() < 1 || lines.len() > 4 { return "" }
     for i in lines.len() {
         let wanted = lines[i].trim()
@@ -717,18 +717,18 @@ fn cue_accept_reply(reply, request_revision, attempt){
         ]
         cue_select_preview(0)
         cue_summary = cue_source_excerpt(blocks[0])
-        cue_set_status("原文摘录已逐字核对；三路线为 Agent 假设，不是群友承诺。")
+        cue_set_status("三种说法已生成，点 A、B、C 查看。")
         return
     }
     if attempt < 1 {
-        cue_set_status("剧本结构或来源核对未通过，正在自动重试一次…")
+        cue_set_status("助手的回答没通过检查，正在自动重试一次…")
         let hint = "\n\n你上一次的回答没有通过检查：" + cue_reject_reason + "。请严格按上面的要求重新写出完整的七节。"
         cue_start_turn(cue_last_prompt + hint, request_revision, attempt + 1)
         return
     }
     cue_set_busy(false)
-    if blocks.len() == 7 { cue_set_status("剧本结构或来源核对未通过；未展示可疑结果，请再试一次。") return }
-    cue_set_status("Agent 尚未形成七块完整剧本，请再试一次。")
+    if blocks.len() == 7 { cue_set_status("助手的回答没通过检查，已丢弃。请再试一次。") return }
+    cue_set_status("助手的回答不完整，请再试一次。")
 }
 fn cue_rehearse(){
     if cue_busy { cue_set_status("这一幕正在展开，请稍等。") return }
@@ -740,14 +740,14 @@ fn cue_rehearse(){
     if cue_demo { cue_demo_routes() return }
     cue_set_busy(true)
     let request_revision = cue_revision
-    cue_deadline(request_revision, "Agent 试映")
+    cue_deadline(request_revision, "助手试映")
     let prompt_text = cue_prompt(trial)
-    cue_set_status("Agent 正在排练三个可能的下一幕…")
+    cue_set_status("助手正在准备三种说法…")
     host.request("octos.session.open", {}, fn(session){
         if !cue_request_current(request_revision) { return }
         if !session.is_ok {
             cue_set_busy(false)
-            cue_set_status("Agent 暂时不可用：" + session.error)
+            cue_set_status("助手暂时不可用：" + session.error)
             return
         }
         cue_start_turn(prompt_text, request_revision, 0)
@@ -760,7 +760,7 @@ fn cue_choose_route(index){
     }
     ui.cue_draft.set_text(cue_routes[index].draft)
     cue_pause_playback()
-    cue_set_status("台词已放进草稿，可以继续修改；尚未发送。")
+    cue_set_status("已放进草稿框，可以继续修改。")
 }
 
 // ---- 阅读区（右侧）：对白/建议、现场摘要、A/B 对照 三条独立阅读路径 ----
@@ -800,8 +800,8 @@ fn cue_show_dialogue(){
     cue_set_mode(0)
 }
 fn cue_show_summary(){
-    if cue_summary == "" { cue_set_status("还没有现场摘要：先点“试映下一幕”。") return }
-    cue_set_status("正在阅读原文摘录；只核对引文，不代表群内共识。")
+    if cue_summary == "" { cue_set_status("还没有相关原文：先点「试映下一幕」。") return }
+    cue_set_status("这些是助手选出的相关原文。")
     cue_set_mode(1)
 }
 fn cue_show_takes(){
@@ -864,7 +864,7 @@ fn cue_next_line(){
     if cue_read_mode != 0 { cue_set_mode(0) }
     cue_advance_playback()
     if cue_play_count >= cue_play_lines.len() {
-        cue_set_status("这条假设路线已展开全部 " + cue_play_count + " 句；仍是未发送的排练。")
+        cue_set_status("已显示全部 " + cue_play_count + " 句。")
     } else {
         cue_set_status("已展开 " + cue_play_count + " / " + cue_play_lines.len() + " 句；播放保持暂停。")
     }
@@ -876,7 +876,7 @@ fn cue_page_prev(){
         return
     }
     if cue_ws_page > 0 { cue_ws_page -= 1 }
-    cue_set_status("已翻到第 " + (cue_ws_page + 1) + " 页 / 共 " + cue_ws_pages.len() + " 页；仍是未发送的排练。")
+    cue_set_status("第 " + (cue_ws_page + 1) + " 页 / 共 " + cue_ws_pages.len() + " 页。")
     cue_sync_reader()
 }
 fn cue_page_next(){
@@ -887,9 +887,9 @@ fn cue_page_next(){
     }
     if cue_ws_page + 1 < cue_ws_pages.len() {
         cue_ws_page += 1
-        cue_set_status("已翻到第 " + (cue_ws_page + 1) + " 页 / 共 " + cue_ws_pages.len() + " 页；仍是未发送的排练。")
+        cue_set_status("第 " + (cue_ws_page + 1) + " 页 / 共 " + cue_ws_pages.len() + " 页。")
     } else {
-        cue_set_status("已到最后一页 / 共 " + cue_ws_pages.len() + " 页；仍是未发送的排练。")
+        cue_set_status("已经是最后一页。")
     }
     cue_sync_reader()
 }
@@ -916,16 +916,16 @@ fn cue_save_text(path, text, label){
 fn cue_keep_draft(){
     let text = ui.cue_draft.text()
     // 只用 trim 判断"是否为空"，保存的是**原始 text**：否则首尾空白会被丢掉，
-    // 输入与回读就不是逐字符相等（AI1 2026-10-02 评审 #253）。
+    // 输入与回读就不是逐字符相等。
     if text.trim() == "" { cue_set_status("先点用这句，或在草稿框写一句，再保存。") return }
     if cue_save_text("draft.txt", text, "草稿") {
-        cue_set_status("草稿已保存并回读确认；尚未发送。")
+        cue_set_status("草稿已保存。")
     }
 }
 fn cue_restore_draft(){
     if fs.exists("draft.txt") {
         ui.cue_draft.set_text(fs.read("draft.txt"))
-        cue_set_status("上次草稿已取回；请对照当前群聊再修改。")
+        cue_set_status("已取回上次的草稿。")
     } else { cue_set_status("还没有保存过草稿。") }
 }
 fn cue_refresh_takes(){
@@ -949,7 +949,7 @@ fn cue_keep_take(slot){
         cue_pause_playback()
         cue_rebuild_ws()
         cue_sync_reader()
-        cue_set_status("版本 " + label + " 已保存并回读确认；关闭后可以取回。")
+        cue_set_status("版本 " + label + " 已保存。")
     }
 }
 fn cue_restore_take(slot){
@@ -958,7 +958,7 @@ fn cue_restore_take(slot){
     if slot == 1 { text = cue_take_b label = "B" }
     if text == "" { cue_set_status("版本 " + label + " 还没有内容。") return }
     ui.cue_draft.set_text(text)
-    cue_set_status("版本 " + label + " 已放回编辑框；尚未发送。")
+    cue_set_status("版本 " + label + " 已放回编辑框。")
 }
 fn cue_read_take(slot){
     cue_refresh_takes()
@@ -975,8 +975,8 @@ fn cue_read_take(slot){
     cue_pause_playback()
     cue_rebuild_ws()
     cue_sync_reader()
-    if slot == 1 { cue_set_status("正在阅读版本 B，第 1 页 / 共 " + cue_ws_pages.len() + " 页；仍是未发送的排练。") }
-    else { cue_set_status("正在阅读版本 A，第 1 页 / 共 " + cue_ws_pages.len() + " 页；仍是未发送的排练。") }
+    if slot == 1 { cue_set_status("正在看版本 B。") }
+    else { cue_set_status("正在看版本 A。") }
 }
 
 start_timeout(0.05, fn(){ cue_show_demo() cue_boot_state() })
@@ -1029,7 +1029,7 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 4 new_batch: t
                     CueButton{text: "C 换玩法" on_click: || cue_select_preview(2)}
                     CueButton{text: "用这句" on_click: || cue_choose_route(cue_play_index)}
                 }
-                Label{text: "现场原消息" draw_text.color: cue_green draw_text.text_style.font_size: 11}
+                Label{text: "群聊消息" draw_text.color: cue_green draw_text.text_style.font_size: 11}
                 View{width: Fill height: Fit flow: Right spacing: 4 align: Align{y: 0.5}
                     CueButton{text: "上一条" on_click: || cue_message_prev()}
                     CueButton{text: "下一条" on_click: || cue_message_next()}
@@ -1068,7 +1068,7 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 4 new_batch: t
                 }
                 View{width: Fill height: Fit flow: Right spacing: 4
                     CueButton{text: "对白" on_click: || cue_show_dialogue()}
-                    CueButton{text: "摘要" on_click: || cue_show_summary()}
+                    CueButton{text: "相关原文" on_click: || cue_show_summary()}
                     cue_play_button := CueButton{text: "播放" on_click: || cue_toggle_playback()}
                     CueButton{text: "重播" on_click: || cue_restart_playback()}
                 }
@@ -1084,7 +1084,7 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 4 new_batch: t
                 }
                 header := View{width: Fill height: Fit flow: Right spacing: 6 align: Align{y: 0.5} on_render: || {
                     if cue_read_mode == 1 {
-                        Label{text: "原文摘录" draw_text.color: cue_green draw_text.text_style.font_size: 13}
+                        Label{text: "相关原文" draw_text.color: cue_green draw_text.text_style.font_size: 13}
                     } else {
                         if cue_read_mode == 2 {
                             let name = "版本 A"
@@ -1117,7 +1117,7 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 4 new_batch: t
                         } else {
                             if cue_read_mode == 1 {
                                 if cue_summary == "" {
-                                    CueText{text: "还没有现场摘要。点试映下一幕后，可在这里逐页读完。"}
+                                    CueText{text: "还没有相关原文：先点「试映下一幕」。"}
                                 } else {
                                     CueText{text: cue_ws_pages[idx]}
                                 }
@@ -1139,6 +1139,6 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 4 new_batch: t
                 }
             }
         }
-        CueText{text: "原消息是事实线索；对白和建议是假设，A/B 仅保存草稿文本，不是完整场景存档。尚未发送。" draw_text.color: cue_muted draw_text.text_style.font_size: 10}
+        CueText{text: "三种说法是助手的假设。应用不会替你发送任何消息。" draw_text.color: cue_muted draw_text.text_style.font_size: 10}
     }
 }

@@ -108,12 +108,12 @@ class NativeAcceptanceTests(unittest.TestCase):
                 native.review_matches(changed, self.identity, "")
 
     def test_retry_status_is_pending_not_terminal_failure(self):
-        self.assertEqual(native.turn_state("剧本结构或来源核对未通过，正在自动重试一次…"), "pending")
-        self.assertEqual(native.turn_state("剧本结构或来源核对未通过；未展示可疑结果，请再试一次。"), "failure")
-        self.assertEqual(native.turn_state("Agent 尚未形成七块完整剧本，请再试一次。"), "failure")
+        self.assertEqual(native.turn_state("助手的回答没通过检查，正在自动重试一次…"), "pending")
+        self.assertEqual(native.turn_state("助手的回答没通过检查，已丢弃。请再试一次。"), "failure")
+        self.assertEqual(native.turn_state("助手的回答不完整，请再试一次。"), "failure")
         self.assertEqual(native.turn_state("这次试映没有完成：service error"), "failure")
-        self.assertEqual(native.turn_state("Agent 试映等待超过 90 秒，已结束等待。"), "failure")
-        self.assertEqual(native.turn_state(native.SUCCESS + "；三路线为 Agent 假设。"), "success")
+        self.assertEqual(native.turn_state("助手试映等待超过 90 秒，已结束等待。"), "failure")
+        self.assertEqual(native.turn_state(native.SUCCESS + "；点 A、B、C 查看。"), "success")
         self.assertEqual(native.turn_state("unrecognized production contract"), "unknown")
 
     def test_room_empty_errors_and_pending_are_distinct(self):
@@ -121,7 +121,7 @@ class NativeAcceptanceTests(unittest.TestCase):
                      "这次打开没有选房间。请关闭应用，导入时填上房间再打开。",
                      "宿主没有授权读取这个房间。", "当前宿主不提供群聊服务，请在 Rinx 里打开。"):
             self.assertEqual(native.room_state(text), "failure")
-        self.assertEqual(native.room_state("读取本次附加群聊的最近 12 条文本消息…"), "pending")
+        self.assertEqual(native.room_state("正在读取群聊最近 12 条消息…"), "pending")
         self.assertEqual(native.room_state("原消息已载入，可逐条翻看"), "success")
 
     def test_cli_permissions_fail_before_files_or_bridge(self):
@@ -155,15 +155,15 @@ class NativeAcceptanceTests(unittest.TestCase):
 
     def test_waits_through_automatic_retry_and_records_status(self):
         recorder = self.recorder()
-        recorder.status = Mock(side_effect=["Agent 正在排练三个可能的下一幕…",
-                                           "剧本结构或来源核对未通过，正在自动重试一次…", native.SUCCESS + "；假设"])
+        recorder.status = Mock(side_effect=["助手正在准备三种说法…",
+                                           "助手的回答没通过检查，正在自动重试一次…", native.SUCCESS + "；假设"])
         with patch.object(native.time, "sleep"), patch.object(native.time, "monotonic", return_value=0):
             recorder.wait_status(native.turn_state, "test")
         self.assertEqual([event["state"] for event in recorder.actions], ["pending", "pending", "success"])
 
     def test_observer_timeout_never_starts_another_turn(self):
         recorder = self.recorder()
-        recorder.status = Mock(return_value="Agent 正在排练三个可能的下一幕…")
+        recorder.status = Mock(return_value="助手正在准备三种说法…")
         with patch.object(native.time, "sleep"), patch.object(native.time, "monotonic", side_effect=[0, 2]):
             with self.assertRaisesRegex(RuntimeError, "Observer budget"):
                 recorder.wait_status(native.turn_state, "test")
@@ -193,7 +193,7 @@ class NativeAcceptanceTests(unittest.TestCase):
         recorder = self.recorder()
         recorder.fill, recorder.click = Mock(), Mock()
         recorder.fresh_draft = Mock(side_effect=lambda filename, text: text)
-        recorder.status = Mock(return_value="草稿已保存并回读确认；尚未发送。")
+        recorder.status = Mock(return_value="草稿已保存。")
         recorder.saved_bytes = Mock(return_value="精确原文\n".encode("utf-8"))
         recorder.import_bundle = Mock()
         recorder.b.snap.return_value = [{"i": "cue_draft", "ty": "TextInput", "val": "精确原文\n"}]

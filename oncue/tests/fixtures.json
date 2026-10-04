@@ -396,22 +396,22 @@
       {
         "id": "excerpt_one_id_current_behavior",
         "selection": "#1",
-        "expected": "原文摘录（逐字核对，不代表群内共识）：\n#1 预算 500，9 点集合。\n  保留缩进 👩‍👩‍👧‍👦  "
+        "expected": "相关原文：\n#1 预算 500，9 点集合。\n  保留缩进 👩‍👩‍👧‍👦  "
       },
       {
         "id": "excerpt_selection_order",
         "selection": "#3\n#2",
-        "expected": "原文摘录（逐字核对，不代表群内共识）：\n#3 当天回来；不承诺订票。\n#2 中午之后再讨论，尚未同意。"
+        "expected": "相关原文：\n#3 当天回来；不承诺订票。\n#2 中午之后再讨论，尚未同意。"
       },
       {
         "id": "excerpt_whitespace_crlf",
         "selection": " \t#2\r\n #1 \n",
-        "expected": "原文摘录（逐字核对，不代表群内共识）：\n#2 中午之后再讨论，尚未同意。\n#1 预算 500，9 点集合。\n  保留缩进 👩‍👩‍👧‍👦  "
+        "expected": "相关原文：\n#2 中午之后再讨论，尚未同意。\n#1 预算 500，9 点集合。\n  保留缩进 👩‍👩‍👧‍👦  "
       },
       {
         "id": "excerpt_four_ids",
         "selection": "#2\n#3\n#4\n#5",
-        "expected": "原文摘录（逐字核对，不代表群内共识）：\n#2 中午之后再讨论，尚未同意。\n#3 当天回来；不承诺订票。\n#4 路线由大家共同决定。\n#5 金额待核实。"
+        "expected": "相关原文：\n#2 中午之后再讨论，尚未同意。\n#3 当天回来；不承诺订票。\n#4 路线由大家共同决定。\n#5 金额待核实。"
       },
       {
         "id": "excerpt_duplicate_rejected",

@@ -134,7 +134,7 @@ fn probe_parser(){
     canonical[3] = swapped
     probe_assert("parser.protocol_order_rejects_swap", protocol_ok && !cue_validate_protocol(canonical), {swapped: canonical})
     probe_assert("parser.protocol_requires_markers", !cue_validate_protocol(probe_fixtures.canonical_blocks), {unmarked: true})
-    probe_assert("parser.excerpt_exact", cue_source_excerpt("#2\n#3") == "原文摘录（逐字核对，不代表群内共识）：\n#2 中午才能走。\n#3 希望当天回来。", {})
+    probe_assert("parser.excerpt_exact", cue_source_excerpt("#2\n#3") == "相关原文：\n#2 中午才能走。\n#3 希望当天回来。", {})
     probe_assert("parser.excerpt_rejects_rewording", cue_source_excerpt("#2 杭州") == "" && cue_source_excerpt("#99") == "" && cue_source_excerpt("#2\n#2") == "", {})
     probe_assert("parser.rejects_invented_price", !cue_numbers_grounded("青旅人均80元") && cue_numbers_grounded("预算500，依据#1"), {})
     probe_assert("parser.rejects_invalid_citation", !cue_references_valid("依据#99") && cue_references_valid("依据#2、#3"), {})
@@ -477,7 +477,7 @@ fn probe_storage(){
     probe_assert("storage.blank_never_creates_files", !fs.exists("draft.txt") && !fs.exists("take-a.txt") && !fs.exists("take-b.txt") && ui.cue_draft.text() == probe_fixtures.storage.blank, probe_storage_state())
     ui.cue_draft.set_text(probe_fixtures.storage.draft)
     cue_keep_draft()
-    probe_assert("storage.draft_exact_save_read", fs.exists("draft.txt") && fs.read("draft.txt") == probe_fixtures.storage.draft && ui.cue_status.text().search("回读确认") >= 0, probe_storage_state())
+    probe_assert("storage.draft_exact_save_read", fs.exists("draft.txt") && fs.read("draft.txt") == probe_fixtures.storage.draft && ui.cue_status.text().search("已保存") >= 0, probe_storage_state())
     ui.cue_draft.set_text("临时未保存")
     cue_restore_draft()
     probe_assert("storage.draft_exact_restore", ui.cue_draft.text() == probe_fixtures.storage.draft, probe_storage_state())
