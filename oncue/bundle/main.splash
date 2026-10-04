@@ -299,6 +299,7 @@ fn cue_invalidate(){
 fn cue_stop_wait(){
     if !cue_busy { cue_set_status("当前没有正在等待的请求。") return }
     cue_invalidate()
+    if !cue_demo && cue_sources.len() == 0 { cue_scene_idle() }
     cue_set_status("已停止等待，可以重新载入或改一句再试。已经开始的模型回合仍可能完成。")
 }
 fn cue_deadline(revision, subject){
@@ -307,6 +308,7 @@ fn cue_deadline(revision, subject){
     start_timeout(90.0, fn(){
         if revision != cue_revision || !cue_busy { return }
         cue_invalidate()
+        if !cue_demo && cue_sources.len() == 0 { cue_scene_idle() }
         cue_set_status(subject + "等待超过 90 秒，已结束等待。可以重新载入或改一句再试。")
     })
 }
@@ -316,6 +318,7 @@ fn cue_request_current(revision){
     // merely because its timer callback has not run yet.
     if cue_expires_at > 0.0 && time_now() >= cue_expires_at {
         cue_invalidate()
+        if !cue_demo && cue_sources.len() == 0 { cue_scene_idle() }
         cue_set_status("等待超过 90 秒，已结束等待。可以重新载入或改一句再试。")
         return false
     }
@@ -361,6 +364,10 @@ fn cue_show_demo(){
     cue_set_mode(0)
     cue_set_status("虚构群聊与预设路线，仅供体验玩法。")
 }
+fn cue_scene_idle(){
+    cue_scene = "还没有载入群聊"
+    ui.cue_scene_label.set_text(cue_scene)
+}
 fn cue_import_room(){
     cue_invalidate()
     cue_demo = false
@@ -378,6 +385,7 @@ fn cue_import_room(){
         if !cue_request_current(reading_revision) { return }
         if !room.is_ok {
             cue_set_busy(false)
+            cue_scene_idle()
             cue_set_status("没有读到群聊：" + room.error)
             return
         }
