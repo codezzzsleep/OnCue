@@ -1012,25 +1012,6 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 4 new_batch: t
                     CueButton{text: "载入群聊" on_click: || cue_import_room()}
                 }
                 cue_scene_label := CueText{text: "样例舞台 · 国庆搭子局" draw_text.color: cue_muted draw_text.text_style.font_size: 11}
-                cue_trial := TextInput{width: Fill height: 64 is_multiline: true empty_text: "写一句想接的话" on_change: |text| cue_edit_trial(text)
-                    draw_bg +: {color: #xffffff color_hover: #xffffff color_focus: #xffffff color_empty: #xffffff border_radius: 6.0}
-                    draw_text +: {color: cue_ink color_hover: cue_ink color_focus: cue_ink color_empty: cue_muted color_empty_hover: cue_muted text_style.font_size: 12}
-                }
-                cue_actions := View{width: Fill height: Fit flow: Right spacing: 4
-                    CueButton{text: "试映下一幕" on_click: || cue_rehearse()
-                        draw_bg +: {color: cue_green color_hover: cue_green color_down: #x0b5536}
-                        draw_text +: {color: #xffffff color_hover: #xffffff color_down: #xffffff}
-                    }
-                    CueButton{text: "停止等待" on_click: || cue_stop_wait()}
-                }
-                View{width: Fill height: Fit flow: Right spacing: 4
-                    CueButton{text: "A 顺着说" on_click: || cue_select_preview(0)}
-                    CueButton{text: "B 换问法" on_click: || cue_select_preview(1)}
-                }
-                View{width: Fill height: Fit flow: Right spacing: 4
-                    CueButton{text: "C 换玩法" on_click: || cue_select_preview(2)}
-                    CueButton{text: "用这句" on_click: || cue_choose_route(cue_play_index)}
-                }
                 Label{text: "群聊消息" draw_text.color: cue_green draw_text.text_style.font_size: 11}
                 View{width: Fill height: Fit flow: Right spacing: 4 align: Align{y: 0.5}
                     CueButton{text: "上一条" on_click: || cue_message_prev()}
@@ -1052,37 +1033,25 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 4 new_batch: t
                         }
                     }}
                 }
-            }
-            result_panel := View{width: "min(100%, max(320px, 50% - 4px))" height: Fit flow: Down spacing: 3
-                cue_draft := TextInput{width: Fill height: 76 is_multiline: true empty_text: "选路线后用这句放入草稿，再改"
-                    draw_bg +: {color: #xffffff color_hover: #xffffff color_focus: #xffffff color_empty: #xffffff border_radius: 6.0}
+                Label{text: "我想说的话" draw_text.color: cue_green draw_text.text_style.font_size: 11}
+                cue_trial := TextInput{width: Fill height: 64 is_multiline: true empty_text: "写一句想接的话" on_change: |text| cue_edit_trial(text)
+                    draw_bg +: {color: #ffffff color_hover: #ffffff color_focus: #ffffff color_empty: #ffffff border_radius: 6.0}
                     draw_text +: {color: cue_ink color_hover: cue_ink color_focus: cue_ink color_empty: cue_muted color_empty_hover: cue_muted text_style.font_size: 12}
                 }
-                View{width: Fill height: Fit flow: Right spacing: 4
-                    CueButton{text: "保留这句" on_click: || cue_keep_draft()}
-                    CueButton{text: "取回草稿" on_click: || cue_restore_draft()}
-                    CueButton{text: "存 A" on_click: || cue_keep_take(0)}
+                cue_actions := View{width: Fill height: Fit flow: Right spacing: 4
+                    CueButton{text: "试映下一幕" on_click: || cue_rehearse()
+                        draw_bg +: {color: cue_green color_hover: cue_green color_down: #x0b5536}
+                        draw_text +: {color: #xffffff color_hover: #ffffff color_down: #xffffff}
+                    }
+                    CueButton{text: "停止等待" on_click: || cue_stop_wait()}
                 }
+            }
+            result_panel := View{width: "min(100%, max(320px, 50% - 4px))" height: Fit flow: Down spacing: 3
+                Label{text: "三种说法" draw_text.color: cue_green draw_text.text_style.font_size: 11}
                 View{width: Fill height: Fit flow: Right spacing: 4
-                    CueButton{text: "存 B" on_click: || cue_keep_take(1)}
-                    CueButton{text: "取 A" on_click: || cue_restore_take(0)}
-                    CueButton{text: "取 B" on_click: || cue_restore_take(1)}
-                }
-                View{width: Fill height: Fit flow: Right spacing: 4
-                    CueButton{text: "对白" on_click: || cue_show_dialogue()}
-                    CueButton{text: "相关原文" on_click: || cue_show_summary()}
-                    cue_play_button := CueButton{text: "播放" on_click: || cue_toggle_playback()}
-                    CueButton{text: "重播" on_click: || cue_restart_playback()}
-                }
-                View{width: Fill height: Fit flow: Right spacing: 4
-                    CueButton{text: "上一页" on_click: || cue_page_prev()}
-                    CueButton{text: "下一页" on_click: || cue_page_next()}
-                    CueButton{text: "下一句" on_click: || cue_next_line()}
-                }
-                View{width: Fill height: Fit flow: Right spacing: 4
-                    CueButton{text: "A/B 对照" on_click: || { cue_refresh_takes() cue_show_takes() }}
-                    CueButton{text: "显示 A" on_click: || cue_read_take(0)}
-                    CueButton{text: "显示 B" on_click: || cue_read_take(1)}
+                    CueButton{text: "A 顺着说" on_click: || cue_select_preview(0)}
+                    CueButton{text: "B 换问法" on_click: || cue_select_preview(1)}
+                    CueButton{text: "C 换玩法" on_click: || cue_select_preview(2)}
                 }
                 header := View{width: Fill height: Fit flow: Right spacing: 6 align: Align{y: 0.5} on_render: || {
                     if cue_read_mode == 1 {
@@ -1106,7 +1075,7 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 4 new_batch: t
                     if shown > total { shown = total }
                     Label{text: "第 " + shown + " 页 / 共 " + total + " 页" width: Fill draw_text.color: cue_muted draw_text.text_style.font_size: 11}
                 }}
-                RoundedView{width: Fill height: Fit min_height: 70 flow: Down padding: 6 new_batch: true draw_bg.color: #xffffff
+                RoundedView{width: Fill height: Fit min_height: 70 flow: Down padding: 6 new_batch: true draw_bg.color: #ffffff
                     readout := View{width: Fill height: Fit flow: Down spacing: 4 on_render: || {
                         let idx = cue_ws_page
                         if idx >= cue_ws_pages.len() { idx = 0 }
@@ -1139,8 +1108,39 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 4 new_batch: t
                         }
                     }}
                 }
+                View{width: Fill height: Fit flow: Right spacing: 4
+                    CueButton{text: "对白" on_click: || cue_show_dialogue()}
+                    CueButton{text: "相关原文" on_click: || cue_show_summary()}
+                    cue_play_button := CueButton{text: "播放" on_click: || cue_toggle_playback()}
+                    CueButton{text: "重播" on_click: || cue_restart_playback()}
+                }
+                View{width: Fill height: Fit flow: Right spacing: 4
+                    CueButton{text: "上一页" on_click: || cue_page_prev()}
+                    CueButton{text: "下一页" on_click: || cue_page_next()}
+                    CueButton{text: "下一句" on_click: || cue_next_line()}
+                    CueButton{text: "用这句" on_click: || cue_choose_route(cue_play_index)}
+                }
+                Label{text: "草稿" draw_text.color: cue_green draw_text.text_style.font_size: 11}
+                cue_draft := TextInput{width: Fill height: 76 is_multiline: true empty_text: "选路线后用这句放入草稿，再改"
+                    draw_bg +: {color: #ffffff color_hover: #ffffff color_focus: #ffffff color_empty: #ffffff border_radius: 6.0}
+                    draw_text +: {color: cue_ink color_hover: cue_ink color_focus: cue_ink color_empty: cue_muted color_empty_hover: cue_muted text_style.font_size: 12}
+                }
+                View{width: Fill height: Fit flow: Right spacing: 4
+                    CueButton{text: "保留这句" on_click: || cue_keep_draft()}
+                    CueButton{text: "取回草稿" on_click: || cue_restore_draft()}
+                    CueButton{text: "存 A" on_click: || cue_keep_take(0)}
+                }
+                View{width: Fill height: Fit flow: Right spacing: 4
+                    CueButton{text: "存 B" on_click: || cue_keep_take(1)}
+                    CueButton{text: "取 A" on_click: || cue_restore_take(0)}
+                    CueButton{text: "取 B" on_click: || cue_restore_take(1)}
+                }
+                View{width: Fill height: Fit flow: Right spacing: 4
+                    CueButton{text: "A/B 对照" on_click: || { cue_refresh_takes() cue_show_takes() }}
+                    CueButton{text: "显示 A" on_click: || cue_read_take(0)}
+                    CueButton{text: "显示 B" on_click: || cue_read_take(1)}
+                }
             }
-        }
         CueText{text: "三种说法是助手的假设。应用不会替你发送任何消息。" draw_text.color: cue_muted draw_text.text_style.font_size: 10}
     }
 }
