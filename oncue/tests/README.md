@@ -4,7 +4,7 @@
 
 | 测试 | 测什么 | 怎么跑 | 数量 |
 | --- | --- | --- | --- |
-| 逻辑测试 | `main.splash` 里的函数 | card-host 的脚本虚拟机，本地运行 | 8 套 146 项 |
+| 逻辑测试 | `main.splash` 里的函数 | card-host 的脚本虚拟机，本地运行 | 8 套 149 项 |
 | 工具单元测试 | 测试包生成器、结果检查器、实机验收脚本 | Python，CI 每次提交都跑 | 91 项 |
 | 实机验收 | 应用在 Rinx 里的完整流程 | 脚本驱动一个正在运行的 Rinx | 4 种模式 |
 
@@ -12,7 +12,7 @@ CI 只跑第二种，不运行应用的代码。
 
 ## 逻辑测试
 
-`generate_probe.py` 把 `main.splash` 的 65 个函数原样复制进一个测试包，加上测试脚本 `probe_harness.splash` 和测试数据 `fixtures.json`。测试包在 card-host 里运行，宿主服务的返回值由测试脚本模拟。超时和播放用的是真实计时，deadline 一套要等 90 多秒。
+`generate_probe.py` 把 `main.splash` 的 64 个函数原样复制进一个测试包，加上测试脚本 `probe_harness.splash` 和测试数据 `fixtures.json`。测试包在 card-host 里运行，宿主服务的返回值由测试脚本模拟。超时和播放用的是真实计时，deadline 一套要等 90 多秒。
 
 各套的内容见[验证记录](../VERIFICATION.md)。最近一次的结果在 [evidence/logic-tests](../../evidence/logic-tests/README.md)。
 

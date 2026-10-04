@@ -66,7 +66,7 @@ python3 oncue/tools/prepare_dev_bundle.py "${DEV_ROOT}/bundle" --hub "$OCTO_HUB"
 ## 验证
 
 - **包检查**：`hub check oncue/bundle --publisher-key oncue.dev=50578fd7e0d8ac51a1e9e590835427ce8e71f46dba491860c75ae4e7c8c78042` 通过。
-- **逻辑测试**：8 套共 146 项断言。测试把 `main.splash` 的函数原样放进 card-host 的脚本虚拟机运行，宿主服务的返回值由测试脚本模拟。覆盖回答格式解析、重试、90 秒超时、播放计时、存储和来源检查。结果文件和复核命令见[测试说明](oncue/tests/README.md)。CI 只跑测试工具自身的 91 项单元测试，不包含这 146 项。
+- **逻辑测试**：8 套共 149 项断言。测试把 `main.splash` 的函数原样放进 card-host 的脚本虚拟机运行，宿主服务的返回值由测试脚本模拟。覆盖回答格式解析、重试、90 秒超时、播放计时、存储和来源检查。结果文件和复核命令见[测试说明](oncue/tests/README.md)。CI 只跑测试工具自身的 91 项单元测试，不包含这 149 项。
 - **实机**：在 Rinx（OctoSense `6c4746f` + Rinx `c515e5f`，Linux aarch64）里，用比赛服务器 `matrix.rinx.chat` 上的房间和 MiniMax-M2.7 走通了读取群聊、试映、播放、保存草稿和关闭重开。宽窗口（990×613）和窄窗口（412×892）各测一遍。逐项结果见[验证记录](oncue/VERIFICATION.md)。
 
 ## 尚未验证

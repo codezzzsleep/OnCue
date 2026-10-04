@@ -1,16 +1,16 @@
 # 逻辑测试结果
 
-8 套共 146 项断言的结果文件，2026-10-04 运行，全部通过。对应的 `main.splash` SHA-256 是 `4b2fd02fb3e893dd15214a22f7ce173eed3d11c5cab1cbda4c72ef8038e472b5`。
+8 套共 149 项断言的结果文件，2026-10-04 运行，全部通过。对应的 `main.splash` SHA-256 是 `faffa7a2750d4ea5584257e742f0c316e83d6739c247e3b5685d64ea6ef4766e`。
 
 | 套件 | 断言数 | 结果文件 |
 | --- | --- | --- |
 | parser | 30 | [probe-result.json](parser/app-data/oncue-probe-parser/probe-result.json) |
 | pagination | 15 | [probe-result.json](pagination/app-data/oncue-probe-pagination/probe-result.json) |
-| retry | 8 | [probe-result.json](retry/app-data/oncue-probe-retry/probe-result.json) |
+| retry | 9 | [probe-result.json](retry/app-data/oncue-probe-retry/probe-result.json) |
 | deadline | 6 | [probe-result.json](deadline/app-data/oncue-probe-deadline/probe-result.json) |
 | playback | 18 | [probe-result.json](playback/app-data/oncue-probe-playback/probe-result.json) |
 | storage | 14 | [probe-result.json](storage/app-data/oncue-probe-storage/probe-result.json) |
-| grounding | 51 | [probe-result.json](grounding/app-data/oncue-probe-grounding/probe-result.json) |
+| grounding | 53 | [probe-result.json](grounding/app-data/oncue-probe-grounding/probe-result.json) |
 | envelope | 4 | [probe-result.json](envelope/app-data/oncue-probe-envelope/probe-result.json) |
 
 ## 复核

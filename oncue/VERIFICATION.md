@@ -24,22 +24,22 @@ hub check oncue/bundle --publisher-key oncue.dev=50578fd7e0d8ac51a1e9e590835427c
 
 ## 逻辑测试
 
-8 套共 146 项断言。测试把 `main.splash` 的 65 个函数原样放进测试包，在 card-host 的脚本虚拟机里运行。宿主服务的返回值由测试脚本模拟，不调用模型。
+8 套共 149 项断言。测试把 `main.splash` 的 64 个函数原样放进测试包，在 card-host 的脚本虚拟机里运行。宿主服务的返回值由测试脚本模拟，不调用模型。
 
 | 套件 | 断言数 | 测什么 |
 | --- | --- | --- |
 | parser | 30 | 七段格式的解析，各种分隔写法，缺段、重复、乱序时拒绝 |
 | pagination | 15 | 长文本分页不丢字，不切断 emoji 和组合字符 |
-| retry | 8 | 格式不对时重试一次；停止、改台词、发新请求后，旧回答不生效 |
+| retry | 9 | 格式不对时重试一次；停止、改台词、发新请求后，旧回答不生效 |
 | deadline | 6 | 90 秒超时，包含打开会话和重试的时间 |
 | playback | 18 | 逐句播放的计时，暂停、继续、重播，切换路线 |
 | storage | 14 | 草稿写入和读取，空白内容不覆盖 |
-| grounding | 51 | 相关原文的取出，编号、数字、固定用语的检查 |
+| grounding | 53 | 相关原文的取出，编号、数字、固定用语的检查 |
 | envelope | 4 | 宿主返回的数据结构异常时不报错、不显示结果 |
 
 结果文件和复核命令在 [evidence/logic-tests](../evidence/logic-tests/README.md)，重跑方法在[测试说明](tests/README.md)。
 
-这些测试对应的 `main.splash` SHA-256：`4b2fd02fb3e893dd15214a22f7ce173eed3d11c5cab1cbda4c72ef8038e472b5`。改了 `main.splash` 就要重跑并更新这一行。
+这些测试对应的 `main.splash` SHA-256：`faffa7a2750d4ea5584257e742f0c316e83d6739c247e3b5685d64ea6ef4766e`。改了 `main.splash` 就要重跑并更新这一行。
 
 ## 实机检查
 

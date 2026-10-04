@@ -9,7 +9,7 @@
   },
   "id": "oncue-probe-envelope",
   "integrity": {
-    "bundle_blake3": "cb4e7faa78d3e93a68104b155a3f98e424d7599206ee376e69dcce0db2f40b8d"
+    "bundle_blake3": "3a8b4cf6a7c2e8ead3ac024922df9d4119eaafaf505aa7694a240c77f08e6d0a"
   },
   "name": "OnCue controlled envelope probe",
   "network": {
