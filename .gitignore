@@ -8,7 +8,5 @@ __pycache__/
 
 # build outputs stay out of the repo; the submission drafts are listed explicitly
 build/*
-!build/SUBMISSION.md
-!build/SUBMISSION-CHECKLIST.md
 !build/review.json
 !build/REVIEW-ANSWERS.md
