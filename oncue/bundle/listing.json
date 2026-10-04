@@ -24,7 +24,7 @@
     "support": "https://github.com/codezzzsleep/OnCue/issues",
     "privacy_policy_url": "https://github.com/codezzzsleep/OnCue/blob/main/oncue/PRIVACY.md"
   },
-  "release_notes": "0.4.8：改写了商店描述。TODO(作者)：如果做了 7.2–7.6，在这里各写一句。",
+  "release_notes": "0.4.8：助手的回答没通过检查时，重试会告诉它上一次错在哪。数字检查更严：消息编号不再算作数字的出处，全角数字也会检查。读取群聊失败时显示中文原因。界面文案精简，「摘要」改名为「相关原文」。",
   "age_rating": "all",
   "license": "Apache-2.0"
 }
