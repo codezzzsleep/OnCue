@@ -75,4 +75,10 @@ python3 oncue/tools/native_acceptance.py \
 
 脚本靠界面上的状态文案判断成功和失败。改了 `main.splash` 里的文案，要同步改 `native_acceptance.py` 和 `selftest_native_acceptance.py`。
 
+playback 模式的验收脚本里点击和计时器有竞态，偶尔需要重跑。
+
+脚本不传 `--size` 时会将框架设为 990×613。本轮窄屏使用临时运行器，把解析器的默认尺寸设为运行前从桥接测得的 412×892；没有修改仓库脚本、尺寸断言或其他验收断言。
+
+当前 `collect_pages` 和 `playback_observation` 会先滚到整页最底；新布局下可能把页码滚出视口，报 `Result page counter is absent or ambiguous`。出现此错误的模式应记为失败，不能算作完整验收通过。
+
 `native_bridge.py`、`rinx_session.py`、`collect_native_reading.py` 是它用到的底层工具。`prepare_dev_bundle.py` 生成未签名副本，`stamp_bundle.py` 计算包摘要。

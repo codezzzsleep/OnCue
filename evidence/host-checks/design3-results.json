@@ -1,0 +1,462 @@
+{
+  "date": "2026-10-04",
+  "source_commit": "271e79d",
+  "bundle_version": "0.4.7",
+  "source_sha256": "1484213e75f0ffe9ecc5d1f18025ec6047216950f0ff0e8cbba2da689eaa9fc8",
+  "unit_tests": {
+    "passed": 91,
+    "total": 91
+  },
+  "logic_tests": {
+    "passed": 149,
+    "total": 149,
+    "suites": 8
+  },
+  "native_runs": [
+    {
+      "run": "412x892-draft",
+      "measured_frame": [
+        412,
+        892
+      ],
+      "passed": true,
+      "error": null,
+      "real_turn_completed": false,
+      "independent_readback_slots": [
+        "A",
+        "B"
+      ],
+      "closed_reimport_exact": false
+    },
+    {
+      "run": "412x892-playback",
+      "measured_frame": [
+        412,
+        892
+      ],
+      "passed": false,
+      "error": "Need at least two remaining lines to distinguish play from timer",
+      "real_turn_completed": true,
+      "independent_readback_slots": [],
+      "closed_reimport_exact": false
+    },
+    {
+      "run": "412x892-playback-retry",
+      "measured_frame": [
+        412,
+        892
+      ],
+      "passed": false,
+      "error": "Need at least two remaining lines to distinguish play from timer",
+      "real_turn_completed": true,
+      "independent_readback_slots": [],
+      "closed_reimport_exact": false
+    },
+    {
+      "run": "412x892-reopen",
+      "measured_frame": [
+        412,
+        892
+      ],
+      "passed": true,
+      "error": null,
+      "real_turn_completed": false,
+      "independent_readback_slots": [],
+      "closed_reimport_exact": true
+    },
+    {
+      "run": "412x892-routes",
+      "measured_frame": [
+        412,
+        892
+      ],
+      "passed": false,
+      "error": "Cannot reveal a unique widget fully inside app_scroll viewport",
+      "real_turn_completed": true,
+      "independent_readback_slots": [],
+      "closed_reimport_exact": false
+    },
+    {
+      "run": "990x613-draft",
+      "measured_frame": [
+        990,
+        613
+      ],
+      "passed": false,
+      "error": "Result page counter is absent or ambiguous",
+      "real_turn_completed": false,
+      "independent_readback_slots": [
+        "A"
+      ],
+      "closed_reimport_exact": false
+    },
+    {
+      "run": "990x613-playback",
+      "measured_frame": [
+        990,
+        613
+      ],
+      "passed": false,
+      "error": "Result page counter is absent or ambiguous",
+      "real_turn_completed": true,
+      "independent_readback_slots": [],
+      "closed_reimport_exact": false
+    },
+    {
+      "run": "990x613-reopen",
+      "measured_frame": [
+        990,
+        613
+      ],
+      "passed": true,
+      "error": null,
+      "real_turn_completed": false,
+      "independent_readback_slots": [],
+      "closed_reimport_exact": true
+    },
+    {
+      "run": "990x613-routes",
+      "measured_frame": [
+        990,
+        613
+      ],
+      "passed": false,
+      "error": "Result page counter is absent or ambiguous",
+      "real_turn_completed": true,
+      "independent_readback_slots": [],
+      "closed_reimport_exact": false
+    }
+  ],
+  "native_adapter": "412x892 used a private wrapper to choose the measured current frame as argparse default; no --size, no repository script or assertion changes",
+  "sample_layout": {
+    "frame": [
+      990,
+      613
+    ],
+    "embedded_app": [
+      954,
+      448
+    ],
+    "show_b_right": 976,
+    "button_container_right": 1008,
+    "draft_card_bottom": 630,
+    "app_scroll_bottom": 631,
+    "message_row_height": 38
+  },
+  "rehearsals": {
+    "source_sha256": "1484213e75f0ffe9ecc5d1f18025ec6047216950f0ff0e8cbba2da689eaa9fc8",
+    "frame": [
+      990,
+      613
+    ],
+    "trial": "那我们中午出发、当天回来，先确认预算可以吗？",
+    "runs": [
+      {
+        "round": 1,
+        "result": "retry-pass",
+        "seconds": 34.586,
+        "events": [
+          {
+            "seconds": 0.05,
+            "text": "助手正在准备三种说法…"
+          },
+          {
+            "seconds": 17.069,
+            "text": "助手的回答没通过检查，正在自动重试一次…"
+          },
+          {
+            "seconds": 34.586,
+            "text": "三种说法已生成，点 A、B、C 查看。"
+          }
+        ]
+      },
+      {
+        "round": 2,
+        "result": "first-pass",
+        "seconds": 16.436,
+        "events": [
+          {
+            "seconds": 0.064,
+            "text": "助手正在准备三种说法…"
+          },
+          {
+            "seconds": 16.436,
+            "text": "三种说法已生成，点 A、B、C 查看。"
+          }
+        ]
+      },
+      {
+        "round": 3,
+        "result": "first-pass",
+        "seconds": 30.421,
+        "events": [
+          {
+            "seconds": 0.061,
+            "text": "助手正在准备三种说法…"
+          },
+          {
+            "seconds": 30.421,
+            "text": "三种说法已生成，点 A、B、C 查看。"
+          }
+        ]
+      },
+      {
+        "round": 4,
+        "result": "first-pass",
+        "seconds": 15.632,
+        "events": [
+          {
+            "seconds": 0.057,
+            "text": "助手正在准备三种说法…"
+          },
+          {
+            "seconds": 15.632,
+            "text": "三种说法已生成，点 A、B、C 查看。"
+          }
+        ]
+      },
+      {
+        "round": 5,
+        "result": "first-pass",
+        "seconds": 16.582,
+        "events": [
+          {
+            "seconds": 0.069,
+            "text": "助手正在准备三种说法…"
+          },
+          {
+            "seconds": 16.582,
+            "text": "三种说法已生成，点 A、B、C 查看。"
+          }
+        ]
+      },
+      {
+        "round": 6,
+        "result": "first-pass",
+        "seconds": 16.767,
+        "events": [
+          {
+            "seconds": 0.059,
+            "text": "助手正在准备三种说法…"
+          },
+          {
+            "seconds": 16.767,
+            "text": "三种说法已生成，点 A、B、C 查看。"
+          }
+        ]
+      },
+      {
+        "round": 7,
+        "result": "first-pass",
+        "seconds": 16.796,
+        "events": [
+          {
+            "seconds": 0.052,
+            "text": "助手正在准备三种说法…"
+          },
+          {
+            "seconds": 16.796,
+            "text": "三种说法已生成，点 A、B、C 查看。"
+          }
+        ]
+      },
+      {
+        "round": 8,
+        "result": "first-pass",
+        "seconds": 14.904,
+        "events": [
+          {
+            "seconds": 0.064,
+            "text": "助手正在准备三种说法…"
+          },
+          {
+            "seconds": 14.904,
+            "text": "三种说法已生成，点 A、B、C 查看。"
+          }
+        ]
+      },
+      {
+        "round": 9,
+        "result": "first-pass",
+        "seconds": 16.215,
+        "events": [
+          {
+            "seconds": 0.069,
+            "text": "助手正在准备三种说法…"
+          },
+          {
+            "seconds": 16.215,
+            "text": "三种说法已生成，点 A、B、C 查看。"
+          }
+        ]
+      },
+      {
+        "round": 10,
+        "result": "first-pass",
+        "seconds": 17.133,
+        "events": [
+          {
+            "seconds": 0.053,
+            "text": "助手正在准备三种说法…"
+          },
+          {
+            "seconds": 17.133,
+            "text": "三种说法已生成，点 A、B、C 查看。"
+          }
+        ]
+      }
+    ]
+  },
+  "authorization_retests": [
+    {
+      "check": "real_message_wrapping",
+      "frame": [
+        412,
+        892
+      ],
+      "rows": [
+        {
+          "message_id": "#1",
+          "body_height": 49,
+          "row_width": 235
+        },
+        {
+          "message_id": "#2",
+          "body_height": 24,
+          "row_width": 235
+        },
+        {
+          "message_id": "#3",
+          "body_height": 24,
+          "row_width": 235
+        },
+        {
+          "message_id": "#4",
+          "body_height": 49,
+          "row_width": 235
+        },
+        {
+          "message_id": "#5",
+          "body_height": 49,
+          "row_width": 235
+        },
+        {
+          "message_id": "#6",
+          "body_height": 24,
+          "row_width": 235
+        },
+        {
+          "message_id": "#7",
+          "body_height": 49,
+          "row_width": 235
+        },
+        {
+          "message_id": "#8",
+          "body_height": 49,
+          "row_width": 235
+        },
+        {
+          "message_id": "#9",
+          "body_height": 24,
+          "row_width": 235
+        },
+        {
+          "message_id": "#10",
+          "body_height": 49,
+          "row_width": 235
+        },
+        {
+          "message_id": "#11",
+          "body_height": 49,
+          "row_width": 235
+        }
+      ]
+    },
+    {
+      "check": "real_message_wrapping",
+      "frame": [
+        990,
+        613
+      ],
+      "rows": [
+        {
+          "message_id": "#1",
+          "body_height": 23,
+          "row_width": 381
+        },
+        {
+          "message_id": "#2",
+          "body_height": 24,
+          "row_width": 381
+        },
+        {
+          "message_id": "#3",
+          "body_height": 24,
+          "row_width": 381
+        },
+        {
+          "message_id": "#4",
+          "body_height": 24,
+          "row_width": 381
+        },
+        {
+          "message_id": "#5",
+          "body_height": 24,
+          "row_width": 381
+        },
+        {
+          "message_id": "#6",
+          "body_height": 24,
+          "row_width": 381
+        },
+        {
+          "message_id": "#7",
+          "body_height": 24,
+          "row_width": 381
+        },
+        {
+          "message_id": "#8",
+          "body_height": 24,
+          "row_width": 381
+        },
+        {
+          "message_id": "#9",
+          "body_height": 24,
+          "row_width": 381
+        },
+        {
+          "message_id": "#10",
+          "body_height": 24,
+          "row_width": 381
+        }
+      ]
+    },
+    {
+      "check": "no_room",
+      "passed": true,
+      "status": "这次打开没有选房间。请关闭应用，导入时填上房间再打开。",
+      "version": "0.4.7",
+      "source_commit": "271e79d"
+    },
+    {
+      "check": "back",
+      "passed": true,
+      "same_host": true,
+      "library_visible": true,
+      "version": "0.4.7",
+      "source_commit": "271e79d"
+    },
+    {
+      "check": "reopen",
+      "passed": true,
+      "exact_saved_bytes": true,
+      "version": "0.4.7",
+      "source_commit": "271e79d"
+    }
+  ],
+  "card_host_room_service": {
+    "passed": true,
+    "status": "当前宿主不提供群聊服务，请在 Rinx 里打开。"
+  },
+  "cross_account_retested": false
+}

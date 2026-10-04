@@ -1,6 +1,6 @@
 # 验证记录
 
-版本 `TODO(作者)：最终版本号`，`oncue.dev` 签名，标签 `TODO(作者)`。
+本次验证日期：2026-10-04。内容对应 `271e79d`，包版本仍为 `0.4.7`；尚未发布为 0.4.8。
 
 ## 测试环境
 
@@ -16,11 +16,9 @@
 
 ## 包检查
 
-```sh
-hub check oncue/bundle --publisher-key oncue.dev=50578fd7e0d8ac51a1e9e590835427ce8e71f46dba491860c75ae4e7c8c78042
-```
+已对当前内容运行 `hub stamp`。与当前包资源一致、只移除签名的开发副本通过 `hub check --allow-unsigned`。
 
-输出 `oncue-screening-room TODO(作者)：版本 — PASSED`。
+发布包保留的旧签名不对应当前内容，签名检查尚未通过；本轮没有重新签名。
 
 ## 逻辑测试
 
@@ -39,36 +37,38 @@ hub check oncue/bundle --publisher-key oncue.dev=50578fd7e0d8ac51a1e9e590835427c
 
 结果文件和复核命令在 [evidence/logic-tests](../evidence/logic-tests/README.md)，重跑方法在[测试说明](tests/README.md)。
 
-这些测试对应的 `main.splash` SHA-256：`faffa7a2750d4ea5584257e742f0c316e83d6739c247e3b5685d64ea6ef4766e`。改了 `main.splash` 就要重跑并更新这一行。
+这些测试对应的 `main.splash` SHA-256：`1484213e75f0ffe9ecc5d1f18025ec6047216950f0ff0e8cbba2da689eaa9fc8`。改了 `main.splash` 就要重跑并更新这一行。
 
 ## 实机检查
 
-用脚本在 Rinx 里模拟点击和输入，每一步读取界面上的文字来核对。最近一次：`TODO(作者)：日期和版本`。
+2026-10-04，用脚本在 Rinx 里模拟点击和输入。内容对应 `271e79d`，包版本 `0.4.7`。表头是实测 Rinx 框架尺寸；小程序可视区域分别为 954×448 和 376×727。
 
 | 检查 | 990×613 | 412×892 |
 | --- | --- | --- |
 | 读取授权房间的 12 条消息 | 通过 | 通过 |
-| 长消息翻页 | 通过 | 通过 |
+| 长消息在列表里自动换行 | 本轮消息未触发换行 | 通过，长消息正文高度 49 px |
 | 助手按七段格式返回三种说法 | 通过 | 通过 |
-| 三种说法和相关原文都能读完 | 通过 | 通过 |
-| 播放、暂停、切换路线 | 通过 | 通过 |
-| 草稿 A、B 保存后读取一致 | 通过 | 通过 |
+| 三种说法和相关原文都能读完 | 未通过：读页前滚到底导致页码不可见 | 未通过：三条路线已读取，相关原文按钮无法完整显示并点击 |
+| 播放、暂停、切换路线 | 未通过：观察时页码不可见 | 未通过：暂停后剩余行数不足以检验计时推进，重跑一次仍失败 |
+| 草稿 A、B 保存后读取一致 | 未完整通过：A 的独立字节回读通过，页面检查因页码不可见停止 | 通过 |
 | 关闭后重新打开，草稿还在 | 通过 | 通过 |
 
-记录在 `TODO(作者)：把本机 build/validation-2026-10-04/ 去掉账号目录和绝对路径后放进 evidence/host-checks/，这里写链接；不放就删掉这一行`。
+四模式结果：990×613 仅 `reopen` 通过；412×892 的 `draft`、`reopen` 通过。`routes`、`playback` 均未完整通过。本轮未修改验收脚本或断言。两尺寸均未传 `--size`；窄屏临时运行器使用执行前桥接测得的尺寸作为解析器默认值，几何检查仍为零容差。
+
+连续 10 次真实试映：9 次首轮通过，1 次自动重试后通过，0 次失败，耗时 14.9–34.6 秒。
+
+默认窗口的样例 B 路线播放结束并点「用这句」后，八个草稿按钮同排；「显示 B」右边 976，按钮行右边 1008；草稿卡片底边 630，滚动视口底边 631。消息单行高度 38 px。上述坐标为桥接窗口坐标。结果汇总见[本轮实测记录](../evidence/host-checks/design3-results.json)。
 
 ## 授权和失败状态
 
 | 检查 | 结果 | 测试版本 | 截图 |
 | --- | --- | --- | --- |
-| 打开时没有选房间，点「载入群聊」 | 宿主拒绝，状态行显示“没有读到群聊：this mini-app is not attached to a room” | 0.4.4 | [截图](../evidence/screenshots/rinx-5-room-denied.png) |
+| 打开时没有选房间，点「载入群聊」 | 显示“这次打开没有选房间。请关闭应用，导入时填上房间再打开。” | 0.4.7（271e79d） | [截图](../evidence/screenshots/design3-no-room.png) |
 | 用另一个账号打开同一个应用 | 授权面板显示 `Allowed room: None`，没有沿用第一个账号的房间授权 | 0.4.4 | [截图](../evidence/screenshots/recipient-2-own-consent.png) |
 | 另一个账号点「取 A」 | 显示“版本 A 还没有内容”，读不到第一个账号的草稿 | 0.4.4 | [截图](../evidence/screenshots/recipient-4-draft-isolated.png) |
-| 点 Back | 应用关闭，回到小程序列表，Rinx 继续运行 | 0.4.4 | [截图](../evidence/screenshots/rinx-2-back-closed.png) |
-| 关闭后重新导入 | 草稿还在 | 0.4.4 | [截图](../evidence/screenshots/rinx-4-draft-after-reopen.png) |
-| 在 card-host 里点「载入群聊」 | 状态行显示“没有读到群聊：no service answers "matrix" on this device” | 0.4.4 | [截图](../evidence/screenshots/bridge-1-error-state.png) |
-
-`TODO(作者)`：这六项是在 0.4.4 上测的，截图是旧界面。用最终版本重测后替换截图，并把“测试版本”一列改掉。
+| 点 Back | 应用关闭，回到小程序列表，同一 Rinx 进程继续运行 | 0.4.7（271e79d） | [截图](../evidence/screenshots/design3-back-closed.png) |
+| 关闭后重新导入 | 编辑框与保存的草稿逐字节一致；未重启宿主 | 0.4.7（271e79d） | [截图](../evidence/screenshots/design3-draft-after-reopen.png) |
+| 在 card-host 里点「载入群聊」 | 显示“当前宿主不提供群聊服务，请在 Rinx 里打开。” | 0.4.7（271e79d） | [截图](../evidence/screenshots/design3-card-host-room-unavailable.png) |
 
 ## 未验证
 
@@ -76,3 +76,4 @@ hub check oncue/bundle --publisher-key oncue.dev=50578fd7e0d8ac51a1e9e590835427c
 - macOS、Windows、移动端。
 - 用户在授权面板点拒绝、授权满一小时到期、回答进行中关闭应用。
 - 从 App Hub 商店安装。
+- 当前内容的跨账号授权和草稿隔离：本轮没有可供核对的第二个已登录宿主，因此上表两项保留 0.4.4 的历史结果。

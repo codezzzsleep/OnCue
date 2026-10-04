@@ -65,9 +65,9 @@ python3 oncue/tools/prepare_dev_bundle.py "${DEV_ROOT}/bundle" --hub "$OCTO_HUB"
 
 ## 验证
 
-- **包检查**：`hub check oncue/bundle --publisher-key oncue.dev=50578fd7e0d8ac51a1e9e590835427ce8e71f46dba491860c75ae4e7c8c78042` 通过。
+- **包检查**：当前内容已重算摘要；移除签名的开发副本通过 `hub check --allow-unsigned`。发布包旧签名待更新，本轮没有重新签名。
 - **逻辑测试**：8 套共 149 项断言。测试把 `main.splash` 的函数原样放进 card-host 的脚本虚拟机运行，宿主服务的返回值由测试脚本模拟。覆盖回答格式解析、重试、90 秒超时、播放计时、存储和来源检查。结果文件和复核命令见[测试说明](oncue/tests/README.md)。CI 只跑测试工具自身的 91 项单元测试，不包含这 149 项。
-- **实机**：在 Rinx（OctoSense `6c4746f` + Rinx `c515e5f`，Linux aarch64）里，用比赛服务器 `matrix.rinx.chat` 上的房间和 MiniMax-M2.7 走通了读取群聊、试映、播放、保存草稿和关闭重开。宽窗口（990×613）和窄窗口（412×892）各测一遍。逐项结果见[验证记录](oncue/VERIFICATION.md)。
+- **实机**：2026-10-04 在 Rinx（OctoSense `6c4746f` + Rinx `c515e5f`，Linux aarch64）上，分别在 990×613、412×892 执行四种验收模式：前者仅关闭重开通过，后者草稿和关闭重开通过，其余模式受页码不可见、按钮无法完整显示或播放计时检查限制而失败。连续 10 次真实试映为 9 次首轮通过、1 次自动重试后通过、0 次失败。逐项结果见[验证记录](oncue/VERIFICATION.md)。
 
 ## 尚未验证
 
