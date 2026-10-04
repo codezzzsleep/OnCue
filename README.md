@@ -37,7 +37,7 @@ OnCue 是一个运行在 Rinx 里的 OctoScript 小程序。在群里发言之�
 
 **从 App Hub 安装**
 
-在 Rinx 的 **Discover → Mini apps** 进入 App Hub 应用库，找到 OnCue 后 **Add** 安装、**Open** 打开；打开时宿主会列出应用申请的六项服务和所选房间，确认后为本次运行授权。上架申请：`TODO(作者)：最终版本对应的 issue 链接`。
+在 Rinx 的 **Discover → Mini apps** 进入 App Hub 应用库，找到 OnCue 后 **Add** 安装、**Open** 打开；打开时宿主会列出应用申请的六项服务和所选房间，确认后为本次运行授权。上架申请：<https://github.com/OctoSense-org/OctoSense-App-Hub/issues/78>。
 
 **本地导入**
 
