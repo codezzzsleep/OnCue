@@ -9,7 +9,7 @@
   },
   "id": "oncue-probe-envelope",
   "integrity": {
-    "bundle_blake3": "db3d2ca42694349c856173cb019cdc191bf11f31864386fa11ee74ce9eb38b56"
+    "bundle_blake3": "a43ad7a0001727c7a923885cb4ac49004dc43c8777e5ab85aea365956ac7c773"
   },
   "name": "OnCue controlled envelope probe",
   "network": {
@@ -19,5 +19,5 @@
   "storage": {
     "max_bytes": 4194304
   },
-  "version": "0.4.8"
+  "version": "0.5.0"
 }

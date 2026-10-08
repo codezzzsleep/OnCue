@@ -27,8 +27,18 @@ REQUIRED_FUNCTIONS = {
     "cue_advance_playback", "cue_next_line", "cue_restart_playback",
     "cue_keep_draft", "cue_restore_draft", "cue_save_text", "cue_keep_take",
     "cue_refresh_takes", "cue_read_take", "cue_restore_take",
+    "cue_load_store", "cue_decode_store", "cue_store_valid", "cue_slot_valid",
+    "cue_store_write", "cue_reload_store", "cue_save_slot", "cue_capture_slot",
+    "cue_activate_room", "cue_set_editor", "cue_editor_current",
+    "cue_import_legacy", "cue_request_delete", "cue_confirm_delete",
+    "cue_source_payload", "cue_context_key", "cue_toggle_source", "cue_grant_model",
+    "cue_revoke_model", "cue_validate_route", "cue_route_refs", "cue_numbers_in",
+    "cue_refine", "cue_refine_identity", "cue_decode_refinement",
+    "cue_accept_refinement", "cue_apply_refinement", "cue_edit_refine",
 }
-STORAGE_FIXTURES = {"draft.txt": "draft", "take-a.txt": "take_a", "take-b.txt": "take_b"}
+STORAGE_FILE = "rehearsals-v1.json"
+LEGACY_FILES = ("draft.txt", "take-a.txt", "take-b.txt")
+STORAGE_FIXTURES = ("draft", "take_a", "take_b")
 INITIALIZER = re.compile(
     r"(?m)^start_timeout\(0\.05,\s*fn\(\)\{\s*"
     r"cue_show_demo\(\)\s+cue_(?:refresh_takes|boot_state)\(\)\s*\}\)\s*$"
@@ -161,9 +171,14 @@ def build_probe(source: str, fixture_bytes: bytes, harness: str, suite: str) -> 
         "real_playback_interval_seconds": 1.4,
         "filesystem": "real card-host jail; fs is not shadowed",
         "semantic_fact_verification": False,
-        "storage_file_sha256": {
-            name: digest(fixtures["storage"][key].encode("utf-8"))
-            for name, key in STORAGE_FIXTURES.items()
+        "storage_expectation": {
+            "file": STORAGE_FILE,
+            "room_id": "probe-room",
+            "schema": 1,
+            "slots": [[fixtures["storage"][key], None, "manual", "", "", "", "", "", 0]
+                      for key in STORAGE_FIXTURES],
+            "absent_files": list(LEGACY_FILES),
+            "revision_note": "Only monotonic runtime editor/store revisions are variable; all other fields are literal fixtures",
         } if suite == "storage" else {},
     }
     header = (

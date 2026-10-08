@@ -9,7 +9,7 @@
   },
   "id": "oncue-probe-pagination",
   "integrity": {
-    "bundle_blake3": "d6aa681444cf0804af8b72aad9fbd4ff03ea11dbe41f2166fc4b631b19f1cb6b"
+    "bundle_blake3": "957fde434fb5cdf419542b06728cd34a1eeb92d5921ff4013344f5b123bf6fa6"
   },
   "name": "OnCue controlled pagination probe",
   "network": {
@@ -19,5 +19,5 @@
   "storage": {
     "max_bytes": 4194304
   },
-  "version": "0.4.8"
+  "version": "0.5.0"
 }

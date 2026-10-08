@@ -9,7 +9,7 @@
   },
   "id": "oncue-probe-parser",
   "integrity": {
-    "bundle_blake3": "ee6f02aeba1732a0e99822bfa166f9a2ed5d12725fe33b1edc580811f42c89dc"
+    "bundle_blake3": "5fea855674ec3ca91d058f9e7db92f7fced2594616efc03e8822c77b3de2abf5"
   },
   "name": "OnCue controlled parser probe",
   "network": {
@@ -19,5 +19,5 @@
   "storage": {
     "max_bytes": 4194304
   },
-  "version": "0.4.8"
+  "version": "0.5.0"
 }

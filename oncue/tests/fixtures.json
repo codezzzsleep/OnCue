@@ -3,12 +3,12 @@
   "notice": "Literal controlled fixtures, not natural model results. Pagination expectations are conservation/cluster assertions, not a Python implementation.",
   "canonical_blocks": [
     "#2\n#3",
-    "Aa|假设回应甲。\nAb|依据：#2，待确认。",
-    "Ac|建议：中午之后？",
-    "Ba|假设回应乙。\nBb|依据：#3，新提议。",
-    "Bc|建议：当天往返？",
-    "Ca|假设回应丙。\nCb|依据：#4，待核实。",
-    "Cc|建议：来个半日小游戏？"
+    "虚构回应甲：路线A先考虑边界。\n虚构回应乙：暂不替别人决定。\n依据：#2\n待确认：是否方便继续讨论？",
+    "Ac|建议：中午之后。",
+    "虚构回应甲：路线B先考虑边界。\n虚构回应乙：暂不替别人决定。\n依据：#3\n待确认：是否方便继续讨论？",
+    "Bc|建议：当天往返。",
+    "虚构回应甲：路线C先考虑边界。\n虚构回应乙：暂不替别人决定。\n依据：#4\n待确认：是否方便继续讨论？",
+    "Cc|建议：来个半日小游戏。"
   ],
   "parser": [
     {
@@ -365,14 +365,100 @@
     "draft": "  草稿首行 👩‍👩‍👧‍👦  \n\n第二行\t保留制表与 é\n尾行 🇨🇳  \n",
     "take_a": "  A 版本：先核实 👍🏽  \n\n A 第二行\t空格不裁剪\n结尾🙂  \n",
     "take_b": "\n  B 版本：不同问法 🇫🇷\nB 中间  两个空格\n 👩‍👩‍👧‍👦 尾行 \t ",
-    "blank": " \n\t  \n "
+    "blank": " \n\t  \n ",
+    "invalid_cases": [
+      {
+        "id": "corruption_invalid_json",
+        "raw": "not json"
+      },
+      {
+        "id": "corruption_truncation",
+        "raw": "[1,0,["
+      },
+      {
+        "id": "corruption_trailing_junk",
+        "raw": "[1,0,[]]junk"
+      },
+      {
+        "id": "corruption_whitespace",
+        "raw": " [1,0,[]]"
+      },
+      {
+        "id": "corruption_object",
+        "raw": "{}"
+      },
+      {
+        "id": "corruption_null",
+        "raw": "null"
+      },
+      {
+        "id": "corruption_version",
+        "raw": "[2,0,[]]"
+      },
+      {
+        "id": "corruption_string_revision",
+        "raw": "[1,\"0\",[]]"
+      },
+      {
+        "id": "corruption_negative_revision",
+        "raw": "[1,-1,[]]"
+      },
+      {
+        "id": "corruption_fraction_revision",
+        "raw": "[1,0.5,[]]"
+      },
+      {
+        "id": "corruption_rooms_object",
+        "raw": "[1,0,{}]"
+      },
+      {
+        "id": "corruption_duplicate_rooms",
+        "raw": "[1,0,[[\"x\",null,null,null],[\"x\",null,null,null]]]"
+      },
+      {
+        "id": "corruption_empty_room",
+        "raw": "[1,0,[[\"\",null,null,null]]]"
+      },
+      {
+        "id": "corruption_numeric_room",
+        "raw": "[1,0,[[3,null,null,null]]]"
+      },
+      {
+        "id": "corruption_short_room",
+        "raw": "[1,0,[[\"x\",null,null]]]"
+      },
+      {
+        "id": "corruption_short_slot",
+        "raw": "[1,0,[[\"x\",[\"draft\"],null,null]]]"
+      },
+      {
+        "id": "corruption_slot_text_type",
+        "raw": "[1,0,[[\"x\",[3,0,\"manual\",\"\",\"\",\"\",\"\",\"\",0],null,null]]]"
+      },
+      {
+        "id": "corruption_slot_revision_type",
+        "raw": "[1,0,[[\"x\",[\"x\",\"0\",\"manual\",\"\",\"\",\"\",\"\",\"\",0],null,null]]]"
+      },
+      {
+        "id": "corruption_slot_origin",
+        "raw": "[1,0,[[\"x\",[\"x\",0,\"unknown\",\"\",\"\",\"\",\"\",\"\",0],null,null]]]"
+      },
+      {
+        "id": "corruption_slot_time_type",
+        "raw": "[1,0,[[\"x\",[\"x\",0,\"manual\",\"\",\"\",\"\",\"\",\"\",\"0\"],null,null]]]"
+      },
+      {
+        "id": "corruption_slot_negative_time",
+        "raw": "[1,0,[[\"x\",[\"x\",0,\"manual\",\"\",\"\",\"\",\"\",\"\",-1],null,null]]]"
+      }
+    ]
   },
   "grounding": {
-    "notice": "Excerpt accepts 1-4 IDs, matching the prompt. Numeric checks strip #refs first, accept fullwidth digits, and allow only numbers that appear in the trial or source bodies; message indices and Chinese numerals are not treated as allowed values. References only check ASCII digits after #.",
+    "notice": "Controlled literal expectations: exact numeric tokens preserve sign/decimal/unit/Chinese quantities; source mask retains stable ordinals. Bounded validation is not semantic truth.",
     "sources": [
       {
         "sender": "夹具甲",
-        "body": "预算 500，9 点集合。\n  保留缩进 👩‍👩‍👧‍👦  "
+        "body": "预算 500元，9 点集合。\n  保留缩进 👩‍👩‍👧‍👦  "
       },
       {
         "sender": "夹具乙",
@@ -396,7 +482,7 @@
       {
         "id": "excerpt_one_id_current_behavior",
         "selection": "#1",
-        "expected": "相关原文：\n#1 预算 500，9 点集合。\n  保留缩进 👩‍👩‍👧‍👦  "
+        "expected": "相关原文：\n#1 预算 500元，9 点集合。\n  保留缩进 👩‍👩‍👧‍👦  "
       },
       {
         "id": "excerpt_selection_order",
@@ -406,7 +492,7 @@
       {
         "id": "excerpt_whitespace_crlf",
         "selection": " \t#2\r\n #1 \n",
-        "expected": "相关原文：\n#2 中午之后再讨论，尚未同意。\n#1 预算 500，9 点集合。\n  保留缩进 👩‍👩‍👧‍👦  "
+        "expected": "相关原文：\n#2 中午之后再讨论，尚未同意。\n#1 预算 500元，9 点集合。\n  保留缩进 👩‍👩‍👧‍👦  "
       },
       {
         "id": "excerpt_four_ids",
@@ -469,11 +555,9 @@
         "id": "tokens_ascii_and_fullwidth",
         "text": "v12.50 -9 9:30 １２ 三 🙂",
         "expected": [
-          "12",
-          "50",
-          "9",
-          "9",
-          "30",
+          "12.50",
+          "-9",
+          "9:30",
           "12"
         ]
       },
@@ -485,12 +569,25 @@
           "2",
           "500"
         ]
+      },
+      {
+        "id": "tokens_sign_decimal_unit_chinese",
+        "text": "-12.50元 +9人 ８０元 八十元 三天 一起 一版 9:30 －５．２％",
+        "expected": [
+          "-12.50元",
+          "+9人",
+          "80元",
+          "八十元",
+          "三天",
+          "9:30",
+          "-5.2%"
+        ]
       }
     ],
     "numbers": [
       {
         "id": "numbers_source_allowed",
-        "text": "预算500，9点集合。",
+        "text": "预算500元，9点集合。",
         "expected": true
       },
       {
@@ -524,24 +621,29 @@
         "expected": false
       },
       {
-        "id": "numbers_decimal_parts_not_value",
+        "id": "numbers_decimal_composition_rejected",
         "text": "费用500.9元。",
-        "expected": true
+        "expected": false
       },
       {
-        "id": "numbers_negative_sign_not_checked",
+        "id": "numbers_negative_sign_rejected",
         "text": "余额-500元。",
-        "expected": true
+        "expected": false
       },
       {
-        "id": "numbers_fullwidth_rejected",
+        "id": "numbers_fullwidth_invented_rejected",
         "text": "费用８０元。",
         "expected": false
       },
       {
-        "id": "numbers_chinese_outside_scope",
-        "text": "费用八十元。",
+        "id": "numbers_fullwidth_known_allowed",
+        "text": "费用５００元。",
         "expected": true
+      },
+      {
+        "id": "numbers_chinese_invented_rejected",
+        "text": "费用八十元。",
+        "expected": false
       },
       {
         "id": "numbers_no_digits_not_semantics",
@@ -551,6 +653,21 @@
       {
         "id": "numbers_reference_digits_rejected",
         "text": "依据#2，4人预算够吗？",
+        "expected": false
+      },
+      {
+        "id": "numbers_unit_change_rejected",
+        "text": "预算500人。",
+        "expected": false
+      },
+      {
+        "id": "numbers_unit_drop_rejected",
+        "text": "预算500。",
+        "expected": false
+      },
+      {
+        "id": "numbers_positive_sign_rejected",
+        "text": "预算+500元。",
         "expected": false
       }
     ],
@@ -618,12 +735,12 @@
     ],
     "protocol_blocks": [
       "#1\n#2",
-      "虚构回应甲：待确认。\n依据：#1",
-      "先核实预算500？",
-      "虚构回应乙：仍待确认。\n依据：#2",
-      "中午以后再讨论？",
-      "虚构回应丙：一起想个小游戏。\n依据：#3",
-      "先提议，不承诺执行？"
+      "虚构回应甲：仍待核实。\n虚构回应乙：暂不替别人决定。\n依据：#1\n待确认：是否方便继续讨论？",
+      "先核实预算500元。",
+      "虚构回应甲：仍待核实。\n虚构回应乙：暂不替别人决定。\n依据：#2\n待确认：是否方便继续讨论？",
+      "中午以后再讨论。",
+      "虚构回应甲：仍待核实。\n虚构回应乙：暂不替别人决定。\n依据：#3\n待确认：是否方便继续讨论？",
+      "先提议，不承诺执行。"
     ]
   },
   "assertion_ids": {
@@ -646,6 +763,14 @@
       "parser.duplicate_leading_wrapper",
       "parser.duplicate_trailing_wrapper",
       "parser.empty_response",
+      "parser.refine_parse_valid",
+      "parser.refine_parse_crlf",
+      "parser.refine_parse_missing",
+      "parser.refine_parse_duplicate",
+      "parser.refine_parse_order",
+      "parser.refine_parse_preamble",
+      "parser.refine_parse_embedded_marker",
+      "parser.refine_parse_empty_note",
       "parser.protocol_order_rejects_swap",
       "parser.protocol_requires_markers",
       "parser.excerpt_exact",
@@ -657,7 +782,8 @@
       "parser.marked7_duplicate_marker_rejected",
       "parser.marked7_reordered_marker_rejected",
       "parser.marked7_wrapped_separator_combo_rejected",
-      "parser.output_order_and_markers"
+      "parser.output_order_and_markers",
+      "parser.route_suggestion_length_and_line_bounds"
     ],
     "pagination": [
       "pagination.empty",
@@ -673,19 +799,48 @@
       "pagination.regional_pairs",
       "pagination.hangul_jamo",
       "pagination.marker_order",
-      "pagination.production_reader_navigation",
-      "pagination.long_text_many_pages"
+      "pagination.long_text_many_pages",
+      "pagination.production_reader_navigation"
     ],
     "retry": [
       "retry.first_malformed_second_valid",
+      "retry.duplicate_after_success_ignored",
       "retry.grounded_retry_hint",
       "retry.both_malformed",
       "retry.stop_during_second",
       "retry.edit_during_second",
       "retry.old_callback_new_request",
       "retry.host_error_no_format_retry",
-      "retry.duplicate_after_success_ignored",
-      "retry.host_allowlist"
+      "retry.host_allowlist",
+      "retry.consent_source_scope_not_trial_goal",
+      "retry.mask_change_revokes_consent",
+      "retry.empty_selection_never_requests",
+      "retry.raw_ui_input_identity_rejects_old_reply",
+      "retry.raw_trial_identity_rejects_old_reply",
+      "retry.source_identity_rejects_old_reply",
+      "retry.stale_route_cannot_overwrite_editor",
+      "retry.delete_invalidates_inflight_generation",
+      "retry.failed_delete_cancels_callback_before_io",
+      "retry.revoke_consent_invalidates_callback",
+      "retry.utf8_prompt_32k_byte_budget",
+      "retry.refine_stages_without_overwrite",
+      "retry.refine_duplicate_callback_ignored",
+      "retry.refine_apply_once_with_metadata",
+      "retry.refine_single_repair_same_budget",
+      "retry.refine_failed_never_overwrites",
+      "retry.refine_host_error_preserves_original",
+      "retry.refine_raw_editor_identity_rejects_old",
+      "retry.refine_raw_instruction_identity_rejects_old",
+      "retry.refine_edit_interrupts_request",
+      "retry.refine_instruction_interrupts_request",
+      "retry.refine_stale_staged_input_cannot_apply",
+      "retry.refine_stale_staged_editor_cannot_apply",
+      "retry.delete_invalidates_inflight_refinement",
+      "retry.delete_invalidates_staged_refinement",
+      "retry.refine_route_local_numbers",
+      "retry.refine_output_char_bounds",
+      "retry.refine_input_byte_and_char_bounds",
+      "retry.refine_never_implicitly_saves"
     ],
     "deadline": [
       "deadline.waiting_at_80",
@@ -716,6 +871,30 @@
       "playback.no_host_calls"
     ],
     "storage": [
+      "storage.corruption_invalid_json",
+      "storage.corruption_truncation",
+      "storage.corruption_trailing_junk",
+      "storage.corruption_whitespace",
+      "storage.corruption_object",
+      "storage.corruption_null",
+      "storage.corruption_version",
+      "storage.corruption_string_revision",
+      "storage.corruption_negative_revision",
+      "storage.corruption_fraction_revision",
+      "storage.corruption_rooms_object",
+      "storage.corruption_duplicate_rooms",
+      "storage.corruption_empty_room",
+      "storage.corruption_numeric_room",
+      "storage.corruption_short_room",
+      "storage.corruption_short_slot",
+      "storage.corruption_slot_text_type",
+      "storage.corruption_slot_revision_type",
+      "storage.corruption_slot_origin",
+      "storage.corruption_slot_time_type",
+      "storage.corruption_slot_negative_time",
+      "storage.legacy_explicit_copy_draft",
+      "storage.legacy_explicit_copy_a",
+      "storage.legacy_explicit_copy_b",
       "storage.fresh_jail_required",
       "storage.empty_restore_preserves_editor",
       "storage.blank_never_creates_files",
@@ -729,6 +908,24 @@
       "storage.take_a_restore_exact",
       "storage.take_b_restore_exact",
       "storage.blank_never_overwrites_files",
+      "storage.metadata_roundtrip",
+      "storage.explicit_reload_recovers_without_overwrite",
+      "storage.stale_writer_locks_without_overwrite",
+      "storage.uncertain_cache_cannot_discard_editor",
+      "storage.room_isolation_restore",
+      "storage.delete_stale_editor_confirmation",
+      "storage.delete_expired_confirmation",
+      "storage.delete_room_switch_confirmation",
+      "storage.delete_one_room_preserves_other",
+      "storage.utf8_slot_byte_limit",
+      "storage.total_serialized_byte_limit",
+      "storage.ten_room_limit_no_eviction",
+      "storage.legacy_no_auto_restore",
+      "storage.legacy_copy_requires_explicit_save",
+      "storage.legacy_explicit_delete_all_three",
+      "storage.explicit_delete_all_new_records",
+      "storage.real_io_failure_locks",
+      "storage.final_canonical_real_file",
       "storage.no_host_calls"
     ],
     "grounding": [
@@ -748,6 +945,7 @@
       "grounding.excerpt_five_ids_rejected",
       "grounding.tokens_ascii_and_fullwidth",
       "grounding.tokens_keep_leading_zeros",
+      "grounding.tokens_sign_decimal_unit_chinese",
       "grounding.numbers_source_allowed",
       "grounding.numbers_invented_rejected",
       "grounding.numbers_substring_rejected",
@@ -755,12 +953,16 @@
       "grounding.numbers_source_id_rejected",
       "grounding.numbers_same_digits_not_semantics",
       "grounding.numbers_leading_zero_rejected",
-      "grounding.numbers_decimal_parts_not_value",
-      "grounding.numbers_negative_sign_not_checked",
-      "grounding.numbers_fullwidth_rejected",
-      "grounding.numbers_chinese_outside_scope",
+      "grounding.numbers_decimal_composition_rejected",
+      "grounding.numbers_negative_sign_rejected",
+      "grounding.numbers_fullwidth_invented_rejected",
+      "grounding.numbers_fullwidth_known_allowed",
+      "grounding.numbers_chinese_invented_rejected",
       "grounding.numbers_no_digits_not_semantics",
       "grounding.numbers_reference_digits_rejected",
+      "grounding.numbers_unit_change_rejected",
+      "grounding.numbers_unit_drop_rejected",
+      "grounding.numbers_positive_sign_rejected",
       "grounding.refs_valid_bounds",
       "grounding.refs_duplicates_allowed",
       "grounding.refs_no_hash_not_semantics",
@@ -783,6 +985,20 @@
       "grounding.protocol_commitment_question_allowed",
       "grounding.commitment_pending_line_rejected",
       "grounding.protocol_does_not_verify_semantics",
+      "grounding.route_local_numeric_rejects_other_source",
+      "grounding.route_ordinal_not_numeric_source",
+      "grounding.route_requires_one_basis_line",
+      "grounding.route_requires_one_to_four_refs",
+      "grounding.route_duplicate_basis_ref_rejected",
+      "grounding.route_undeclared_reference_rejected",
+      "grounding.refusal_needs_no_question_mark",
+      "grounding.user_goal_note_numeric_allowed",
+      "grounding.decimal_fragment_sign_unit_counterexamples",
+      "grounding.chinese_quantity_counterexamples",
+      "grounding.commitment_single_question_exception_only",
+      "grounding.source_ids_stable_gaps",
+      "grounding.excluded_message_numbers_rejected",
+      "grounding.g2_prompt_scope_goal_and_sender_omission",
       "grounding.empty_source_bounds",
       "grounding.no_host_calls"
     ],
@@ -790,7 +1006,58 @@
       "envelope.normal_open_started_turn",
       "envelope.nil_data_handled_without_runtime_error",
       "envelope.nil_data_never_publishes_routes",
-      "envelope.host_allowlist"
+      "envelope.host_allowlist",
+      "envelope.bad_text_type_bounded_repair",
+      "envelope.refine_malformed_success_preserves_editor",
+      "envelope.missing_room_id_disables_persistence",
+      "envelope.invalid_message_array_never_loaded",
+      "envelope.stale_room_info_preserves_edited_draft",
+      "envelope.valid_sources_copy_only_body_sender",
+      "envelope.source_schema_and_byte_limits",
+      "envelope.dirty_switch_stale_confirmation",
+      "envelope.dirty_switch_requires_explicit_discard"
     ]
-  }
+  },
+  "refinement": [
+    {
+      "id": "refine_parse_valid",
+      "text": "【R1依据】\n#2\n【R1建议】\n这次先不参加。\n【R1说明】\n保留拒绝边界。",
+      "valid": true
+    },
+    {
+      "id": "refine_parse_crlf",
+      "text": "【R1依据】\r\n#2\r\n【R1建议】\r\n这次先不参加。\r\n【R1说明】\r\n保留拒绝边界。",
+      "valid": true
+    },
+    {
+      "id": "refine_parse_missing",
+      "text": "【R1依据】\n#2\n【R1建议】\n这次先不参加。",
+      "valid": false
+    },
+    {
+      "id": "refine_parse_duplicate",
+      "text": "【R1依据】\n#2\n【R1建议】\n这次先不参加。\n【R1建议】\n重复\n【R1说明】\n说明",
+      "valid": false
+    },
+    {
+      "id": "refine_parse_order",
+      "text": "【R1建议】\n建议\n【R1依据】\n#2\n【R1说明】\n说明",
+      "valid": false
+    },
+    {
+      "id": "refine_parse_preamble",
+      "text": "你好\n【R1依据】\n#2\n【R1建议】\n建议\n【R1说明】\n说明",
+      "valid": false
+    },
+    {
+      "id": "refine_parse_embedded_marker",
+      "text": "【R1依据】\n#2\n【R1建议】\n建议【R1说明】\n【R1说明】\n说明",
+      "valid": false
+    },
+    {
+      "id": "refine_parse_empty_note",
+      "text": "【R1依据】\n#2\n【R1建议】\n建议\n【R1说明】\n",
+      "valid": false
+    }
+  ]
 }
