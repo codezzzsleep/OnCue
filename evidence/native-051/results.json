@@ -1,0 +1,98 @@
+{
+  "schema": 1,
+  "version": "0.5.1",
+  "source_sha256": "6db2afa1fc54094c550d98f36a989434f405f26e57bfd91aa4377363352e46f3",
+  "dates": [
+    "2026-10-08",
+    "2026-10-09"
+  ],
+  "host": "Rinx in OctoSense, Linux aarch64",
+  "model": "MiniMax-M2.7",
+  "frame": [
+    990,
+    613
+  ],
+  "network": "real authorized test-room reads and host-managed model calls; no Matrix sends",
+  "generation_observations": [
+    {
+      "case": "clarify-1",
+      "generation_accepted": true,
+      "automatic_repair_observed": true
+    },
+    {
+      "case": "clarify-2",
+      "generation_accepted": false,
+      "automatic_repair_observed": true
+    },
+    {
+      "case": "refusal-with-default-goal",
+      "generation_accepted": false,
+      "automatic_repair_observed": true
+    },
+    {
+      "case": "explicit-refusal-goal",
+      "generation_accepted": true,
+      "automatic_repair_observed": true
+    }
+  ],
+  "generation_note": "Four development observations on this source, not an unbiased benchmark. Two accepted after one repair; two rejected and preserved existing draft. An early collector missed offscreen cards; the accepted generation was subsequently verified by scrolling. No rejected result counted as a completed generation.",
+  "refinement_flow": [
+    {
+      "case": "generated_routes_available",
+      "passed": true
+    },
+    {
+      "case": "route_selected_without_save",
+      "passed": true
+    },
+    {
+      "case": "real_candidate_staged_without_overwrite",
+      "passed": true
+    },
+    {
+      "case": "explicit_apply_without_save",
+      "passed": true
+    },
+    {
+      "case": "saved_model_revision_exact",
+      "passed": true
+    },
+    {
+      "case": "reimport_room_restores_revised_draft",
+      "passed": true
+    }
+  ],
+  "native_modes": [
+    {
+      "mode": "draft",
+      "passed": true,
+      "scope": "actual Rinx UI and independently read app-owned files",
+      "frame": [
+        54,
+        44,
+        990,
+        613
+      ]
+    },
+    {
+      "mode": "reopen",
+      "passed": true,
+      "scope": "actual Rinx UI and independently read app-owned files",
+      "frame": [
+        54,
+        44,
+        990,
+        613
+      ]
+    }
+  ],
+  "screenshots": {
+    "revision-staged.png": "Actual real-model candidate before explicit application",
+    "reopened-revision.png": "Actual saved model revision restored after reimport and room load"
+  },
+  "limitations": [
+    "No team-external user study",
+    "Model suggestions require semantic review; incorrect invented personal reasons can pass finite checks",
+    "Rinx checks reopen the mini-app; full process-restart persistence previously checked separately using card-host0.5.0"
+  ]
+}

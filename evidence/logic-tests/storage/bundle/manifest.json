@@ -9,7 +9,7 @@
   },
   "id": "oncue-probe-storage",
   "integrity": {
-    "bundle_blake3": "c4f7f650850ecfcb58e91e6574bf02d2ab8e0674764ccab913721c4d7d93a47b"
+    "bundle_blake3": "5a0cf3265262c7d92802cc99a09e8ea1174bab900b789e553b20d3d2dd1cb87b"
   },
   "name": "OnCue controlled storage probe",
   "network": {
@@ -19,5 +19,5 @@
   "storage": {
     "max_bytes": 4194304
   },
-  "version": "0.4.8"
+  "version": "0.5.1"
 }

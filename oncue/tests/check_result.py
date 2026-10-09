@@ -24,7 +24,7 @@ def validate_result(result: dict, provenance: dict) -> list[str]:
                 "expected_assertion_ids", "controlled_injection", "natural_model_test",
                 "production_functions_unchanged", "real_deadline_seconds",
                 "real_playback_interval_seconds", "filesystem",
-                "semantic_fact_verification", "storage_file_sha256"):
+                "semantic_fact_verification", "storage_expectation"):
         if meta.get(key) != provenance.get(key):
             errors.append(f"Provenance mismatch: {key}")
     if meta.get("controlled_injection") is not True or meta.get("natural_model_test") is not False:
@@ -58,16 +58,53 @@ def validate_result(result: dict, provenance: dict) -> list[str]:
 
 
 def validate_storage_bytes(files: dict[str, bytes], provenance: dict) -> list[str]:
-    """Compare literal fixture hashes, not a Python copy of production storage logic."""
-    expected = provenance.get("storage_file_sha256", {})
-    if set(expected) != {"draft.txt", "take-a.txt", "take-b.txt"}:
-        return ["Storage provenance must identify all three real jail files"]
+    """Inspect the final literal artifact, not a Python port of storage behavior.
+
+    Runtime assertions exercise validation/migration/writes. This independent
+    collector verifies the final canonical file's exact fixture fields and bytes.
+    """
+    expected = provenance.get("storage_expectation", {})
+    name = expected.get("file")
+    if name != "rehearsals-v1.json" or len(expected.get("slots", [])) != 3:
+        return ["Storage provenance must identify the canonical file and all three slots"]
     errors = []
-    for name, expected_hash in expected.items():
-        if name not in files:
-            errors.append(f"Missing real jail file: {name}")
-        elif sha256(files[name]) != expected_hash:
-            errors.append(f"Real jail bytes differ from literal fixture: {name}")
+    for legacy in expected.get("absent_files", []):
+        if legacy in files:
+            errors.append(f"Legacy file remains after explicit migration deletion: {legacy}")
+    if name not in files:
+        return errors + [f"Missing real jail file: {name}"]
+    try:
+        text = files[name].decode("utf-8")
+        value = json.loads(text)
+        canonical = json.dumps(value, ensure_ascii=False, separators=(",", ":"))
+        if text != canonical:
+            errors.append("Real canonical store bytes are not strict array JSON serialization")
+        if (not isinstance(value, list) or len(value) != 3 or value[0] != 1
+                or type(value[1]) is not int or value[1] < 3):
+            return errors + ["Unexpected final canonical schema/revision"]
+        rooms = value[2]
+        if not isinstance(rooms, list) or len(rooms) != 1:
+            return errors + ["Expected exactly one final fixture room"]
+        room = rooms[0]
+        if not isinstance(room, list) or len(room) != 4 or room[0] != expected["room_id"]:
+            return errors + ["Final room identity differs from literal fixture"]
+        revisions = []
+        for index, fixture in enumerate(expected["slots"]):
+            slot = room[index + 1]
+            if not isinstance(slot, list) or len(slot) != 9:
+                errors.append(f"Malformed final slot {index}")
+                continue
+            if type(slot[1]) is not int or slot[1] < 1:
+                errors.append(f"Invalid editor revision in slot {index}")
+            else:
+                revisions.append(slot[1])
+            for field in (0, 2, 3, 4, 5, 6, 7, 8):
+                if type(slot[field]) is not type(fixture[field]) or slot[field] != fixture[field]:
+                    errors.append(f"Real jail slot {index} field {field} differs from literal fixture")
+        if len(revisions) == 3 and not revisions[0] < revisions[1] < revisions[2]:
+            errors.append("Final slot editor revisions do not reflect sequential saves")
+    except (UnicodeError, ValueError, TypeError, KeyError) as error:
+        errors.append(f"Unreadable canonical storage artifact: {error}")
     return errors
 
 
@@ -109,12 +146,14 @@ def collect(run_dir: Path, wait_seconds: float, current_source: Path | None) -> 
     if provenance["suite"] == "storage":
         # Inspect actual host-created files independently of the Splash assertions.
         files = {}
-        for name in ("draft.txt", "take-a.txt", "take-b.txt"):
+        for name in ("rehearsals-v1.json", "draft.txt", "take-a.txt", "take-b.txt"):
             path = result_path.parent / name
             if path.is_symlink() or path.resolve().parent != result_path.parent:
                 errors.append(f"Storage path is not a direct real jail file: {name}")
             elif path.is_file():
                 files[name] = path.read_bytes()
+            elif path.exists():
+                errors.append(f"Storage path is not a regular jail file: {name}")
         errors.extend(validate_storage_bytes(files, provenance))
         for name, data in files.items():
             print(f"Real jail bytes: {name} | {len(data)} bytes | SHA256 {sha256(data)}")

@@ -109,17 +109,21 @@ class InfrastructureTests(unittest.TestCase):
     def test_all_new_assertion_ids_have_one_oracle(self):
         # IDs are reviewed fixture literals, not generated from the harness at run time.
         self.assertEqual(set(self.fixtures["assertion_ids"]), set(generate_probe.SUITES))
-        literal = re.findall(r'probe_assert\("((?:playback|storage|grounding|envelope)\.[^"\n]+)"', self.harness)
+        literal = re.findall(r'probe_assert\("((?:parser|pagination|retry|deadline|playback|storage|grounding|envelope)\.[^"\n]+)"', self.harness)
+        literal = [name for name in literal if name != "storage.legacy_explicit_copy_"]
         self.assertEqual(len(literal), len(set(literal)))
-        expected_grounding = {"grounding." + case["id"]
-                              for group in ("excerpts", "tokens", "numbers", "references")
-                              for case in self.fixtures["grounding"][group]}
-        for suite in ("playback", "storage", "grounding", "envelope"):
+        dynamic = {
+            "parser": {"parser." + case["id"] for case in self.fixtures["parser"] + self.fixtures["refinement"]},
+            "pagination": {"pagination." + case["id"] for case in self.fixtures["pagination"]},
+            "grounding": {"grounding." + case["id"] for group in ("excerpts", "tokens", "numbers", "references")
+                          for case in self.fixtures["grounding"][group]},
+            "storage": {"storage." + case["id"] for case in self.fixtures["storage"]["invalid_cases"]}
+                       | {"storage.legacy_explicit_copy_" + name for name in ("draft", "a", "b")},
+        }
+        for suite in generate_probe.SUITES:
             defined = {name for name in literal if name.startswith(suite + ".")}
-            if suite == "grounding":
-                self.assertFalse(defined & expected_grounding)
-                defined |= expected_grounding
-            self.assertEqual(defined, set(self.fixtures["assertion_ids"][suite]))
+            defined |= dynamic.get(suite, set())
+            self.assertEqual(defined, set(self.fixtures["assertion_ids"][suite]), suite)
             self.assertIn(f'if probe_meta.suite == "{suite}" {{ probe_{suite}() return }}', self.harness)
 
     def test_production_api_drift_and_shadowing_refused(self):
@@ -137,18 +141,49 @@ class InfrastructureTests(unittest.TestCase):
     def test_storage_literal_byte_checker(self):
         _, provenance = generate_probe.build_probe(self.source, self.fixture_bytes, self.harness, "storage")
         # Synthetic bytes exist ONLY in memory; this is not a successful jail run.
-        files = {name: self.fixtures["storage"][key].encode("utf-8")
-                 for name, key in generate_probe.STORAGE_FIXTURES.items()}
+        slots = copy.deepcopy(provenance["storage_expectation"]["slots"])
+        for index, slot in enumerate(slots):
+            slot[1] = index + 10
+        value = [1, 3, [["probe-room", *slots]]]
+        encode = lambda data: json.dumps(data, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+        files = {generate_probe.STORAGE_FILE: encode(value)}
         self.assertEqual(check_result.validate_storage_bytes(files, provenance), [])
-        for name in files:
-            for mutate in (lambda data: data.strip(), lambda data: data + b"x"):
-                changed = dict(files)
-                changed[name] = mutate(changed[name])
-                self.assertTrue(check_result.validate_storage_bytes(changed, provenance))
-            changed = dict(files)
-            del changed[name]
-            self.assertTrue(check_result.validate_storage_bytes(changed, provenance))
+        for data in (files[generate_probe.STORAGE_FILE] + b"x", files[generate_probe.STORAGE_FILE][:-1],
+                     b" " + files[generate_probe.STORAGE_FILE], b"{}", b"null", b"[1,3,[]]"):
+            self.assertTrue(check_result.validate_storage_bytes({generate_probe.STORAGE_FILE: data}, provenance))
+        for index in range(3):
+            for field in (0, 2, 3, 4, 5, 6, 7, 8):
+                changed = copy.deepcopy(value)
+                changed[2][0][index + 1][field] = "wrong"
+                self.assertTrue(check_result.validate_storage_bytes({generate_probe.STORAGE_FILE: encode(changed)}, provenance))
+        for name in generate_probe.LEGACY_FILES:
+            self.assertTrue(check_result.validate_storage_bytes({**files, name: b"legacy"}, provenance))
+        self.assertTrue(check_result.validate_storage_bytes({}, provenance))
         self.assertTrue(check_result.validate_storage_bytes(files, {}))
+
+    def test_storage_final_revision_and_identity_checked(self):
+        _, provenance = generate_probe.build_probe(self.source, self.fixture_bytes, self.harness, "storage")
+        slots = copy.deepcopy(provenance["storage_expectation"]["slots"])
+        for index, slot in enumerate(slots):
+            slot[1] = index + 1
+        valid = [1, 3, [["probe-room", *slots]]]
+        mutations = []
+        for revision in (True, -1, 2, "3", 3.5):
+            changed = copy.deepcopy(valid)
+            changed[1] = revision
+            mutations.append(changed)
+        changed = copy.deepcopy(valid)
+        changed[2][0][0] = "wrong-room"
+        mutations.append(changed)
+        changed = copy.deepcopy(valid)
+        changed[2].append(changed[2][0])
+        mutations.append(changed)
+        changed = copy.deepcopy(valid)
+        changed[2][0][3][1] = 1
+        mutations.append(changed)
+        for changed in mutations:
+            data = json.dumps(changed, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+            self.assertTrue(check_result.validate_storage_bytes({generate_probe.STORAGE_FILE: data}, provenance))
 
     def test_envelope_failure_is_not_xfail(self):
         _, provenance = generate_probe.build_probe(self.source, self.fixture_bytes, self.harness, "envelope")
@@ -173,7 +208,7 @@ class InfrastructureTests(unittest.TestCase):
                   "assertions": [{"id": name, "passed": True, "detail": {"synthetic_checker_unit_input": True}}
                                  for name in provenance["expected_assertion_ids"]]}
         self.assertEqual(check_result.validate_result(sample, provenance), [])
-        for key in ("real_playback_interval_seconds", "filesystem", "semantic_fact_verification", "storage_file_sha256"):
+        for key in ("real_playback_interval_seconds", "filesystem", "semantic_fact_verification", "storage_expectation"):
             changed = copy.deepcopy(sample)
             changed["meta"][key] = "incorrect"
             self.assertTrue(check_result.validate_result(changed, provenance))
