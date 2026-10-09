@@ -35,7 +35,7 @@ card-host 可以打开应用并看内置样例，但它不提供 Matrix 和助�
    ```
 
 2. 在 Rinx 里打开 **Discover → Mini apps → Import an app**。包路径填上一步打印出的目录，房间填你的 Matrix 房间 ID。
-3. 点 **Review bundle**。面板会列出应用名、版本、六项服务和 Allowed room。
+3. 点 **Review bundle**。面板会列出应用名、版本、八项服务和 Allowed room。
 4. 点 **Run**。每次打开都要重新授权，点 Back 关闭后授权失效。
 
 ## 使用
