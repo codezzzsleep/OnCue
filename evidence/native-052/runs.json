@@ -1,0 +1,144 @@
+{
+  "schema": 1,
+  "version": "0.5.2",
+  "source_sha256": "56397f9520631300ef5319146113d24dd53ccc002c70a31b4cbfa1ade406c94c",
+  "source_commit": "d844673",
+  "host_rinx_commit": "c515e5fc9b6dc22e67f7d551b09fdd793ec685a1",
+  "model": "MiniMax-M2.7",
+  "window_pixels": [
+    990,
+    760
+  ],
+  "scope": "2026-10-09 六次真实房间试映，三种目标各两次；每次最多一次自动修复。数据窗口相同，不能视为总体成功率。",
+  "natural_model": true,
+  "controlled_injection": false,
+  "counts": {
+    "passed_first": 3,
+    "passed_after_repair": 2,
+    "rejected": 1
+  },
+  "notes": [
+    "首轮后验收脚本寻找已隐藏的允许按钮而中止；没有额外请求。剩余五轮在同一已允许实例继续。",
+    "这是发送功能加入前的确定源码；最终源码的完整交互另行记录。"
+  ],
+  "runs": [
+    {
+      "id": "clarify-1",
+      "goal": "澄清条件",
+      "input_summary": "先确认一下，这次是当天回来，还是需要住宿？",
+      "started_at": "2026-10-09T19:54:04.873435+08:00",
+      "ended_at": "2026-10-09T19:55:19.074888+08:00",
+      "statuses": [
+        "助手正在准备三种说法…",
+        "助手的回答没通过检查，正在自动重试一次…",
+        "三种说法好了。每条下面是它依据的原文，选之前对一下。"
+      ],
+      "first_rejection_original": "数字：‘1’不在本路线依据或本人提议中；去掉对白里的编号（如【1】），真实数量保持原文写法，不改为中文数字，也不增加引用来拼凑事实",
+      "raw_reply_sha256": [
+        "c2fb4557f057251ed99517b84c2b1519401ad1cb98d21496084d429818434589",
+        "4316c31cbb30583b7739f167559f0907e9c80f15f21eaaf671959525d028cae6"
+      ],
+      "result": "passed_after_repair",
+      "final_status": "三种说法好了。每条下面是它依据的原文，选之前对一下。",
+      "readback_result": "未发送，本轮仅试映",
+      "repair_result": "三种说法好了。每条下面是它依据的原文，选之前对一下。"
+    },
+    {
+      "id": "clarify-2",
+      "goal": "澄清条件",
+      "input_summary": "出发时间还没说清楚，能不能先把时间对一下？",
+      "started_at": "2026-10-09T19:59:46.378667+08:00",
+      "ended_at": "2026-10-09T20:00:03.454462+08:00",
+      "statuses": [
+        "助手正在准备三种说法…",
+        "三种说法好了。每条下面是它依据的原文，选之前对一下。"
+      ],
+      "first_rejection_original": null,
+      "raw_reply_sha256": [
+        "83239b056c93224fb5220cad608e1ca5ae7b0e088f0ef84180ef763c1223d640"
+      ],
+      "result": "passed_first",
+      "final_status": "三种说法好了。每条下面是它依据的原文，选之前对一下。",
+      "readback_result": "未发送，本轮仅试映",
+      "repair_result": "not needed"
+    },
+    {
+      "id": "decline-1",
+      "goal": "礼貌拒绝",
+      "input_summary": "谢谢邀请，这次我不参加，你们继续讨论。",
+      "started_at": "2026-10-09T20:00:24.184703+08:00",
+      "ended_at": "2026-10-09T20:01:08.386871+08:00",
+      "statuses": [
+        "助手正在准备三种说法…",
+        "助手的回答没通过检查，正在自动重试一次…",
+        "三种说法好了。每条下面是它依据的原文，选之前对一下。"
+      ],
+      "first_rejection_original": "【摘要】一节只能写 1 到 4 个存在的消息编号，每行一个，例如 #2",
+      "raw_reply_sha256": [
+        "6e6e37b94c99e70dc68af6f2f46879b3a2c89c618171d7938f9c66215434bc7c",
+        "62dbd619bb2c35543edd203f52bed1e9a582b1fdeb065f68e38f5f4703a4861e"
+      ],
+      "result": "passed_after_repair",
+      "final_status": "三种说法好了。每条下面是它依据的原文，选之前对一下。",
+      "readback_result": "未发送，本轮仅试映",
+      "repair_result": "三种说法好了。每条下面是它依据的原文，选之前对一下。"
+    },
+    {
+      "id": "decline-2",
+      "goal": "礼貌拒绝",
+      "input_summary": "这次我先不加入，不影响你们继续安排。",
+      "started_at": "2026-10-09T20:01:28.810518+08:00",
+      "ended_at": "2026-10-09T20:01:46.535767+08:00",
+      "statuses": [
+        "助手正在准备三种说法…",
+        "三种说法好了。每条下面是它依据的原文，选之前对一下。"
+      ],
+      "first_rejection_original": null,
+      "raw_reply_sha256": [
+        "2d22a6b41b0f8525c3eef16e1fc9086104047035a3ac8f745e3e245ab51f2d22"
+      ],
+      "result": "passed_first",
+      "final_status": "三种说法好了。每条下面是它依据的原文，选之前对一下。",
+      "readback_result": "未发送，本轮仅试映",
+      "repair_result": "not needed"
+    },
+    {
+      "id": "advance-1",
+      "goal": "推动下一步",
+      "input_summary": "我们先把还没明确的条件列出来，再一起看怎么安排。",
+      "started_at": "2026-10-09T20:02:06.484658+08:00",
+      "ended_at": "2026-10-09T20:03:40.672534+08:00",
+      "statuses": [
+        "助手正在准备三种说法…",
+        "助手试映等待超过 90 秒，已结束等待。可以重新载入或改一句再试。"
+      ],
+      "first_rejection_original": null,
+      "raw_reply_sha256": [
+        "08cd669567dce589b8f68aaaf0eced2ae7696f64edbbad582e46600342231414"
+      ],
+      "result": "rejected",
+      "final_status": "助手试映等待超过 90 秒，已结束等待。可以重新载入或改一句再试。",
+      "readback_result": "未发送，本轮仅试映",
+      "repair_result": "not needed"
+    },
+    {
+      "id": "advance-2",
+      "goal": "推动下一步",
+      "input_summary": "能不能先说清出发和返程安排，再讨论谁负责？",
+      "started_at": "2026-10-09T20:04:03.076502+08:00",
+      "ended_at": "2026-10-09T20:04:34.115392+08:00",
+      "statuses": [
+        "助手正在准备三种说法…",
+        "三种说法好了。每条下面是它依据的原文，选之前对一下。"
+      ],
+      "first_rejection_original": null,
+      "raw_reply_sha256": [
+        "a98b3ddcb921ae98f89f525338d073e174ee38d52a9ec15f77c547d891350b71"
+      ],
+      "result": "passed_first",
+      "final_status": "三种说法好了。每条下面是它依据的原文，选之前对一下。",
+      "readback_result": "未发送，本轮仅试映",
+      "repair_result": "not needed"
+    }
+  ]
+}
