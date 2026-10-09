@@ -14,7 +14,7 @@ import re
 import sys
 
 HERE = Path(__file__).resolve().parent
-DEFAULT_SOURCE = HERE.parent / "bundle" / "main.splash"
+DEFAULT_SOURCE = HERE.parent.parent / "bundle" / "main.splash"
 CORE_SUITES = ("parser", "pagination", "retry", "deadline", "playback", "storage", "grounding", "envelope")
 SUITES = (*CORE_SUITES, "send", "send2", "send3", "send4")
 REQUIRED_FUNCTIONS = {

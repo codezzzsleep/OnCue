@@ -16,7 +16,7 @@ OnCue 是运行在 Rinx 里的私人群聊排练工具。选择表达目标和�
   <sub>宽窗口和窄窗口下的界面</sub>
 </p>
 
-当前未签名审阅包在 [`oncue/bundle/`](oncue/bundle/)。
+当前未签名审阅包在 [`bundle/`](bundle/)。
 
 ## 当前实际界面
 

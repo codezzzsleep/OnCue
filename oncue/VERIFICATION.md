@@ -6,7 +6,7 @@
 
 ## 包检查
 
-`hub check oncue/bundle --allow-unsigned` 输出 `oncue-screening-room 0.5.1 — PASSED`，仅提示未签名。资源摘要复核相等：`ef5ad210e02c364a76942d22e5b72b119064a512b995dd4cf86fc62f29ef2796`。
+`hub check bundle --allow-unsigned` 输出 `oncue-screening-room 0.5.1 — PASSED`，仅提示未签名。资源摘要复核相等：`ef5ad210e02c364a76942d22e5b72b119064a512b995dd4cf86fc62f29ef2796`。
 
 ## 真实Rinx与模型流程
 

@@ -36,7 +36,7 @@ SUITE=parser; PORT=8197; RUN="$WORK/$SUITE"; WAIT=15
 [ "$SUITE" = playback ] && WAIT=25
 python3 "$OCTO" run "$RUN/bundle" --port "$PORT" --hidden --detach --timeout 20 --app-data "$RUN/app-data" \
 && python3 oncue/tests/check_result.py --run-dir "$RUN" --wait-seconds "$WAIT" \
-     --current-source oncue/bundle/main.splash
+     --current-source bundle/main.splash
 echo "suite=$SUITE exit=$?"
 curl --fail --silent --show-error "http://127.0.0.1:$PORT/quit"
 ```
@@ -58,7 +58,7 @@ python3 -m unittest discover -s oncue/tests -p 'selftest_*.py' -v
 ```sh
 python3 oncue/tools/native_acceptance.py \
   --port 8771 --out /path/to/new-output-dir \
-  --bundle "$DEV_ROOT/bundle" --release-bundle oncue/bundle --hub "$OCTO_HUB" \
+  --bundle "$DEV_ROOT/bundle" --release-bundle bundle --hub "$OCTO_HUB" \
   --account '@you:matrix.rinx.chat' --data-dir /path/to/rinx-data \
   --room '!yourRoomId:matrix.rinx.chat' \
   --host-binary /path/to/octosense \

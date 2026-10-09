@@ -4,7 +4,7 @@
 
 ## 这是什么
 
-OnCue 是参加 GOSIM Agentic App 2026 的 OctoScript 小程序，运行在 Rinx 里。提交的应用包是 `oncue/bundle/`，其余是说明、测试和证据。产品说明见 `oncue/BRIEF.md`，运行方法见 `oncue/docs/RUNNING.md`。
+OnCue 是参加 GOSIM Agentic App 2026 的 OctoScript 小程序，运行在 Rinx 里。提交的应用包是 `bundle/`，其余是说明、测试和证据。产品说明见 `oncue/BRIEF.md`，运行方法见 `oncue/docs/RUNNING.md`。
 
 ## 不能做的事
 
@@ -25,7 +25,7 @@ OnCue 是参加 GOSIM Agentic App 2026 的 OctoScript 小程序，运行在 Rinx
 
 ## 改了应用包之后
 
-`oncue/bundle/` 下任何文件有改动，都要做完下面几步再交给作者：
+`bundle/` 下任何文件有改动，都要做完下面几步再交给作者：
 
 1. 把 `manifest.json` 里的版本号加一。同一个版本号只能对应一份内容。
 2. 跑工具单元测试：`python3 -m unittest discover -s oncue/tests -p 'selftest_*.py'`。
@@ -41,7 +41,7 @@ OnCue 是参加 GOSIM Agentic App 2026 的 OctoScript 小程序，运行在 Rinx
 python3 -m unittest discover -s oncue/tests -p 'selftest_*.py' -v
 
 # 检查已签名的包（OCTO_HUB 指向本地构建的 hub）
-"$OCTO_HUB" check oncue/bundle --publisher-key oncue.dev=50578fd7e0d8ac51a1e9e590835427ce8e71f46dba491860c75ae4e7c8c78042
+"$OCTO_HUB" check bundle --publisher-key oncue.dev=50578fd7e0d8ac51a1e9e590835427ce8e71f46dba491860c75ae4e7c8c78042
 
 # 生成未签名副本，用于 card-host 和 Rinx 本地导入
 python3 oncue/tools/prepare_dev_bundle.py "$(mktemp -d)/bundle" --hub "$OCTO_HUB"
@@ -71,7 +71,7 @@ python3 oncue/tools/prepare_dev_bundle.py "$(mktemp -d)/bundle" --hub "$OCTO_HUB
 - 没做的事统一写在“未验证”里，每件事写一次。不要在别处反复写“不代表”“不等于”“不证明”。
 - 不写本机路径、完整的账号和房间号、进程号。这些放在 `.private/ENV.md`，不入库。
 - 不引用仓库里不存在的文件。
-- 不把 TODO 和给作者的留言写进 `oncue/bundle/` 和 `oncue/PRIVACY.md`，这两处的内容会公开发布。
+- 不把 TODO 和给作者的留言写进 `bundle/` 和 `oncue/PRIVACY.md`，这两处的内容会公开发布。
 - 不新增文档，除非作者要求。状态变化写进 `CHANGELOG.md`。
 
 ## 提交规则

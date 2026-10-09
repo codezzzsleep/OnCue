@@ -26,7 +26,7 @@ from native_bridge import Bridge
 from rinx_session import module, resize
 
 APP_ID = "oncue-screening-room"
-DEFAULT_RELEASE = Path(__file__).resolve().parents[1] / "bundle"
+DEFAULT_RELEASE = Path(__file__).resolve().parents[2] / "bundle"
 SUCCESS = "三种说法好了。每条下面是它依据的原文，选之前对一下。"
 CONSENT = "允许当前范围内的试映与修订"
 CONSENT_GRANTED = "已允许。点试映或修订时，会把台词、目标和勾选的消息发给助手。"

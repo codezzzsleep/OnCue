@@ -20,7 +20,7 @@
 ```sh
 for s in parser pagination retry deadline playback storage grounding envelope; do
   python3 oncue/tests/check_result.py --run-dir evidence/logic-tests/$s --wait-seconds 0 \
-    --current-source oncue/bundle/main.splash || exit $?
+    --current-source bundle/main.splash || exit $?
 done
 ```
 
