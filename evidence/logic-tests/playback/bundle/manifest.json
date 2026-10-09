@@ -9,7 +9,7 @@
   },
   "id": "oncue-probe-playback",
   "integrity": {
-    "bundle_blake3": "851ef3c8454fe0050862cd7621ba84fc2627eaec11f7b8bb2350bc0bea1c6f1f"
+    "bundle_blake3": "e142bfffbe078bb484cbe8cc3f5fd4d410fdc19dadff5d24d959607578e2ddb5"
   },
   "name": "OnCue controlled playback probe",
   "network": {
@@ -19,5 +19,5 @@
   "storage": {
     "max_bytes": 4194304
   },
-  "version": "0.5.1"
+  "version": "0.5.2"
 }

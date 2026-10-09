@@ -9,7 +9,7 @@
   },
   "id": "oncue-probe-retry",
   "integrity": {
-    "bundle_blake3": "b484df730f055ae8446b3c6807452d18afcf2278e4de12fc78c6eb2d3cf19193"
+    "bundle_blake3": "3cf5dda3d641945c26a59ae81a4576d71583ace21e0a715df29b5eb9edb16b7a"
   },
   "name": "OnCue controlled retry probe",
   "network": {
@@ -19,5 +19,5 @@
   "storage": {
     "max_bytes": 4194304
   },
-  "version": "0.5.1"
+  "version": "0.5.2"
 }

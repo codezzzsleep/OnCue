@@ -65,10 +65,35 @@ let cue_delete_disk_ready = false
 let cue_switch_target = ""
 let cue_switch_editor = ""
 let cue_discard_once = false
+// Independent bounded freshness/transport state; never use the model retry latch.
+let cue_room_epoch = 0
+let cue_source_window = nil
+let cue_route_window = nil
+let cue_refine_window = nil
+let cue_own_id = ""
+let cue_own_epoch = -1
+let cue_io_epoch = 0
+let cue_io_busy = false
+let cue_io_stage = ""
+let cue_io_until = 0.0
+let cue_fresh_state = ""
+let cue_fresh_text = ""
+let cue_fresh_rows = []
+let cue_send_phase = "idle"
+let cue_send_text = ""
+let cue_send_confirmation = nil
+let cue_send_nonce = 0
+let cue_send_latch = false
+let cue_send_history = []
+let cue_send_active = -1
+let cue_send_allow_resend = false
+let cue_send_resend_of = -1
+let cue_editor_sent = nil
+let cue_send_evidence_open = false
 
 // TEST-ONLY controlled host. No native host service is forwarded.
-let probe_meta = "{\"schema\": 1, \"suite\": \"pagination\", \"source_sha256\": \"6db2afa1fc54094c550d98f36a989434f405f26e57bfd91aa4377363352e46f3\", \"fixtures_sha256\": \"ffc74f583419b98a15361a55f97f26bddcd759396f1ff3b8759dec9a40909192\", \"harness_sha256\": \"a049a390c491764bdb6bb69c99e37a4582b88d1d066f8d659962dac0f793f46e\", \"expected_assertion_ids\": [\"pagination.empty\", \"pagination.ascii16\", \"pagination.ascii17\", \"pagination.cjk9\", \"pagination.newlines_rows3\", \"pagination.leading_newline_rows1\", \"pagination.crlf_boundary\", \"pagination.combining\", \"pagination.emoji_zwj\", \"pagination.emoji_modifier\", \"pagination.regional_pairs\", \"pagination.hangul_jamo\", \"pagination.marker_order\", \"pagination.long_text_many_pages\", \"pagination.production_reader_navigation\"], \"controlled_injection\": true, \"natural_model_test\": false, \"production_functions_unchanged\": true, \"real_deadline_seconds\": 90, \"real_playback_interval_seconds\": 1.4, \"filesystem\": \"real card-host jail; fs is not shadowed\", \"semantic_fact_verification\": false, \"storage_expectation\": {}}".parse_json()
-let probe_fixtures = "{\n  \"schema\": 1,\n  \"notice\": \"Literal controlled fixtures, not natural model results. Pagination expectations are conservation/cluster assertions, not a Python implementation.\",\n  \"canonical_blocks\": [\n    \"#2\\n#3\",\n    \"虚构回应甲：路线A先考虑边界。\\n虚构回应乙：暂不替别人决定。\\n依据：#2\\n待确认：是否方便继续讨论？\",\n    \"Ac|建议：中午之后。\",\n    \"虚构回应甲：路线B先考虑边界。\\n虚构回应乙：暂不替别人决定。\\n依据：#3\\n待确认：是否方便继续讨论？\",\n    \"Bc|建议：当天往返。\",\n    \"虚构回应甲：路线C先考虑边界。\\n虚构回应乙：暂不替别人决定。\\n依据：#4\\n待确认：是否方便继续讨论？\",\n    \"Cc|建议：来个半日小游戏。\"\n  ],\n  \"parser\": [\n    {\n      \"id\": \"standard7\",\n      \"text\": \"S0\\n@@@\\nA1\\n@@@\\nA2\\n@@@\\nB1\\n@@@\\nB2\\n@@@\\nC1\\n@@@\\nC2\",\n      \"valid\": true,\n      \"blocks\": [\n        \"S0\",\n        \"A1\",\n        \"A2\",\n        \"B1\",\n        \"B2\",\n        \"C1\",\n        \"C2\"\n      ]\n    },\n    {\n      \"id\": \"wrapper7\",\n      \"text\": \"@@@\\nS0\\n@@@\\nA1\\n@@@\\nA2\\n@@@\\nB1\\n@@@\\nB2\\n@@@\\nC1\\n@@@\\nC2\\n@@@\",\n      \"valid\": true,\n      \"blocks\": [\n        \"S0\",\n        \"A1\",\n        \"A2\",\n        \"B1\",\n        \"B2\",\n        \"C1\",\n        \"C2\"\n      ]\n    },\n    {\n      \"id\": \"leading_wrapper7\",\n      \"text\": \"@@@\\nS0\\n@@@\\nA1\\n@@@\\nA2\\n@@@\\nB1\\n@@@\\nB2\\n@@@\\nC1\\n@@@\\nC2\",\n      \"valid\": true,\n      \"blocks\": [\n        \"S0\",\n        \"A1\",\n        \"A2\",\n        \"B1\",\n        \"B2\",\n        \"C1\",\n        \"C2\"\n      ]\n    },\n    {\n      \"id\": \"trailing_wrapper7\",\n      \"text\": \"S0\\n@@@\\nA1\\n@@@\\nA2\\n@@@\\nB1\\n@@@\\nB2\\n@@@\\nC1\\n@@@\\nC2\\n@@@\\n\",\n      \"valid\": true,\n      \"blocks\": [\n        \"S0\",\n        \"A1\",\n        \"A2\",\n        \"B1\",\n        \"B2\",\n        \"C1\",\n        \"C2\"\n      ]\n    },\n    {\n      \"id\": \"crlf7\",\n      \"text\": \"@@@\\r\\nS0\\r\\n@@@\\r\\nA1\\r\\n第二行\\r\\n@@@\\r\\nA2\\r\\n@@@\\r\\nB1\\r\\n@@@\\r\\nB2\\r\\n@@@\\r\\nC1\\r\\n@@@\\r\\nC2\\r\\n@@@\\r\\n\",\n      \"valid\": true,\n      \"blocks\": [\n        \"S0\",\n        \"A1\\n第二行\",\n        \"A2\",\n        \"B1\",\n        \"B2\",\n        \"C1\",\n        \"C2\"\n      ]\n    },\n    {\n      \"id\": \"eol7\",\n      \"text\": \"S0@@@\\nA1@@@\\nA2@@@\\nB1@@@\\nB2@@@\\nC1@@@\\nC2\",\n      \"valid\": true,\n      \"blocks\": [\n        \"S0\",\n        \"A1\",\n        \"A2\",\n        \"B1\",\n        \"B2\",\n        \"C1\",\n        \"C2\"\n      ]\n    },\n    {\n      \"id\": \"eol_wrapper7\",\n      \"text\": \"@@@\\nS0@@@\\nA1@@@\\nA2@@@\\nB1@@@\\nB2@@@\\nC1@@@\\nC2@@@\\n\",\n      \"valid\": true,\n      \"blocks\": [\n        \"S0\",\n        \"A1\",\n        \"A2\",\n        \"B1\",\n        \"B2\",\n        \"C1\",\n        \"C2\"\n      ]\n    },\n    {\n      \"id\": \"separator_whitespace7\",\n      \"text\": \"  S0  \\n  @@@ \\nA1\\n\\t@@@\\t\\nA2\\n@@@\\nB1\\n@@@\\nB2\\n@@@\\nC1\\n@@@\\nC2  \",\n      \"valid\": true,\n      \"blocks\": [\n        \"S0\",\n        \"A1\",\n        \"A2\",\n        \"B1\",\n        \"B2\",\n        \"C1\",\n        \"C2\"\n      ]\n    },\n    {\n      \"id\": \"internal_blank_lines_preserved\",\n      \"text\": \"S0\\n@@@\\nA1\\n\\n依据：#2\\n@@@\\nA2\\n@@@\\nB1\\n@@@\\nB2\\n@@@\\nC1\\n@@@\\nC2\",\n      \"valid\": true,\n      \"blocks\": [\n        \"S0\",\n        \"A1\\n\\n依据：#2\",\n        \"A2\",\n        \"B1\",\n        \"B2\",\n        \"C1\",\n        \"C2\"\n      ]\n    },\n    {\n      \"id\": \"internal_empty_block\",\n      \"text\": \"S0\\n@@@\\nA1\\n@@@\\n  \\n@@@\\nB1\\n@@@\\nB2\\n@@@\\nC1\\n@@@\\nC2\",\n      \"valid\": false,\n      \"blocks\": []\n    },\n    {\n      \"id\": \"six_blocks\",\n      \"text\": \"S0\\n@@@\\nA1\\n@@@\\nA2\\n@@@\\nB1\\n@@@\\nB2\\n@@@\\nC1\",\n      \"valid\": false,\n      \"blocks\": []\n    },\n    {\n      \"id\": \"eight_blocks\",\n      \"text\": \"S0\\n@@@\\nA1\\n@@@\\nA2\\n@@@\\nB1\\n@@@\\nB2\\n@@@\\nC1\\n@@@\\nC2\\n@@@\\nEXTRA\",\n      \"valid\": false,\n      \"blocks\": []\n    },\n    {\n      \"id\": \"body_inline_marker\",\n      \"text\": \"S0中间@@@符号\\n@@@\\nA1\\n@@@\\nA2\\n@@@\\nB1\\n@@@\\nB2\\n@@@\\nC1\\n@@@\\nC2\",\n      \"valid\": true,\n      \"blocks\": [\n        \"S0中间@@@符号\",\n        \"A1\",\n        \"A2\",\n        \"B1\",\n        \"B2\",\n        \"C1\",\n        \"C2\"\n      ]\n    },\n    {\n      \"id\": \"strict_body_eol_marker\",\n      \"text\": \"S0提到@@@\\n仍属于摘要\\n@@@\\nA1\\n@@@\\nA2\\n@@@\\nB1\\n@@@\\nB2\\n@@@\\nC1\\n@@@\\nC2\",\n      \"valid\": true,\n      \"blocks\": [\n        \"S0提到@@@\\n仍属于摘要\",\n        \"A1\",\n        \"A2\",\n        \"B1\",\n        \"B2\",\n        \"C1\",\n        \"C2\"\n      ]\n    },\n    {\n      \"id\": \"ambiguous_mixed_six_to_seven\",\n      \"text\": \"S0提到@@@\\n仍属于摘要\\n@@@\\nA1\\n@@@\\nA2\\n@@@\\nB1\\n@@@\\nB2\\n@@@\\nC1\",\n      \"valid\": false,\n      \"blocks\": [],\n      \"reason\": \"One attached literal plus five standard boundaries must not manufacture a missing seventh block.\"\n    },\n    {\n      \"id\": \"duplicate_leading_wrapper\",\n      \"text\": \"@@@\\n@@@\\nS0\\n@@@\\nA1\\n@@@\\nA2\\n@@@\\nB1\\n@@@\\nB2\\n@@@\\nC1\\n@@@\\nC2\",\n      \"valid\": false,\n      \"blocks\": []\n    },\n    {\n      \"id\": \"duplicate_trailing_wrapper\",\n      \"text\": \"S0\\n@@@\\nA1\\n@@@\\nA2\\n@@@\\nB1\\n@@@\\nB2\\n@@@\\nC1\\n@@@\\nC2\\n@@@\\n@@@\",\n      \"valid\": false,\n      \"blocks\": []\n    },\n    {\n      \"id\": \"empty_response\",\n      \"text\": \" \\r\\n\\t\",\n      \"valid\": false,\n      \"blocks\": []\n    }\n  ],\n  \"pagination\": [\n    {\n      \"id\": \"empty\",\n      \"text\": \"\",\n      \"cols\": 16,\n      \"rows\": 3,\n      \"clusters\": [],\n      \"exact\": [\n        \"\"\n      ]\n    },\n    {\n      \"id\": \"ascii16\",\n      \"text\": \"1234567890123456\",\n      \"cols\": 16,\n      \"rows\": 1,\n      \"clusters\": [],\n      \"exact\": [\n        \"1234567890123456\"\n      ]\n    },\n    {\n      \"id\": \"ascii17\",\n      \"text\": \"12345678901234567\",\n      \"cols\": 16,\n      \"rows\": 1,\n      \"clusters\": [],\n      \"exact\": [\n        \"1234567890123456\",\n        \"7\"\n      ]\n    },\n    {\n      \"id\": \"cjk9\",\n      \"text\": \"甲乙丙丁戊己庚辛壬\",\n      \"cols\": 16,\n      \"rows\": 1,\n      \"clusters\": [],\n      \"exact\": [\n        \"甲乙丙丁戊己庚辛\",\n        \"壬\"\n      ]\n    },\n    {\n      \"id\": \"newlines_rows3\",\n      \"text\": \"甲\\n乙\\n丙\\n丁\\n\",\n      \"cols\": 16,\n      \"rows\": 3,\n      \"clusters\": [],\n      \"exact\": null\n    },\n    {\n      \"id\": \"leading_newline_rows1\",\n      \"text\": \"\\n甲\\n\",\n      \"cols\": 16,\n      \"rows\": 1,\n      \"clusters\": [],\n      \"exact\": null\n    },\n    {\n      \"id\": \"crlf_boundary\",\n      \"text\": \"1234567890123456\\r\\n下一行\",\n      \"cols\": 16,\n      \"rows\": 1,\n      \"clusters\": [\n        \"\\r\\n\"\n      ],\n      \"exact\": null\n    },\n    {\n      \"id\": \"combining\",\n      \"text\": \"123456789012345éZ\",\n      \"cols\": 16,\n      \"rows\": 1,\n      \"clusters\": [\n        \"é\"\n      ],\n      \"exact\": null\n    },\n    {\n      \"id\": \"emoji_zwj\",\n      \"text\": \"12345678901234👩‍👩‍👧‍👦Z\",\n      \"cols\": 16,\n      \"rows\": 1,\n      \"clusters\": [\n        \"👩‍👩‍👧‍👦\"\n      ],\n      \"exact\": null\n    },\n    {\n      \"id\": \"emoji_modifier\",\n      \"text\": \"12345678901234👍🏽Z\",\n      \"cols\": 16,\n      \"rows\": 1,\n      \"clusters\": [\n        \"👍🏽\"\n      ],\n      \"exact\": null\n    },\n    {\n      \"id\": \"regional_pairs\",\n      \"text\": \"12345678901234🇨🇳🇫🇷🇯🇵Z\",\n      \"cols\": 16,\n      \"rows\": 1,\n      \"clusters\": [\n        \"🇨🇳\",\n        \"🇫🇷\",\n        \"🇯🇵\"\n      ],\n      \"exact\": null\n    },\n    {\n      \"id\": \"hangul_jamo\",\n      \"text\": \"12345678901234각Z\",\n      \"cols\": 16,\n      \"rows\": 1,\n      \"clusters\": [\n        \"각\"\n      ],\n      \"exact\": null\n    },\n    {\n      \"id\": \"marker_order\",\n      \"text\": \"M0|事实#2\\nM1|假设@@@正文\\nM2|待核实🙂\\nM3|END\",\n      \"cols\": 16,\n      \"rows\": 3,\n      \"clusters\": [],\n      \"exact\": null\n    },\n    {\n      \"id\": \"long_text_many_pages\",\n      \"text\": \"预算讨论：青旅床位每人80元，国庆溢价到120元。\\n第1条补充：住宿8号床位报价70元，需提前3天确认。\\n第2条补充：住宿9号床位报价80元，需提前4天确认。\\n第3条补充：住宿10号床位报价90元，需提前5天确认。\\n第4条补充：住宿11号床位报价100元，需提前6天确认。\\n第5条补充：住宿12号床位报价110元，需提前7天确认。\\n第6条补充：住宿13号床位报价120元，需提前8天确认。\\n第7条补充：住宿14号床位报价130元，需提前9天确认。\\n第8条补充：住宿15号床位报价140元，需提前10天确认。\\n第9条补充：住宿16号床位报价150元，需提前11天确认。\\n第10条补充：住宿17号床位报价160元，需提前12天确认。\\n第11条补充：住宿18号床位报价170元，需提前13天确认。\",\n      \"rows\": 3,\n      \"cols\": 32,\n      \"clusters\": [\n        \"预算讨论\",\n        \"国庆溢价\"\n      ]\n    }\n  ],\n  \"playback_routes\": [\n    {\n      \"title\": \"受控路线 A\",\n      \"body\": \"A甲：第一句。\\nA乙：第二句。\\nA丙：第三句。\\nA丁：第四句。\\nA戊：第五句。\",\n      \"draft\": \"A 建议，未发送。\"\n    },\n    {\n      \"title\": \"受控路线 B\",\n      \"body\": \"B甲：另一路线。\\nB乙：等待核实🙂。\\nB丙：最后一句。\",\n      \"draft\": \"B 建议，未发送。\"\n    }\n  ],\n  \"storage\": {\n    \"draft\": \"  草稿首行 👩‍👩‍👧‍👦  \\n\\n第二行\\t保留制表与 é\\n尾行 🇨🇳  \\n\",\n    \"take_a\": \"  A 版本：先核实 👍🏽  \\n\\n A 第二行\\t空格不裁剪\\n结尾🙂  \\n\",\n    \"take_b\": \"\\n  B 版本：不同问法 🇫🇷\\nB 中间  两个空格\\n 👩‍👩‍👧‍👦 尾行 \\t \",\n    \"blank\": \" \\n\\t  \\n \",\n    \"invalid_cases\": [\n      {\n        \"id\": \"corruption_invalid_json\",\n        \"raw\": \"not json\"\n      },\n      {\n        \"id\": \"corruption_truncation\",\n        \"raw\": \"[1,0,[\"\n      },\n      {\n        \"id\": \"corruption_trailing_junk\",\n        \"raw\": \"[1,0,[]]junk\"\n      },\n      {\n        \"id\": \"corruption_whitespace\",\n        \"raw\": \" [1,0,[]]\"\n      },\n      {\n        \"id\": \"corruption_object\",\n        \"raw\": \"{}\"\n      },\n      {\n        \"id\": \"corruption_null\",\n        \"raw\": \"null\"\n      },\n      {\n        \"id\": \"corruption_version\",\n        \"raw\": \"[2,0,[]]\"\n      },\n      {\n        \"id\": \"corruption_string_revision\",\n        \"raw\": \"[1,\\\"0\\\",[]]\"\n      },\n      {\n        \"id\": \"corruption_negative_revision\",\n        \"raw\": \"[1,-1,[]]\"\n      },\n      {\n        \"id\": \"corruption_fraction_revision\",\n        \"raw\": \"[1,0.5,[]]\"\n      },\n      {\n        \"id\": \"corruption_rooms_object\",\n        \"raw\": \"[1,0,{}]\"\n      },\n      {\n        \"id\": \"corruption_duplicate_rooms\",\n        \"raw\": \"[1,0,[[\\\"x\\\",null,null,null],[\\\"x\\\",null,null,null]]]\"\n      },\n      {\n        \"id\": \"corruption_empty_room\",\n        \"raw\": \"[1,0,[[\\\"\\\",null,null,null]]]\"\n      },\n      {\n        \"id\": \"corruption_numeric_room\",\n        \"raw\": \"[1,0,[[3,null,null,null]]]\"\n      },\n      {\n        \"id\": \"corruption_short_room\",\n        \"raw\": \"[1,0,[[\\\"x\\\",null,null]]]\"\n      },\n      {\n        \"id\": \"corruption_short_slot\",\n        \"raw\": \"[1,0,[[\\\"x\\\",[\\\"draft\\\"],null,null]]]\"\n      },\n      {\n        \"id\": \"corruption_slot_text_type\",\n        \"raw\": \"[1,0,[[\\\"x\\\",[3,0,\\\"manual\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",0],null,null]]]\"\n      },\n      {\n        \"id\": \"corruption_slot_revision_type\",\n        \"raw\": \"[1,0,[[\\\"x\\\",[\\\"x\\\",\\\"0\\\",\\\"manual\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",0],null,null]]]\"\n      },\n      {\n        \"id\": \"corruption_slot_origin\",\n        \"raw\": \"[1,0,[[\\\"x\\\",[\\\"x\\\",0,\\\"unknown\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",0],null,null]]]\"\n      },\n      {\n        \"id\": \"corruption_slot_time_type\",\n        \"raw\": \"[1,0,[[\\\"x\\\",[\\\"x\\\",0,\\\"manual\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"0\\\"],null,null]]]\"\n      },\n      {\n        \"id\": \"corruption_slot_negative_time\",\n        \"raw\": \"[1,0,[[\\\"x\\\",[\\\"x\\\",0,\\\"manual\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",-1],null,null]]]\"\n      }\n    ]\n  },\n  \"grounding\": {\n    \"notice\": \"Controlled literal expectations: exact numeric tokens preserve sign/decimal/unit/Chinese quantities; source mask retains stable ordinals. Bounded validation is not semantic truth.\",\n    \"sources\": [\n      {\n        \"sender\": \"夹具甲\",\n        \"body\": \"预算 500元，9 点集合。\\n  保留缩进 👩‍👩‍👧‍👦  \"\n      },\n      {\n        \"sender\": \"夹具乙\",\n        \"body\": \"中午之后再讨论，尚未同意。\"\n      },\n      {\n        \"sender\": \"夹具丙\",\n        \"body\": \"当天回来；不承诺订票。\"\n      },\n      {\n        \"sender\": \"夹具丁\",\n        \"body\": \"路线由大家共同决定。\"\n      },\n      {\n        \"sender\": \"夹具戊\",\n        \"body\": \"金额待核实。\"\n      }\n    ],\n    \"trial\": \"草稿里新提议 77 元，未发送。\",\n    \"excerpts\": [\n      {\n        \"id\": \"excerpt_one_id_current_behavior\",\n        \"selection\": \"#1\",\n        \"expected\": \"相关原文：\\n#1 预算 500元，9 点集合。\\n  保留缩进 👩‍👩‍👧‍👦  \"\n      },\n      {\n        \"id\": \"excerpt_selection_order\",\n        \"selection\": \"#3\\n#2\",\n        \"expected\": \"相关原文：\\n#3 当天回来；不承诺订票。\\n#2 中午之后再讨论，尚未同意。\"\n      },\n      {\n        \"id\": \"excerpt_whitespace_crlf\",\n        \"selection\": \" \\t#2\\r\\n #1 \\n\",\n        \"expected\": \"相关原文：\\n#2 中午之后再讨论，尚未同意。\\n#1 预算 500元，9 点集合。\\n  保留缩进 👩‍👩‍👧‍👦  \"\n      },\n      {\n        \"id\": \"excerpt_four_ids\",\n        \"selection\": \"#2\\n#3\\n#4\\n#5\",\n        \"expected\": \"相关原文：\\n#2 中午之后再讨论，尚未同意。\\n#3 当天回来；不承诺订票。\\n#4 路线由大家共同决定。\\n#5 金额待核实。\"\n      },\n      {\n        \"id\": \"excerpt_duplicate_rejected\",\n        \"selection\": \"#2\\n #2 \",\n        \"expected\": \"\"\n      },\n      {\n        \"id\": \"excerpt_zero_rejected\",\n        \"selection\": \"#0\",\n        \"expected\": \"\"\n      },\n      {\n        \"id\": \"excerpt_out_of_range_rejected\",\n        \"selection\": \"#6\",\n        \"expected\": \"\"\n      },\n      {\n        \"id\": \"excerpt_leading_zero_rejected\",\n        \"selection\": \"#02\",\n        \"expected\": \"\"\n      },\n      {\n        \"id\": \"excerpt_negative_rejected\",\n        \"selection\": \"#-1\",\n        \"expected\": \"\"\n      },\n      {\n        \"id\": \"excerpt_rewording_rejected\",\n        \"selection\": \"#2 大家已同意\",\n        \"expected\": \"\"\n      },\n      {\n        \"id\": \"excerpt_same_line_ids_rejected\",\n        \"selection\": \"#2、#3\",\n        \"expected\": \"\"\n      },\n      {\n        \"id\": \"excerpt_empty_rejected\",\n        \"selection\": \" \\n\\t\",\n        \"expected\": \"\"\n      },\n      {\n        \"id\": \"excerpt_internal_blank_rejected\",\n        \"selection\": \"#2\\n\\n#3\",\n        \"expected\": \"\"\n      },\n      {\n        \"id\": \"excerpt_five_ids_rejected\",\n        \"selection\": \"#1\\n#2\\n#3\\n#4\\n#5\",\n        \"expected\": \"\"\n      }\n    ],\n    \"tokens\": [\n      {\n        \"id\": \"tokens_ascii_and_fullwidth\",\n        \"text\": \"v12.50 -9 9:30 １２ 三 🙂\",\n        \"expected\": [\n          \"12.50\",\n          \"-9\",\n          \"9:30\",\n          \"12\"\n        ]\n      },\n      {\n        \"id\": \"tokens_keep_leading_zeros\",\n        \"text\": \"005 #2 500\",\n        \"expected\": [\n          \"005\",\n          \"2\",\n          \"500\"\n        ]\n      },\n      {\n        \"id\": \"tokens_sign_decimal_unit_chinese\",\n        \"text\": \"-12.50元 +9人 ８０元 八十元 三天 一起 一版 9:30 －５．２％\",\n        \"expected\": [\n          \"-12.50元\",\n          \"+9人\",\n          \"80元\",\n          \"八十元\",\n          \"三天\",\n          \"9:30\",\n          \"-5.2%\"\n        ]\n      }\n    ],\n    \"numbers\": [\n      {\n        \"id\": \"numbers_source_allowed\",\n        \"text\": \"预算500元，9点集合。\",\n        \"expected\": true\n      },\n      {\n        \"id\": \"numbers_invented_rejected\",\n        \"text\": \"青旅80元。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"numbers_substring_rejected\",\n        \"text\": \"费用50元。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"numbers_trial_allowed_not_fact\",\n        \"text\": \"已付款77元。\",\n        \"expected\": true\n      },\n      {\n        \"id\": \"numbers_source_id_rejected\",\n        \"text\": \"入住5晚。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"numbers_same_digits_not_semantics\",\n        \"text\": \"已替大家支付500元。\",\n        \"expected\": true\n      },\n      {\n        \"id\": \"numbers_leading_zero_rejected\",\n        \"text\": \"费用0500元。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"numbers_decimal_composition_rejected\",\n        \"text\": \"费用500.9元。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"numbers_negative_sign_rejected\",\n        \"text\": \"余额-500元。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"numbers_fullwidth_invented_rejected\",\n        \"text\": \"费用８０元。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"numbers_fullwidth_known_allowed\",\n        \"text\": \"费用５００元。\",\n        \"expected\": true\n      },\n      {\n        \"id\": \"numbers_chinese_invented_rejected\",\n        \"text\": \"费用八十元。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"numbers_no_digits_not_semantics\",\n        \"text\": \"所有人已同意，已经订票。\",\n        \"expected\": true\n      },\n      {\n        \"id\": \"numbers_reference_digits_rejected\",\n        \"text\": \"依据#2，4人预算够吗？\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"numbers_unit_change_rejected\",\n        \"text\": \"预算500人。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"numbers_unit_drop_rejected\",\n        \"text\": \"预算500。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"numbers_positive_sign_rejected\",\n        \"text\": \"预算+500元。\",\n        \"expected\": false\n      }\n    ],\n    \"references\": [\n      {\n        \"id\": \"refs_valid_bounds\",\n        \"text\": \"依据#1、#5。\",\n        \"expected\": true\n      },\n      {\n        \"id\": \"refs_duplicates_allowed\",\n        \"text\": \"依据#2和#2。\",\n        \"expected\": true\n      },\n      {\n        \"id\": \"refs_no_hash_not_semantics\",\n        \"text\": \"没有引用但声称全员同意。\",\n        \"expected\": true\n      },\n      {\n        \"id\": \"refs_zero_rejected\",\n        \"text\": \"依据#0。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"refs_out_of_range_rejected\",\n        \"text\": \"依据#6。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"refs_negative_rejected\",\n        \"text\": \"依据#-1。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"refs_bare_hash_rejected\",\n        \"text\": \"依据#。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"refs_fullwidth_rejected\",\n        \"text\": \"依据#２。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"refs_leading_zero_rejected\",\n        \"text\": \"依据#02。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"refs_suffix_not_checked\",\n        \"text\": \"依据#2任意后缀。\",\n        \"expected\": true\n      },\n      {\n        \"id\": \"refs_decimal_suffix_not_checked\",\n        \"text\": \"依据#2.9。\",\n        \"expected\": true\n      },\n      {\n        \"id\": \"refs_double_hash_rejected\",\n        \"text\": \"依据##2。\",\n        \"expected\": false\n      }\n    ],\n    \"protocol_blocks\": [\n      \"#1\\n#2\",\n      \"虚构回应甲：仍待核实。\\n虚构回应乙：暂不替别人决定。\\n依据：#1\\n待确认：是否方便继续讨论？\",\n      \"先核实预算500元。\",\n      \"虚构回应甲：仍待核实。\\n虚构回应乙：暂不替别人决定。\\n依据：#2\\n待确认：是否方便继续讨论？\",\n      \"中午以后再讨论。\",\n      \"虚构回应甲：仍待核实。\\n虚构回应乙：暂不替别人决定。\\n依据：#3\\n待确认：是否方便继续讨论？\",\n      \"先提议，不承诺执行。\"\n    ]\n  },\n  \"assertion_ids\": {\n    \"parser\": [\n      \"parser.standard7\",\n      \"parser.wrapper7\",\n      \"parser.leading_wrapper7\",\n      \"parser.trailing_wrapper7\",\n      \"parser.crlf7\",\n      \"parser.eol7\",\n      \"parser.eol_wrapper7\",\n      \"parser.separator_whitespace7\",\n      \"parser.internal_blank_lines_preserved\",\n      \"parser.internal_empty_block\",\n      \"parser.six_blocks\",\n      \"parser.eight_blocks\",\n      \"parser.body_inline_marker\",\n      \"parser.strict_body_eol_marker\",\n      \"parser.ambiguous_mixed_six_to_seven\",\n      \"parser.duplicate_leading_wrapper\",\n      \"parser.duplicate_trailing_wrapper\",\n      \"parser.empty_response\",\n      \"parser.refine_parse_valid\",\n      \"parser.refine_parse_crlf\",\n      \"parser.refine_parse_missing\",\n      \"parser.refine_parse_duplicate\",\n      \"parser.refine_parse_order\",\n      \"parser.refine_parse_preamble\",\n      \"parser.refine_parse_embedded_marker\",\n      \"parser.refine_parse_empty_note\",\n      \"parser.protocol_order_rejects_swap\",\n      \"parser.protocol_requires_markers\",\n      \"parser.excerpt_exact\",\n      \"parser.excerpt_rejects_rewording\",\n      \"parser.rejects_invented_price\",\n      \"parser.rejects_invalid_citation\",\n      \"parser.marked7_no_separator_valid\",\n      \"parser.marked7_missing_marker_rejected\",\n      \"parser.marked7_duplicate_marker_rejected\",\n      \"parser.marked7_reordered_marker_rejected\",\n      \"parser.marked7_wrapped_separator_combo_rejected\",\n      \"parser.output_order_and_markers\",\n      \"parser.route_suggestion_length_and_line_bounds\"\n    ],\n    \"pagination\": [\n      \"pagination.empty\",\n      \"pagination.ascii16\",\n      \"pagination.ascii17\",\n      \"pagination.cjk9\",\n      \"pagination.newlines_rows3\",\n      \"pagination.leading_newline_rows1\",\n      \"pagination.crlf_boundary\",\n      \"pagination.combining\",\n      \"pagination.emoji_zwj\",\n      \"pagination.emoji_modifier\",\n      \"pagination.regional_pairs\",\n      \"pagination.hangul_jamo\",\n      \"pagination.marker_order\",\n      \"pagination.long_text_many_pages\",\n      \"pagination.production_reader_navigation\"\n    ],\n    \"retry\": [\n      \"retry.first_malformed_second_valid\",\n      \"retry.duplicate_after_success_ignored\",\n      \"retry.grounded_retry_hint\",\n      \"retry.both_malformed\",\n      \"retry.stop_during_second\",\n      \"retry.edit_during_second\",\n      \"retry.old_callback_new_request\",\n      \"retry.host_error_no_format_retry\",\n      \"retry.host_allowlist\",\n      \"retry.consent_source_scope_not_trial_goal\",\n      \"retry.mask_change_revokes_consent\",\n      \"retry.empty_selection_never_requests\",\n      \"retry.raw_ui_input_identity_rejects_old_reply\",\n      \"retry.raw_trial_identity_rejects_old_reply\",\n      \"retry.source_identity_rejects_old_reply\",\n      \"retry.stale_route_cannot_overwrite_editor\",\n      \"retry.delete_invalidates_inflight_generation\",\n      \"retry.failed_delete_cancels_callback_before_io\",\n      \"retry.revoke_consent_invalidates_callback\",\n      \"retry.utf8_prompt_32k_byte_budget\",\n      \"retry.refine_stages_without_overwrite\",\n      \"retry.refine_duplicate_callback_ignored\",\n      \"retry.refine_apply_once_with_metadata\",\n      \"retry.refine_single_repair_same_budget\",\n      \"retry.refine_failed_never_overwrites\",\n      \"retry.refine_host_error_preserves_original\",\n      \"retry.refine_raw_editor_identity_rejects_old\",\n      \"retry.refine_raw_instruction_identity_rejects_old\",\n      \"retry.refine_edit_interrupts_request\",\n      \"retry.refine_instruction_interrupts_request\",\n      \"retry.refine_stale_staged_input_cannot_apply\",\n      \"retry.refine_stale_staged_editor_cannot_apply\",\n      \"retry.delete_invalidates_inflight_refinement\",\n      \"retry.delete_invalidates_staged_refinement\",\n      \"retry.refine_route_local_numbers\",\n      \"retry.refine_output_char_bounds\",\n      \"retry.refine_input_byte_and_char_bounds\",\n      \"retry.refine_never_implicitly_saves\"\n    ],\n    \"deadline\": [\n      \"deadline.waiting_at_80\",\n      \"deadline.same_revision_on_retry\",\n      \"deadline.original_budget_expired\",\n      \"deadline.timeout_elapsed\",\n      \"deadline.late_callback_ignored\",\n      \"deadline.host_allowlist\"\n    ],\n    \"playback\": [\n      \"playback.empty_route_controls\",\n      \"playback.select_starts_hidden\",\n      \"playback.invalid_selection_unchanged\",\n      \"playback.play_first_line\",\n      \"playback.pause_invalidates_epoch\",\n      \"playback.paused_timer_inert\",\n      \"playback.resume_preserves_progress\",\n      \"playback.real_timer_advances\",\n      \"playback.next_line_pauses\",\n      \"playback.complete_exact_text\",\n      \"playback.next_line_upper_bound\",\n      \"playback.restart_hidden_zero\",\n      \"playback.route_switch_resets\",\n      \"playback.old_epoch_ignored_while_new_playing\",\n      \"playback.switched_route_timer_isolated\",\n      \"playback.timer_completes_and_pauses\",\n      \"playback.play_after_end_restarts\",\n      \"playback.no_host_calls\"\n    ],\n    \"storage\": [\n      \"storage.corruption_invalid_json\",\n      \"storage.corruption_truncation\",\n      \"storage.corruption_trailing_junk\",\n      \"storage.corruption_whitespace\",\n      \"storage.corruption_object\",\n      \"storage.corruption_null\",\n      \"storage.corruption_version\",\n      \"storage.corruption_string_revision\",\n      \"storage.corruption_negative_revision\",\n      \"storage.corruption_fraction_revision\",\n      \"storage.corruption_rooms_object\",\n      \"storage.corruption_duplicate_rooms\",\n      \"storage.corruption_empty_room\",\n      \"storage.corruption_numeric_room\",\n      \"storage.corruption_short_room\",\n      \"storage.corruption_short_slot\",\n      \"storage.corruption_slot_text_type\",\n      \"storage.corruption_slot_revision_type\",\n      \"storage.corruption_slot_origin\",\n      \"storage.corruption_slot_time_type\",\n      \"storage.corruption_slot_negative_time\",\n      \"storage.legacy_explicit_copy_draft\",\n      \"storage.legacy_explicit_copy_a\",\n      \"storage.legacy_explicit_copy_b\",\n      \"storage.fresh_jail_required\",\n      \"storage.empty_restore_preserves_editor\",\n      \"storage.blank_never_creates_files\",\n      \"storage.draft_exact_save_read\",\n      \"storage.draft_exact_restore\",\n      \"storage.take_a_no_routes_exact_save\",\n      \"storage.take_b_no_routes_exact_save\",\n      \"storage.refresh_from_real_files\",\n      \"storage.take_a_read_and_page_bounds\",\n      \"storage.take_b_read_exact\",\n      \"storage.take_a_restore_exact\",\n      \"storage.take_b_restore_exact\",\n      \"storage.blank_never_overwrites_files\",\n      \"storage.metadata_roundtrip\",\n      \"storage.explicit_reload_recovers_without_overwrite\",\n      \"storage.stale_writer_locks_without_overwrite\",\n      \"storage.uncertain_cache_cannot_discard_editor\",\n      \"storage.room_isolation_restore\",\n      \"storage.delete_stale_editor_confirmation\",\n      \"storage.delete_expired_confirmation\",\n      \"storage.delete_room_switch_confirmation\",\n      \"storage.delete_one_room_preserves_other\",\n      \"storage.utf8_slot_byte_limit\",\n      \"storage.total_serialized_byte_limit\",\n      \"storage.ten_room_limit_no_eviction\",\n      \"storage.legacy_no_auto_restore\",\n      \"storage.legacy_copy_requires_explicit_save\",\n      \"storage.legacy_explicit_delete_all_three\",\n      \"storage.explicit_delete_all_new_records\",\n      \"storage.real_io_failure_locks\",\n      \"storage.final_canonical_real_file\",\n      \"storage.no_host_calls\"\n    ],\n    \"grounding\": [\n      \"grounding.excerpt_one_id_current_behavior\",\n      \"grounding.excerpt_selection_order\",\n      \"grounding.excerpt_whitespace_crlf\",\n      \"grounding.excerpt_four_ids\",\n      \"grounding.excerpt_duplicate_rejected\",\n      \"grounding.excerpt_zero_rejected\",\n      \"grounding.excerpt_out_of_range_rejected\",\n      \"grounding.excerpt_leading_zero_rejected\",\n      \"grounding.excerpt_negative_rejected\",\n      \"grounding.excerpt_rewording_rejected\",\n      \"grounding.excerpt_same_line_ids_rejected\",\n      \"grounding.excerpt_empty_rejected\",\n      \"grounding.excerpt_internal_blank_rejected\",\n      \"grounding.excerpt_five_ids_rejected\",\n      \"grounding.tokens_ascii_and_fullwidth\",\n      \"grounding.tokens_keep_leading_zeros\",\n      \"grounding.tokens_sign_decimal_unit_chinese\",\n      \"grounding.numbers_source_allowed\",\n      \"grounding.numbers_invented_rejected\",\n      \"grounding.numbers_substring_rejected\",\n      \"grounding.numbers_trial_allowed_not_fact\",\n      \"grounding.numbers_source_id_rejected\",\n      \"grounding.numbers_same_digits_not_semantics\",\n      \"grounding.numbers_leading_zero_rejected\",\n      \"grounding.numbers_decimal_composition_rejected\",\n      \"grounding.numbers_negative_sign_rejected\",\n      \"grounding.numbers_fullwidth_invented_rejected\",\n      \"grounding.numbers_fullwidth_known_allowed\",\n      \"grounding.numbers_chinese_invented_rejected\",\n      \"grounding.numbers_no_digits_not_semantics\",\n      \"grounding.numbers_reference_digits_rejected\",\n      \"grounding.numbers_unit_change_rejected\",\n      \"grounding.numbers_unit_drop_rejected\",\n      \"grounding.numbers_positive_sign_rejected\",\n      \"grounding.refs_valid_bounds\",\n      \"grounding.refs_duplicates_allowed\",\n      \"grounding.refs_no_hash_not_semantics\",\n      \"grounding.refs_zero_rejected\",\n      \"grounding.refs_out_of_range_rejected\",\n      \"grounding.refs_negative_rejected\",\n      \"grounding.refs_bare_hash_rejected\",\n      \"grounding.refs_fullwidth_rejected\",\n      \"grounding.refs_leading_zero_rejected\",\n      \"grounding.refs_suffix_not_checked\",\n      \"grounding.refs_decimal_suffix_not_checked\",\n      \"grounding.refs_double_hash_rejected\",\n      \"grounding.protocol_valid_fixture\",\n      \"grounding.protocol_duplicate_excerpt_rejected\",\n      \"grounding.protocol_wrong_excerpt_rejected\",\n      \"grounding.protocol_reworded_excerpt_rejected\",\n      \"grounding.protocol_invented_number_rejected\",\n      \"grounding.protocol_invalid_reference_rejected\",\n      \"grounding.protocol_commitment_claim_rejected\",\n      \"grounding.protocol_commitment_question_allowed\",\n      \"grounding.commitment_pending_line_rejected\",\n      \"grounding.protocol_does_not_verify_semantics\",\n      \"grounding.route_local_numeric_rejects_other_source\",\n      \"grounding.route_ordinal_not_numeric_source\",\n      \"grounding.route_requires_one_basis_line\",\n      \"grounding.route_requires_one_to_four_refs\",\n      \"grounding.route_duplicate_basis_ref_rejected\",\n      \"grounding.route_undeclared_reference_rejected\",\n      \"grounding.refusal_needs_no_question_mark\",\n      \"grounding.user_goal_note_numeric_allowed\",\n      \"grounding.decimal_fragment_sign_unit_counterexamples\",\n      \"grounding.chinese_quantity_counterexamples\",\n      \"grounding.numeric_repair_names_offending_quantity\",\n      \"grounding.commitment_single_question_exception_only\",\n      \"grounding.source_ids_stable_gaps\",\n      \"grounding.excluded_message_numbers_rejected\",\n      \"grounding.g2_prompt_scope_goal_and_sender_omission\",\n      \"grounding.g2_explicit_ready_sentence_and_marker_shape\",\n      \"grounding.r1_explicit_ready_sentence_and_marker_shape\",\n      \"grounding.empty_source_bounds\",\n      \"grounding.no_host_calls\"\n    ],\n    \"envelope\": [\n      \"envelope.normal_open_started_turn\",\n      \"envelope.nil_data_handled_without_runtime_error\",\n      \"envelope.nil_data_never_publishes_routes\",\n      \"envelope.host_allowlist\",\n      \"envelope.bad_text_type_bounded_repair\",\n      \"envelope.refine_malformed_success_preserves_editor\",\n      \"envelope.missing_room_id_disables_persistence\",\n      \"envelope.invalid_message_array_never_loaded\",\n      \"envelope.stale_room_info_preserves_edited_draft\",\n      \"envelope.valid_sources_copy_only_body_sender\",\n      \"envelope.source_schema_and_byte_limits\",\n      \"envelope.dirty_switch_stale_confirmation\",\n      \"envelope.dirty_switch_requires_explicit_discard\"\n    ]\n  },\n  \"refinement\": [\n    {\n      \"id\": \"refine_parse_valid\",\n      \"text\": \"【R1依据】\\n#2\\n【R1建议】\\n这次先不参加。\\n【R1说明】\\n保留拒绝边界。\",\n      \"valid\": true\n    },\n    {\n      \"id\": \"refine_parse_crlf\",\n      \"text\": \"【R1依据】\\r\\n#2\\r\\n【R1建议】\\r\\n这次先不参加。\\r\\n【R1说明】\\r\\n保留拒绝边界。\",\n      \"valid\": true\n    },\n    {\n      \"id\": \"refine_parse_missing\",\n      \"text\": \"【R1依据】\\n#2\\n【R1建议】\\n这次先不参加。\",\n      \"valid\": false\n    },\n    {\n      \"id\": \"refine_parse_duplicate\",\n      \"text\": \"【R1依据】\\n#2\\n【R1建议】\\n这次先不参加。\\n【R1建议】\\n重复\\n【R1说明】\\n说明\",\n      \"valid\": false\n    },\n    {\n      \"id\": \"refine_parse_order\",\n      \"text\": \"【R1建议】\\n建议\\n【R1依据】\\n#2\\n【R1说明】\\n说明\",\n      \"valid\": false\n    },\n    {\n      \"id\": \"refine_parse_preamble\",\n      \"text\": \"你好\\n【R1依据】\\n#2\\n【R1建议】\\n建议\\n【R1说明】\\n说明\",\n      \"valid\": false\n    },\n    {\n      \"id\": \"refine_parse_embedded_marker\",\n      \"text\": \"【R1依据】\\n#2\\n【R1建议】\\n建议【R1说明】\\n【R1说明】\\n说明\",\n      \"valid\": false\n    },\n    {\n      \"id\": \"refine_parse_empty_note\",\n      \"text\": \"【R1依据】\\n#2\\n【R1建议】\\n建议\\n【R1说明】\\n\",\n      \"valid\": false\n    }\n  ]\n}\n".parse_json()
+let probe_meta = "{\"schema\": 1, \"suite\": \"pagination\", \"source_sha256\": \"049bced508c020c9c3240f154afc8c47c5e150d2cd881a650dd7503da72801a5\", \"fixtures_sha256\": \"4867b39850bb2bb5b54718f510b68457c768d4856c29b636424add4d6dceea10\", \"harness_sha256\": \"97fcece46b8320839930cc6a46485c4e6dc2b897cd7b3ee44352412b7dd1568a\", \"expected_assertion_ids\": [\"pagination.empty\", \"pagination.ascii16\", \"pagination.ascii17\", \"pagination.cjk9\", \"pagination.newlines_rows3\", \"pagination.leading_newline_rows1\", \"pagination.crlf_boundary\", \"pagination.combining\", \"pagination.emoji_zwj\", \"pagination.emoji_modifier\", \"pagination.regional_pairs\", \"pagination.hangul_jamo\", \"pagination.marker_order\", \"pagination.long_text_many_pages\", \"pagination.production_reader_navigation\"], \"controlled_injection\": true, \"natural_model_test\": false, \"production_functions_unchanged\": true, \"real_deadline_seconds\": 90, \"real_playback_interval_seconds\": 1.4, \"real_send_timeout_seconds\": 30, \"send_transport\": \"injected only; no Matrix service forwarding or native sends\", \"send_identity\": \"synthetic @self:example.invalid; never inferred from readback\", \"filesystem\": \"real card-host jail; fs is not shadowed\", \"semantic_fact_verification\": false, \"storage_expectation\": {}}".parse_json()
+let probe_fixtures = "{\n  \"schema\": 1,\n  \"notice\": \"Literal controlled fixtures, not natural model results. Pagination expectations are conservation/cluster assertions, not a Python implementation.\",\n  \"canonical_blocks\": [\n    \"#2\\n#3\",\n    \"虚构回应甲：路线A先考虑边界。\\n虚构回应乙：暂不替别人决定。\\n依据：#2\\n待确认：是否方便继续讨论？\",\n    \"Ac|建议：中午之后。\",\n    \"虚构回应甲：路线B先考虑边界。\\n虚构回应乙：暂不替别人决定。\\n依据：#3\\n待确认：是否方便继续讨论？\",\n    \"Bc|建议：当天往返。\",\n    \"虚构回应甲：路线C先考虑边界。\\n虚构回应乙：暂不替别人决定。\\n依据：#4\\n待确认：是否方便继续讨论？\",\n    \"Cc|建议：来个协作小游戏。\"\n  ],\n  \"parser\": [\n    {\n      \"id\": \"standard7\",\n      \"text\": \"S0\\n@@@\\nA1\\n@@@\\nA2\\n@@@\\nB1\\n@@@\\nB2\\n@@@\\nC1\\n@@@\\nC2\",\n      \"valid\": true,\n      \"blocks\": [\n        \"S0\",\n        \"A1\",\n        \"A2\",\n        \"B1\",\n        \"B2\",\n        \"C1\",\n        \"C2\"\n      ]\n    },\n    {\n      \"id\": \"wrapper7\",\n      \"text\": \"@@@\\nS0\\n@@@\\nA1\\n@@@\\nA2\\n@@@\\nB1\\n@@@\\nB2\\n@@@\\nC1\\n@@@\\nC2\\n@@@\",\n      \"valid\": true,\n      \"blocks\": [\n        \"S0\",\n        \"A1\",\n        \"A2\",\n        \"B1\",\n        \"B2\",\n        \"C1\",\n        \"C2\"\n      ]\n    },\n    {\n      \"id\": \"leading_wrapper7\",\n      \"text\": \"@@@\\nS0\\n@@@\\nA1\\n@@@\\nA2\\n@@@\\nB1\\n@@@\\nB2\\n@@@\\nC1\\n@@@\\nC2\",\n      \"valid\": true,\n      \"blocks\": [\n        \"S0\",\n        \"A1\",\n        \"A2\",\n        \"B1\",\n        \"B2\",\n        \"C1\",\n        \"C2\"\n      ]\n    },\n    {\n      \"id\": \"trailing_wrapper7\",\n      \"text\": \"S0\\n@@@\\nA1\\n@@@\\nA2\\n@@@\\nB1\\n@@@\\nB2\\n@@@\\nC1\\n@@@\\nC2\\n@@@\\n\",\n      \"valid\": true,\n      \"blocks\": [\n        \"S0\",\n        \"A1\",\n        \"A2\",\n        \"B1\",\n        \"B2\",\n        \"C1\",\n        \"C2\"\n      ]\n    },\n    {\n      \"id\": \"crlf7\",\n      \"text\": \"@@@\\r\\nS0\\r\\n@@@\\r\\nA1\\r\\n第二行\\r\\n@@@\\r\\nA2\\r\\n@@@\\r\\nB1\\r\\n@@@\\r\\nB2\\r\\n@@@\\r\\nC1\\r\\n@@@\\r\\nC2\\r\\n@@@\\r\\n\",\n      \"valid\": true,\n      \"blocks\": [\n        \"S0\",\n        \"A1\\n第二行\",\n        \"A2\",\n        \"B1\",\n        \"B2\",\n        \"C1\",\n        \"C2\"\n      ]\n    },\n    {\n      \"id\": \"eol7\",\n      \"text\": \"S0@@@\\nA1@@@\\nA2@@@\\nB1@@@\\nB2@@@\\nC1@@@\\nC2\",\n      \"valid\": true,\n      \"blocks\": [\n        \"S0\",\n        \"A1\",\n        \"A2\",\n        \"B1\",\n        \"B2\",\n        \"C1\",\n        \"C2\"\n      ]\n    },\n    {\n      \"id\": \"eol_wrapper7\",\n      \"text\": \"@@@\\nS0@@@\\nA1@@@\\nA2@@@\\nB1@@@\\nB2@@@\\nC1@@@\\nC2@@@\\n\",\n      \"valid\": true,\n      \"blocks\": [\n        \"S0\",\n        \"A1\",\n        \"A2\",\n        \"B1\",\n        \"B2\",\n        \"C1\",\n        \"C2\"\n      ]\n    },\n    {\n      \"id\": \"separator_whitespace7\",\n      \"text\": \"  S0  \\n  @@@ \\nA1\\n\\t@@@\\t\\nA2\\n@@@\\nB1\\n@@@\\nB2\\n@@@\\nC1\\n@@@\\nC2  \",\n      \"valid\": true,\n      \"blocks\": [\n        \"S0\",\n        \"A1\",\n        \"A2\",\n        \"B1\",\n        \"B2\",\n        \"C1\",\n        \"C2\"\n      ]\n    },\n    {\n      \"id\": \"internal_blank_lines_preserved\",\n      \"text\": \"S0\\n@@@\\nA1\\n\\n依据：#2\\n@@@\\nA2\\n@@@\\nB1\\n@@@\\nB2\\n@@@\\nC1\\n@@@\\nC2\",\n      \"valid\": true,\n      \"blocks\": [\n        \"S0\",\n        \"A1\\n\\n依据：#2\",\n        \"A2\",\n        \"B1\",\n        \"B2\",\n        \"C1\",\n        \"C2\"\n      ]\n    },\n    {\n      \"id\": \"internal_empty_block\",\n      \"text\": \"S0\\n@@@\\nA1\\n@@@\\n  \\n@@@\\nB1\\n@@@\\nB2\\n@@@\\nC1\\n@@@\\nC2\",\n      \"valid\": false,\n      \"blocks\": []\n    },\n    {\n      \"id\": \"six_blocks\",\n      \"text\": \"S0\\n@@@\\nA1\\n@@@\\nA2\\n@@@\\nB1\\n@@@\\nB2\\n@@@\\nC1\",\n      \"valid\": false,\n      \"blocks\": []\n    },\n    {\n      \"id\": \"eight_blocks\",\n      \"text\": \"S0\\n@@@\\nA1\\n@@@\\nA2\\n@@@\\nB1\\n@@@\\nB2\\n@@@\\nC1\\n@@@\\nC2\\n@@@\\nEXTRA\",\n      \"valid\": false,\n      \"blocks\": []\n    },\n    {\n      \"id\": \"body_inline_marker\",\n      \"text\": \"S0中间@@@符号\\n@@@\\nA1\\n@@@\\nA2\\n@@@\\nB1\\n@@@\\nB2\\n@@@\\nC1\\n@@@\\nC2\",\n      \"valid\": true,\n      \"blocks\": [\n        \"S0中间@@@符号\",\n        \"A1\",\n        \"A2\",\n        \"B1\",\n        \"B2\",\n        \"C1\",\n        \"C2\"\n      ]\n    },\n    {\n      \"id\": \"strict_body_eol_marker\",\n      \"text\": \"S0提到@@@\\n仍属于摘要\\n@@@\\nA1\\n@@@\\nA2\\n@@@\\nB1\\n@@@\\nB2\\n@@@\\nC1\\n@@@\\nC2\",\n      \"valid\": true,\n      \"blocks\": [\n        \"S0提到@@@\\n仍属于摘要\",\n        \"A1\",\n        \"A2\",\n        \"B1\",\n        \"B2\",\n        \"C1\",\n        \"C2\"\n      ]\n    },\n    {\n      \"id\": \"ambiguous_mixed_six_to_seven\",\n      \"text\": \"S0提到@@@\\n仍属于摘要\\n@@@\\nA1\\n@@@\\nA2\\n@@@\\nB1\\n@@@\\nB2\\n@@@\\nC1\",\n      \"valid\": false,\n      \"blocks\": [],\n      \"reason\": \"One attached literal plus five standard boundaries must not manufacture a missing seventh block.\"\n    },\n    {\n      \"id\": \"duplicate_leading_wrapper\",\n      \"text\": \"@@@\\n@@@\\nS0\\n@@@\\nA1\\n@@@\\nA2\\n@@@\\nB1\\n@@@\\nB2\\n@@@\\nC1\\n@@@\\nC2\",\n      \"valid\": false,\n      \"blocks\": []\n    },\n    {\n      \"id\": \"duplicate_trailing_wrapper\",\n      \"text\": \"S0\\n@@@\\nA1\\n@@@\\nA2\\n@@@\\nB1\\n@@@\\nB2\\n@@@\\nC1\\n@@@\\nC2\\n@@@\\n@@@\",\n      \"valid\": false,\n      \"blocks\": []\n    },\n    {\n      \"id\": \"empty_response\",\n      \"text\": \" \\r\\n\\t\",\n      \"valid\": false,\n      \"blocks\": []\n    }\n  ],\n  \"pagination\": [\n    {\n      \"id\": \"empty\",\n      \"text\": \"\",\n      \"cols\": 16,\n      \"rows\": 3,\n      \"clusters\": [],\n      \"exact\": [\n        \"\"\n      ]\n    },\n    {\n      \"id\": \"ascii16\",\n      \"text\": \"1234567890123456\",\n      \"cols\": 16,\n      \"rows\": 1,\n      \"clusters\": [],\n      \"exact\": [\n        \"1234567890123456\"\n      ]\n    },\n    {\n      \"id\": \"ascii17\",\n      \"text\": \"12345678901234567\",\n      \"cols\": 16,\n      \"rows\": 1,\n      \"clusters\": [],\n      \"exact\": [\n        \"1234567890123456\",\n        \"7\"\n      ]\n    },\n    {\n      \"id\": \"cjk9\",\n      \"text\": \"甲乙丙丁戊己庚辛壬\",\n      \"cols\": 16,\n      \"rows\": 1,\n      \"clusters\": [],\n      \"exact\": [\n        \"甲乙丙丁戊己庚辛\",\n        \"壬\"\n      ]\n    },\n    {\n      \"id\": \"newlines_rows3\",\n      \"text\": \"甲\\n乙\\n丙\\n丁\\n\",\n      \"cols\": 16,\n      \"rows\": 3,\n      \"clusters\": [],\n      \"exact\": null\n    },\n    {\n      \"id\": \"leading_newline_rows1\",\n      \"text\": \"\\n甲\\n\",\n      \"cols\": 16,\n      \"rows\": 1,\n      \"clusters\": [],\n      \"exact\": null\n    },\n    {\n      \"id\": \"crlf_boundary\",\n      \"text\": \"1234567890123456\\r\\n下一行\",\n      \"cols\": 16,\n      \"rows\": 1,\n      \"clusters\": [\n        \"\\r\\n\"\n      ],\n      \"exact\": null\n    },\n    {\n      \"id\": \"combining\",\n      \"text\": \"123456789012345éZ\",\n      \"cols\": 16,\n      \"rows\": 1,\n      \"clusters\": [\n        \"é\"\n      ],\n      \"exact\": null\n    },\n    {\n      \"id\": \"emoji_zwj\",\n      \"text\": \"12345678901234👩‍👩‍👧‍👦Z\",\n      \"cols\": 16,\n      \"rows\": 1,\n      \"clusters\": [\n        \"👩‍👩‍👧‍👦\"\n      ],\n      \"exact\": null\n    },\n    {\n      \"id\": \"emoji_modifier\",\n      \"text\": \"12345678901234👍🏽Z\",\n      \"cols\": 16,\n      \"rows\": 1,\n      \"clusters\": [\n        \"👍🏽\"\n      ],\n      \"exact\": null\n    },\n    {\n      \"id\": \"regional_pairs\",\n      \"text\": \"12345678901234🇨🇳🇫🇷🇯🇵Z\",\n      \"cols\": 16,\n      \"rows\": 1,\n      \"clusters\": [\n        \"🇨🇳\",\n        \"🇫🇷\",\n        \"🇯🇵\"\n      ],\n      \"exact\": null\n    },\n    {\n      \"id\": \"hangul_jamo\",\n      \"text\": \"12345678901234각Z\",\n      \"cols\": 16,\n      \"rows\": 1,\n      \"clusters\": [\n        \"각\"\n      ],\n      \"exact\": null\n    },\n    {\n      \"id\": \"marker_order\",\n      \"text\": \"M0|事实#2\\nM1|假设@@@正文\\nM2|待核实🙂\\nM3|END\",\n      \"cols\": 16,\n      \"rows\": 3,\n      \"clusters\": [],\n      \"exact\": null\n    },\n    {\n      \"id\": \"long_text_many_pages\",\n      \"text\": \"预算讨论：青旅床位每人80元，国庆溢价到120元。\\n第1条补充：住宿8号床位报价70元，需提前3天确认。\\n第2条补充：住宿9号床位报价80元，需提前4天确认。\\n第3条补充：住宿10号床位报价90元，需提前5天确认。\\n第4条补充：住宿11号床位报价100元，需提前6天确认。\\n第5条补充：住宿12号床位报价110元，需提前7天确认。\\n第6条补充：住宿13号床位报价120元，需提前8天确认。\\n第7条补充：住宿14号床位报价130元，需提前9天确认。\\n第8条补充：住宿15号床位报价140元，需提前10天确认。\\n第9条补充：住宿16号床位报价150元，需提前11天确认。\\n第10条补充：住宿17号床位报价160元，需提前12天确认。\\n第11条补充：住宿18号床位报价170元，需提前13天确认。\",\n      \"rows\": 3,\n      \"cols\": 32,\n      \"clusters\": [\n        \"预算讨论\",\n        \"国庆溢价\"\n      ]\n    }\n  ],\n  \"playback_routes\": [\n    {\n      \"title\": \"受控路线 A\",\n      \"body\": \"A甲：第一句。\\nA乙：第二句。\\nA丙：第三句。\\nA丁：第四句。\\nA戊：第五句。\",\n      \"draft\": \"A 建议，未发送。\"\n    },\n    {\n      \"title\": \"受控路线 B\",\n      \"body\": \"B甲：另一路线。\\nB乙：等待核实🙂。\\nB丙：最后一句。\",\n      \"draft\": \"B 建议，未发送。\"\n    }\n  ],\n  \"storage\": {\n    \"draft\": \"  草稿首行 👩‍👩‍👧‍👦  \\n\\n第二行\\t保留制表与 é\\n尾行 🇨🇳  \\n\",\n    \"take_a\": \"  A 版本：先核实 👍🏽  \\n\\n A 第二行\\t空格不裁剪\\n结尾🙂  \\n\",\n    \"take_b\": \"\\n  B 版本：不同问法 🇫🇷\\nB 中间  两个空格\\n 👩‍👩‍👧‍👦 尾行 \\t \",\n    \"blank\": \" \\n\\t  \\n \",\n    \"invalid_cases\": [\n      {\n        \"id\": \"corruption_invalid_json\",\n        \"raw\": \"not json\"\n      },\n      {\n        \"id\": \"corruption_truncation\",\n        \"raw\": \"[1,0,[\"\n      },\n      {\n        \"id\": \"corruption_trailing_junk\",\n        \"raw\": \"[1,0,[]]junk\"\n      },\n      {\n        \"id\": \"corruption_whitespace\",\n        \"raw\": \" [1,0,[]]\"\n      },\n      {\n        \"id\": \"corruption_object\",\n        \"raw\": \"{}\"\n      },\n      {\n        \"id\": \"corruption_null\",\n        \"raw\": \"null\"\n      },\n      {\n        \"id\": \"corruption_version\",\n        \"raw\": \"[2,0,[]]\"\n      },\n      {\n        \"id\": \"corruption_string_revision\",\n        \"raw\": \"[1,\\\"0\\\",[]]\"\n      },\n      {\n        \"id\": \"corruption_negative_revision\",\n        \"raw\": \"[1,-1,[]]\"\n      },\n      {\n        \"id\": \"corruption_fraction_revision\",\n        \"raw\": \"[1,0.5,[]]\"\n      },\n      {\n        \"id\": \"corruption_rooms_object\",\n        \"raw\": \"[1,0,{}]\"\n      },\n      {\n        \"id\": \"corruption_duplicate_rooms\",\n        \"raw\": \"[1,0,[[\\\"x\\\",null,null,null],[\\\"x\\\",null,null,null]]]\"\n      },\n      {\n        \"id\": \"corruption_empty_room\",\n        \"raw\": \"[1,0,[[\\\"\\\",null,null,null]]]\"\n      },\n      {\n        \"id\": \"corruption_numeric_room\",\n        \"raw\": \"[1,0,[[3,null,null,null]]]\"\n      },\n      {\n        \"id\": \"corruption_short_room\",\n        \"raw\": \"[1,0,[[\\\"x\\\",null,null]]]\"\n      },\n      {\n        \"id\": \"corruption_short_slot\",\n        \"raw\": \"[1,0,[[\\\"x\\\",[\\\"draft\\\"],null,null]]]\"\n      },\n      {\n        \"id\": \"corruption_slot_text_type\",\n        \"raw\": \"[1,0,[[\\\"x\\\",[3,0,\\\"manual\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",0],null,null]]]\"\n      },\n      {\n        \"id\": \"corruption_slot_revision_type\",\n        \"raw\": \"[1,0,[[\\\"x\\\",[\\\"x\\\",\\\"0\\\",\\\"manual\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",0],null,null]]]\"\n      },\n      {\n        \"id\": \"corruption_slot_origin\",\n        \"raw\": \"[1,0,[[\\\"x\\\",[\\\"x\\\",0,\\\"unknown\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",0],null,null]]]\"\n      },\n      {\n        \"id\": \"corruption_slot_time_type\",\n        \"raw\": \"[1,0,[[\\\"x\\\",[\\\"x\\\",0,\\\"manual\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"0\\\"],null,null]]]\"\n      },\n      {\n        \"id\": \"corruption_slot_negative_time\",\n        \"raw\": \"[1,0,[[\\\"x\\\",[\\\"x\\\",0,\\\"manual\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",\\\"\\\",-1],null,null]]]\"\n      }\n    ]\n  },\n  \"grounding\": {\n    \"notice\": \"Controlled literal expectations: exact numeric tokens preserve sign/decimal/unit/Chinese quantities; source mask retains stable ordinals. Bounded validation is not semantic truth.\",\n    \"sources\": [\n      {\n        \"sender\": \"夹具甲\",\n        \"body\": \"预算 500元，9 点集合。\\n  保留缩进 👩‍👩‍👧‍👦  \"\n      },\n      {\n        \"sender\": \"夹具乙\",\n        \"body\": \"中午之后再讨论，尚未同意。\"\n      },\n      {\n        \"sender\": \"夹具丙\",\n        \"body\": \"当天回来；不承诺订票。\"\n      },\n      {\n        \"sender\": \"夹具丁\",\n        \"body\": \"路线由大家共同决定。\"\n      },\n      {\n        \"sender\": \"夹具戊\",\n        \"body\": \"金额待核实。\"\n      }\n    ],\n    \"trial\": \"草稿里新提议 77 元，未发送。\",\n    \"excerpts\": [\n      {\n        \"id\": \"excerpt_one_id_current_behavior\",\n        \"selection\": \"#1\",\n        \"expected\": \"相关原文：\\n#1 预算 500元，9 点集合。\\n  保留缩进 👩‍👩‍👧‍👦  \"\n      },\n      {\n        \"id\": \"excerpt_selection_order\",\n        \"selection\": \"#3\\n#2\",\n        \"expected\": \"相关原文：\\n#3 当天回来；不承诺订票。\\n#2 中午之后再讨论，尚未同意。\"\n      },\n      {\n        \"id\": \"excerpt_whitespace_crlf\",\n        \"selection\": \" \\t#2\\r\\n #1 \\n\",\n        \"expected\": \"相关原文：\\n#2 中午之后再讨论，尚未同意。\\n#1 预算 500元，9 点集合。\\n  保留缩进 👩‍👩‍👧‍👦  \"\n      },\n      {\n        \"id\": \"excerpt_four_ids\",\n        \"selection\": \"#2\\n#3\\n#4\\n#5\",\n        \"expected\": \"相关原文：\\n#2 中午之后再讨论，尚未同意。\\n#3 当天回来；不承诺订票。\\n#4 路线由大家共同决定。\\n#5 金额待核实。\"\n      },\n      {\n        \"id\": \"excerpt_duplicate_rejected\",\n        \"selection\": \"#2\\n #2 \",\n        \"expected\": \"\"\n      },\n      {\n        \"id\": \"excerpt_zero_rejected\",\n        \"selection\": \"#0\",\n        \"expected\": \"\"\n      },\n      {\n        \"id\": \"excerpt_out_of_range_rejected\",\n        \"selection\": \"#6\",\n        \"expected\": \"\"\n      },\n      {\n        \"id\": \"excerpt_leading_zero_rejected\",\n        \"selection\": \"#02\",\n        \"expected\": \"\"\n      },\n      {\n        \"id\": \"excerpt_negative_rejected\",\n        \"selection\": \"#-1\",\n        \"expected\": \"\"\n      },\n      {\n        \"id\": \"excerpt_rewording_rejected\",\n        \"selection\": \"#2 大家已同意\",\n        \"expected\": \"\"\n      },\n      {\n        \"id\": \"excerpt_same_line_ids_rejected\",\n        \"selection\": \"#2、#3\",\n        \"expected\": \"\"\n      },\n      {\n        \"id\": \"excerpt_empty_rejected\",\n        \"selection\": \" \\n\\t\",\n        \"expected\": \"\"\n      },\n      {\n        \"id\": \"excerpt_internal_blank_rejected\",\n        \"selection\": \"#2\\n\\n#3\",\n        \"expected\": \"\"\n      },\n      {\n        \"id\": \"excerpt_five_ids_rejected\",\n        \"selection\": \"#1\\n#2\\n#3\\n#4\\n#5\",\n        \"expected\": \"\"\n      }\n    ],\n    \"tokens\": [\n      {\n        \"id\": \"tokens_ascii_and_fullwidth\",\n        \"text\": \"v12.50 -9 9:30 １２ 三 🙂\",\n        \"expected\": [\n          \"12.50\",\n          \"-9\",\n          \"9:30\",\n          \"12\"\n        ]\n      },\n      {\n        \"id\": \"tokens_keep_leading_zeros\",\n        \"text\": \"005 #2 500\",\n        \"expected\": [\n          \"005\",\n          \"2\",\n          \"500\"\n        ]\n      },\n      {\n        \"id\": \"tokens_sign_decimal_unit_chinese\",\n        \"text\": \"-12.50元 +9人 ８０元 八十元 三天 一起 一版 9:30 －５．２％\",\n        \"expected\": [\n          \"-12.50元\",\n          \"+9人\",\n          \"80元\",\n          \"八十元\",\n          \"三天\",\n          \"9:30\",\n          \"-5.2%\"\n        ]\n      }\n    ],\n    \"numbers\": [\n      {\n        \"id\": \"numbers_source_allowed\",\n        \"text\": \"预算500元，9点集合。\",\n        \"expected\": true\n      },\n      {\n        \"id\": \"numbers_invented_rejected\",\n        \"text\": \"青旅80元。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"numbers_substring_rejected\",\n        \"text\": \"费用50元。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"numbers_trial_allowed_not_fact\",\n        \"text\": \"已付款77元。\",\n        \"expected\": true\n      },\n      {\n        \"id\": \"numbers_source_id_rejected\",\n        \"text\": \"入住5晚。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"numbers_same_digits_not_semantics\",\n        \"text\": \"已替大家支付500元。\",\n        \"expected\": true\n      },\n      {\n        \"id\": \"numbers_leading_zero_rejected\",\n        \"text\": \"费用0500元。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"numbers_decimal_composition_rejected\",\n        \"text\": \"费用500.9元。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"numbers_negative_sign_rejected\",\n        \"text\": \"余额-500元。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"numbers_fullwidth_invented_rejected\",\n        \"text\": \"费用８０元。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"numbers_fullwidth_known_allowed\",\n        \"text\": \"费用５００元。\",\n        \"expected\": true\n      },\n      {\n        \"id\": \"numbers_chinese_invented_rejected\",\n        \"text\": \"费用八十元。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"numbers_no_digits_not_semantics\",\n        \"text\": \"所有人已同意，已经订票。\",\n        \"expected\": true\n      },\n      {\n        \"id\": \"numbers_reference_digits_rejected\",\n        \"text\": \"依据#2，4人预算够吗？\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"numbers_unit_change_rejected\",\n        \"text\": \"预算500人。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"numbers_unit_drop_rejected\",\n        \"text\": \"预算500。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"numbers_positive_sign_rejected\",\n        \"text\": \"预算+500元。\",\n        \"expected\": false\n      }\n    ],\n    \"references\": [\n      {\n        \"id\": \"refs_valid_bounds\",\n        \"text\": \"依据#1、#5。\",\n        \"expected\": true\n      },\n      {\n        \"id\": \"refs_duplicates_allowed\",\n        \"text\": \"依据#2和#2。\",\n        \"expected\": true\n      },\n      {\n        \"id\": \"refs_no_hash_not_semantics\",\n        \"text\": \"没有引用但声称全员同意。\",\n        \"expected\": true\n      },\n      {\n        \"id\": \"refs_zero_rejected\",\n        \"text\": \"依据#0。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"refs_out_of_range_rejected\",\n        \"text\": \"依据#6。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"refs_negative_rejected\",\n        \"text\": \"依据#-1。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"refs_bare_hash_rejected\",\n        \"text\": \"依据#。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"refs_fullwidth_rejected\",\n        \"text\": \"依据#２。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"refs_leading_zero_rejected\",\n        \"text\": \"依据#02。\",\n        \"expected\": false\n      },\n      {\n        \"id\": \"refs_suffix_not_checked\",\n        \"text\": \"依据#2任意后缀。\",\n        \"expected\": true\n      },\n      {\n        \"id\": \"refs_decimal_suffix_not_checked\",\n        \"text\": \"依据#2.9。\",\n        \"expected\": true\n      },\n      {\n        \"id\": \"refs_double_hash_rejected\",\n        \"text\": \"依据##2。\",\n        \"expected\": false\n      }\n    ],\n    \"protocol_blocks\": [\n      \"#1\\n#2\",\n      \"虚构回应甲：仍待核实。\\n虚构回应乙：暂不替别人决定。\\n依据：#1\\n待确认：是否方便继续讨论？\",\n      \"先核实预算500元。\",\n      \"虚构回应甲：仍待核实。\\n虚构回应乙：暂不替别人决定。\\n依据：#2\\n待确认：是否方便继续讨论？\",\n      \"中午以后再讨论。\",\n      \"虚构回应甲：仍待核实。\\n虚构回应乙：暂不替别人决定。\\n依据：#3\\n待确认：是否方便继续讨论？\",\n      \"先提议，不承诺执行。\"\n    ]\n  },\n  \"assertion_ids\": {\n    \"parser\": [\n      \"parser.standard7\",\n      \"parser.wrapper7\",\n      \"parser.leading_wrapper7\",\n      \"parser.trailing_wrapper7\",\n      \"parser.crlf7\",\n      \"parser.eol7\",\n      \"parser.eol_wrapper7\",\n      \"parser.separator_whitespace7\",\n      \"parser.internal_blank_lines_preserved\",\n      \"parser.internal_empty_block\",\n      \"parser.six_blocks\",\n      \"parser.eight_blocks\",\n      \"parser.body_inline_marker\",\n      \"parser.strict_body_eol_marker\",\n      \"parser.ambiguous_mixed_six_to_seven\",\n      \"parser.duplicate_leading_wrapper\",\n      \"parser.duplicate_trailing_wrapper\",\n      \"parser.empty_response\",\n      \"parser.refine_parse_valid\",\n      \"parser.refine_parse_crlf\",\n      \"parser.refine_parse_missing\",\n      \"parser.refine_parse_duplicate\",\n      \"parser.refine_parse_order\",\n      \"parser.refine_parse_preamble\",\n      \"parser.refine_parse_embedded_marker\",\n      \"parser.refine_parse_empty_note\",\n      \"parser.protocol_order_rejects_swap\",\n      \"parser.protocol_requires_markers\",\n      \"parser.excerpt_exact\",\n      \"parser.excerpt_rejects_rewording\",\n      \"parser.rejects_invented_price\",\n      \"parser.rejects_invalid_citation\",\n      \"parser.marked7_no_separator_valid\",\n      \"parser.marked7_missing_marker_rejected\",\n      \"parser.marked7_duplicate_marker_rejected\",\n      \"parser.marked7_reordered_marker_rejected\",\n      \"parser.marked7_wrapped_separator_combo_rejected\",\n      \"parser.output_order_and_markers\",\n      \"parser.route_suggestion_length_and_line_bounds\"\n    ],\n    \"pagination\": [\n      \"pagination.empty\",\n      \"pagination.ascii16\",\n      \"pagination.ascii17\",\n      \"pagination.cjk9\",\n      \"pagination.newlines_rows3\",\n      \"pagination.leading_newline_rows1\",\n      \"pagination.crlf_boundary\",\n      \"pagination.combining\",\n      \"pagination.emoji_zwj\",\n      \"pagination.emoji_modifier\",\n      \"pagination.regional_pairs\",\n      \"pagination.hangul_jamo\",\n      \"pagination.marker_order\",\n      \"pagination.long_text_many_pages\",\n      \"pagination.production_reader_navigation\"\n    ],\n    \"retry\": [\n      \"retry.first_malformed_second_valid\",\n      \"retry.duplicate_after_success_ignored\",\n      \"retry.grounded_retry_hint\",\n      \"retry.both_malformed\",\n      \"retry.stop_during_second\",\n      \"retry.edit_during_second\",\n      \"retry.old_callback_new_request\",\n      \"retry.host_error_no_format_retry\",\n      \"retry.host_allowlist\",\n      \"retry.consent_source_scope_not_trial_goal\",\n      \"retry.mask_change_revokes_consent\",\n      \"retry.empty_selection_never_requests\",\n      \"retry.raw_ui_input_identity_rejects_old_reply\",\n      \"retry.raw_trial_identity_rejects_old_reply\",\n      \"retry.source_identity_rejects_old_reply\",\n      \"retry.stale_route_cannot_overwrite_editor\",\n      \"retry.delete_invalidates_inflight_generation\",\n      \"retry.failed_delete_cancels_callback_before_io\",\n      \"retry.revoke_consent_invalidates_callback\",\n      \"retry.utf8_prompt_32k_byte_budget\",\n      \"retry.refine_stages_without_overwrite\",\n      \"retry.refine_duplicate_callback_ignored\",\n      \"retry.refine_apply_once_with_metadata\",\n      \"retry.refine_single_repair_same_budget\",\n      \"retry.refine_failed_never_overwrites\",\n      \"retry.refine_host_error_preserves_original\",\n      \"retry.refine_raw_editor_identity_rejects_old\",\n      \"retry.refine_raw_instruction_identity_rejects_old\",\n      \"retry.refine_edit_interrupts_request\",\n      \"retry.refine_instruction_interrupts_request\",\n      \"retry.refine_stale_staged_input_cannot_apply\",\n      \"retry.refine_stale_staged_editor_cannot_apply\",\n      \"retry.delete_invalidates_inflight_refinement\",\n      \"retry.delete_invalidates_staged_refinement\",\n      \"retry.refine_route_local_numbers\",\n      \"retry.refine_output_char_bounds\",\n      \"retry.refine_input_byte_and_char_bounds\",\n      \"retry.refine_never_implicitly_saves\"\n    ],\n    \"deadline\": [\n      \"deadline.waiting_at_80\",\n      \"deadline.same_revision_on_retry\",\n      \"deadline.original_budget_expired\",\n      \"deadline.timeout_elapsed\",\n      \"deadline.late_callback_ignored\",\n      \"deadline.host_allowlist\"\n    ],\n    \"playback\": [\n      \"playback.empty_route_controls\",\n      \"playback.select_starts_hidden\",\n      \"playback.invalid_selection_unchanged\",\n      \"playback.play_first_line\",\n      \"playback.pause_invalidates_epoch\",\n      \"playback.paused_timer_inert\",\n      \"playback.resume_preserves_progress\",\n      \"playback.real_timer_advances\",\n      \"playback.next_line_pauses\",\n      \"playback.complete_exact_text\",\n      \"playback.next_line_upper_bound\",\n      \"playback.restart_hidden_zero\",\n      \"playback.route_switch_resets\",\n      \"playback.old_epoch_ignored_while_new_playing\",\n      \"playback.switched_route_timer_isolated\",\n      \"playback.timer_completes_and_pauses\",\n      \"playback.play_after_end_restarts\",\n      \"playback.no_host_calls\"\n    ],\n    \"storage\": [\n      \"storage.corruption_invalid_json\",\n      \"storage.corruption_truncation\",\n      \"storage.corruption_trailing_junk\",\n      \"storage.corruption_whitespace\",\n      \"storage.corruption_object\",\n      \"storage.corruption_null\",\n      \"storage.corruption_version\",\n      \"storage.corruption_string_revision\",\n      \"storage.corruption_negative_revision\",\n      \"storage.corruption_fraction_revision\",\n      \"storage.corruption_rooms_object\",\n      \"storage.corruption_duplicate_rooms\",\n      \"storage.corruption_empty_room\",\n      \"storage.corruption_numeric_room\",\n      \"storage.corruption_short_room\",\n      \"storage.corruption_short_slot\",\n      \"storage.corruption_slot_text_type\",\n      \"storage.corruption_slot_revision_type\",\n      \"storage.corruption_slot_origin\",\n      \"storage.corruption_slot_time_type\",\n      \"storage.corruption_slot_negative_time\",\n      \"storage.legacy_explicit_copy_draft\",\n      \"storage.legacy_explicit_copy_a\",\n      \"storage.legacy_explicit_copy_b\",\n      \"storage.fresh_jail_required\",\n      \"storage.empty_restore_preserves_editor\",\n      \"storage.blank_never_creates_files\",\n      \"storage.draft_exact_save_read\",\n      \"storage.draft_exact_restore\",\n      \"storage.take_a_no_routes_exact_save\",\n      \"storage.take_b_no_routes_exact_save\",\n      \"storage.refresh_from_real_files\",\n      \"storage.take_a_read_and_page_bounds\",\n      \"storage.take_b_read_exact\",\n      \"storage.take_a_restore_exact\",\n      \"storage.take_b_restore_exact\",\n      \"storage.blank_never_overwrites_files\",\n      \"storage.metadata_roundtrip\",\n      \"storage.explicit_reload_recovers_without_overwrite\",\n      \"storage.stale_writer_locks_without_overwrite\",\n      \"storage.uncertain_cache_cannot_discard_editor\",\n      \"storage.room_isolation_restore\",\n      \"storage.delete_stale_editor_confirmation\",\n      \"storage.delete_expired_confirmation\",\n      \"storage.delete_room_switch_confirmation\",\n      \"storage.delete_one_room_preserves_other\",\n      \"storage.utf8_slot_byte_limit\",\n      \"storage.total_serialized_byte_limit\",\n      \"storage.ten_room_limit_no_eviction\",\n      \"storage.legacy_no_auto_restore\",\n      \"storage.legacy_copy_requires_explicit_save\",\n      \"storage.legacy_explicit_delete_all_three\",\n      \"storage.explicit_delete_all_new_records\",\n      \"storage.real_io_failure_locks\",\n      \"storage.final_canonical_real_file\",\n      \"storage.no_host_calls\"\n    ],\n    \"grounding\": [\n      \"grounding.excerpt_one_id_current_behavior\",\n      \"grounding.excerpt_selection_order\",\n      \"grounding.excerpt_whitespace_crlf\",\n      \"grounding.excerpt_four_ids\",\n      \"grounding.excerpt_duplicate_rejected\",\n      \"grounding.excerpt_zero_rejected\",\n      \"grounding.excerpt_out_of_range_rejected\",\n      \"grounding.excerpt_leading_zero_rejected\",\n      \"grounding.excerpt_negative_rejected\",\n      \"grounding.excerpt_rewording_rejected\",\n      \"grounding.excerpt_same_line_ids_rejected\",\n      \"grounding.excerpt_empty_rejected\",\n      \"grounding.excerpt_internal_blank_rejected\",\n      \"grounding.excerpt_five_ids_rejected\",\n      \"grounding.tokens_ascii_and_fullwidth\",\n      \"grounding.tokens_keep_leading_zeros\",\n      \"grounding.tokens_sign_decimal_unit_chinese\",\n      \"grounding.numbers_source_allowed\",\n      \"grounding.numbers_invented_rejected\",\n      \"grounding.numbers_substring_rejected\",\n      \"grounding.numbers_trial_allowed_not_fact\",\n      \"grounding.numbers_source_id_rejected\",\n      \"grounding.numbers_same_digits_not_semantics\",\n      \"grounding.numbers_leading_zero_rejected\",\n      \"grounding.numbers_decimal_composition_rejected\",\n      \"grounding.numbers_negative_sign_rejected\",\n      \"grounding.numbers_fullwidth_invented_rejected\",\n      \"grounding.numbers_fullwidth_known_allowed\",\n      \"grounding.numbers_chinese_invented_rejected\",\n      \"grounding.numbers_no_digits_not_semantics\",\n      \"grounding.numbers_reference_digits_rejected\",\n      \"grounding.numbers_unit_change_rejected\",\n      \"grounding.numbers_unit_drop_rejected\",\n      \"grounding.numbers_positive_sign_rejected\",\n      \"grounding.refs_valid_bounds\",\n      \"grounding.refs_duplicates_allowed\",\n      \"grounding.refs_no_hash_not_semantics\",\n      \"grounding.refs_zero_rejected\",\n      \"grounding.refs_out_of_range_rejected\",\n      \"grounding.refs_negative_rejected\",\n      \"grounding.refs_bare_hash_rejected\",\n      \"grounding.refs_fullwidth_rejected\",\n      \"grounding.refs_leading_zero_rejected\",\n      \"grounding.refs_suffix_not_checked\",\n      \"grounding.refs_decimal_suffix_not_checked\",\n      \"grounding.refs_double_hash_rejected\",\n      \"grounding.protocol_valid_fixture\",\n      \"grounding.protocol_duplicate_excerpt_rejected\",\n      \"grounding.protocol_wrong_excerpt_rejected\",\n      \"grounding.protocol_reworded_excerpt_rejected\",\n      \"grounding.protocol_invented_number_rejected\",\n      \"grounding.protocol_invalid_reference_rejected\",\n      \"grounding.protocol_commitment_claim_rejected\",\n      \"grounding.protocol_commitment_question_allowed\",\n      \"grounding.commitment_pending_line_rejected\",\n      \"grounding.protocol_does_not_verify_semantics\",\n      \"grounding.route_local_numeric_rejects_other_source\",\n      \"grounding.route_ordinal_not_numeric_source\",\n      \"grounding.route_requires_one_basis_line\",\n      \"grounding.route_requires_one_to_four_refs\",\n      \"grounding.route_duplicate_basis_ref_rejected\",\n      \"grounding.route_undeclared_reference_rejected\",\n      \"grounding.refusal_needs_no_question_mark\",\n      \"grounding.user_goal_note_numeric_allowed\",\n      \"grounding.decimal_fragment_sign_unit_counterexamples\",\n      \"grounding.chinese_quantity_counterexamples\",\n      \"grounding.numeric_repair_names_offending_quantity\",\n      \"grounding.commitment_single_question_exception_only\",\n      \"grounding.source_ids_stable_gaps\",\n      \"grounding.excluded_message_numbers_rejected\",\n      \"grounding.g2_prompt_scope_goal_and_sender_omission\",\n      \"grounding.g2_explicit_ready_sentence_and_marker_shape\",\n      \"grounding.r1_explicit_ready_sentence_and_marker_shape\",\n      \"grounding.052.reject_half_day\",\n      \"grounding.052.reject_three_days\",\n      \"grounding.052.reject_two_nights\",\n      \"grounding.052.reject_two_people\",\n      \"grounding.052.reject_twelve_oclock\",\n      \"grounding.052.reject_two_oclock\",\n      \"grounding.052.reject_ten_minutes\",\n      \"grounding.052.reject_digits_oclock\",\n      \"grounding.052.allow_little_earlier\",\n      \"grounding.052.allow_one_choice\",\n      \"grounding.052.allow_confirm_once\",\n      \"grounding.052.allow_apology\",\n      \"grounding.052.allow_two_directions\",\n      \"grounding.052.allow_together\",\n      \"grounding.052.reject_people_commitment\",\n      \"grounding.052.reject_nights_commitment\",\n      \"grounding.052.original_quantity\",\n      \"grounding.052.half_units\",\n      \"grounding.052.qualified_classifier\",\n      \"grounding.052.vague_ignored\",\n      \"grounding.052.minutes_kept\",\n      \"grounding.empty_source_bounds\",\n      \"grounding.no_host_calls\"\n    ],\n    \"envelope\": [\n      \"envelope.normal_open_started_turn\",\n      \"envelope.nil_data_handled_without_runtime_error\",\n      \"envelope.nil_data_never_publishes_routes\",\n      \"envelope.host_allowlist\",\n      \"envelope.bad_text_type_bounded_repair\",\n      \"envelope.refine_malformed_success_preserves_editor\",\n      \"envelope.missing_room_id_disables_persistence\",\n      \"envelope.invalid_message_array_never_loaded\",\n      \"envelope.stale_room_info_preserves_edited_draft\",\n      \"envelope.valid_sources_copy_only_body_sender\",\n      \"envelope.source_schema_and_byte_limits\",\n      \"envelope.dirty_switch_stale_confirmation\",\n      \"envelope.dirty_switch_requires_explicit_discard\",\n      \"envelope.auth_room_0\",\n      \"envelope.auth_room_1\",\n      \"envelope.auth_room_2\",\n      \"envelope.auth_room_3\",\n      \"envelope.auth_room_4\",\n      \"envelope.auth_room_5\",\n      \"envelope.auth_model_0\",\n      \"envelope.auth_model_1\",\n      \"envelope.auth_model_2\",\n      \"envelope.auth_model_3\",\n      \"envelope.auth_model_4\",\n      \"envelope.auth_model_5\"\n    ],\n    \"send\": [\n      \"send.blank_rejected\",\n      \"send.boundary_4096_4097_ascii\",\n      \"send.boundary_4096_unicode_scalars\",\n      \"send.combining_zwj_scalar_count\",\n      \"send.whitespace_requires_explicit_edit\",\n      \"send.prefix500_unicode_exact\",\n      \"send.blank_no_host_or_disk_change\",\n      \"send.overlimit_no_host_or_editor_change\",\n      \"send.window_30_not_500_messages\",\n      \"send.window_missing_ids_fail_closed\",\n      \"send.window_duplicate_ids_rejected\",\n      \"send.window_wrong_room_rejected\",\n      \"send.window_body_500_scalar_bound\",\n      \"send.matcher_new_own_full\",\n      \"send.matcher_own_sender_not_display_label\",\n      \"send.matcher_old_same_body_id_rejected\",\n      \"send.matcher_edited_old_event_rejected\",\n      \"send.matcher_unknown_own_id_fail_closed\",\n      \"send.matcher_non_text_rejected\",\n      \"send.matcher_ambiguity_preserved\",\n      \"send.reply_fallback_mismatch_unknown\",\n      \"send.prepare_requires_explicit_confirmation\",\n      \"send.doubleclick_one_dispatch\",\n      \"send.wire_exact_body_and_final_read_order\",\n      \"send.empty_ack_is_not_verified\",\n      \"send.success_new_own_readback\",\n      \"send.success_editor_disk_unchanged\",\n      \"send.duplicate_ack_and_reread_never_resend\",\n      \"send.ack_absent_is_unknown\",\n      \"send.reread_found_original_attempt\",\n      \"send.error_unknown_no_automatic_retry\",\n      \"send.reread_absent_enables_manual_resend_only\",\n      \"send.manual_resend_needs_new_confirmation\",\n      \"send.manual_resend_linked_new_attempt\",\n      \"send.auth_failure_clears_consent_preserves_editor_disk\",\n      \"send.missing_account_id_no_dispatch\",\n      \"send.account_switch_final_read_no_dispatch\",\n      \"send.postdispatch_auth_clears_consent_keeps_uncertainty\",\n      \"send.queued_edit_after_confirm_refused\",\n      \"send.edit_back_does_not_restore_confirmation\",\n      \"send.expired_confirmation_refused\",\n      \"send.new_messages_require_second_confirmation\",\n      \"send.second_confirm_uses_immediate_baseline\",\n      \"send.demo_never_requests_host\"\n    ],\n    \"send2\": [\n      \"send.late_room_callback_cannot_dispatch\",\n      \"send.late_final_read_editor_changed_no_dispatch\",\n      \"send.late_ack_never_marks_edited_draft\",\n      \"send.late_ack_wrong_current_room_unknown\",\n      \"send.wrong_sender_readback_stays_unknown\",\n      \"send.old_own_same_body_readback_unknown\",\n      \"send.ambiguous_readback_stays_unknown\",\n      \"send.long_unicode_prefix_only_full_body_sent\",\n      \"send.exact_500_boundary_full_match\",\n      \"send.use_waits_for_real_read_gate\",\n      \"send.nochange_use_applies_exact_candidate\",\n      \"send.duplicate_freshness_callback_applies_once\",\n      \"send.generation_snapshot_is_value_clone\",\n      \"send.new_event_blocks_apply_preserves_editor\",\n      \"send.nochange_refinement_applies\",\n      \"send.edited_same_event_blocks_refinement\",\n      \"send.missing_anchor_never_applies\",\n      \"send.verified_own_new_message_not_stale\",\n      \"send.known_own_receipt_changed_body_not_exempt\",\n      \"send.other_client_own_message_not_exempt\",\n      \"send.empty_window_transition_is_new_context\"\n    ],\n    \"send3\": [\n      \"send.verified_own_message_allows_real_use_gate\",\n      \"send.old_nine_field_store_readable\",\n      \"send.metadata_only_written_on_explicit_save\",\n      \"send.edit_clears_marker_without_disk_write\",\n      \"send.restored_metadata_historical_not_identity\",\n      \"send.corrupt_metadata_fails_closed\",\n      \"send.metadata_body_binding_required\"\n    ],\n    \"send4\": [\n      \"send.real_timeout_unknown_no_retry\",\n      \"send.late_success_after_timeout_no_state_rewrite\",\n      \"send.no_unexpected_or_model_services\"\n    ]\n  },\n  \"refinement\": [\n    {\n      \"id\": \"refine_parse_valid\",\n      \"text\": \"【R1依据】\\n#2\\n【R1建议】\\n这次先不参加。\\n【R1说明】\\n保留拒绝边界。\",\n      \"valid\": true\n    },\n    {\n      \"id\": \"refine_parse_crlf\",\n      \"text\": \"【R1依据】\\r\\n#2\\r\\n【R1建议】\\r\\n这次先不参加。\\r\\n【R1说明】\\r\\n保留拒绝边界。\",\n      \"valid\": true\n    },\n    {\n      \"id\": \"refine_parse_missing\",\n      \"text\": \"【R1依据】\\n#2\\n【R1建议】\\n这次先不参加。\",\n      \"valid\": false\n    },\n    {\n      \"id\": \"refine_parse_duplicate\",\n      \"text\": \"【R1依据】\\n#2\\n【R1建议】\\n这次先不参加。\\n【R1建议】\\n重复\\n【R1说明】\\n说明\",\n      \"valid\": false\n    },\n    {\n      \"id\": \"refine_parse_order\",\n      \"text\": \"【R1建议】\\n建议\\n【R1依据】\\n#2\\n【R1说明】\\n说明\",\n      \"valid\": false\n    },\n    {\n      \"id\": \"refine_parse_preamble\",\n      \"text\": \"你好\\n【R1依据】\\n#2\\n【R1建议】\\n建议\\n【R1说明】\\n说明\",\n      \"valid\": false\n    },\n    {\n      \"id\": \"refine_parse_embedded_marker\",\n      \"text\": \"【R1依据】\\n#2\\n【R1建议】\\n建议【R1说明】\\n【R1说明】\\n说明\",\n      \"valid\": false\n    },\n    {\n      \"id\": \"refine_parse_empty_note\",\n      \"text\": \"【R1依据】\\n#2\\n【R1建议】\\n建议\\n【R1说明】\\n\",\n      \"valid\": false\n    }\n  ]\n}\n".parse_json()
 // Only this harness shadows host; all cue_* production functions stay byte-exact.
 // Timers, UI handles, strings, arrays and fs remain the real card-host APIs.
 let probe_assertions = []
@@ -85,8 +110,11 @@ let probe_storage_baseline = ""
 let host = {request: fn(service, payload, callback){
     probe_requests.push({service: service, payload: payload, callback: callback})
     probe_events.push({kind: "request", case_id: probe_current_case, service: service, payload: payload, revision: cue_revision, at: time_now()})
-    if service != "octos.session.open" && service != "octos.turn.start" && service != "octos.turn.interrupt" && service != "matrix.room_info" && service != "matrix.read_messages" {
+    if service != "octos.session.open" && service != "octos.turn.start" && service != "octos.turn.interrupt" && service != "matrix.room_info" && service != "matrix.read_messages" && service != "matrix.account_info" && service != "matrix.send_message" {
         probe_unexpected += 1
+        probe_checkpoint(false)
+        // Fail hard after persisting evidence; never forward an unknown service.
+        nil.probe_unexpected_service()
     }
     probe_requests.len()
 }}
@@ -150,6 +178,23 @@ fn probe_count_service(service){
     count
 }
 fn probe_reset(case_id){
+    // Expire prior test operations without resetting monotonic callback epochs.
+    for attempt in cue_send_history { attempt.state = "probe_case_complete" }
+    cue_send_history = []
+    cue_send_active = -1
+    cue_send_latch = false
+    cue_send_phase = "idle"
+    cue_send_confirmation = nil
+    cue_send_nonce += 1
+    cue_send_allow_resend = false
+    cue_send_resend_of = -1
+    cue_io_epoch += 1
+    cue_io_busy = false
+    cue_io_stage = ""
+    cue_room_epoch += 1
+    cue_own_id = ""
+    cue_own_epoch = -1
+    cue_fresh_reset()
     cue_invalidate()
     cue_demo = false
     cue_sources = [{sender: "受控夹具", body: "明早9点出发，预算500。"},
@@ -166,6 +211,14 @@ fn probe_reset(case_id){
     cue_load_store()
     cue_activate_room("probe-room", false)
     cue_set_editor("", "manual", "", "", "", "", "", 0.0)
+    let raw = []
+    for i in cue_sources.len() {
+        raw.push(probe_row("$baseline-" + i, "@fixture:example.invalid", cue_sources[i].body))
+    }
+    cue_sources = raw.to_json().parse_json()
+    cue_source_window = cue_window_copy(raw)
+    cue_route_window = nil
+    cue_refine_window = nil
     cue_refine_base = ""
     cue_refine_note = ""
     cue_refine_refs = []
@@ -184,6 +237,24 @@ fn probe_reset(case_id){
     cue_set_status("受控测试准备")
     probe_requests = []
     probe_current_case = case_id
+}
+fn probe_row(id, sender, body){
+    {event_id: id, sender_id: sender, sender: "受控夹具", body: body,
+     room_id: cue_room_id, msgtype: "m.text", ts: 1000, unread: false}
+}
+fn probe_window_reply(start, rows, identity){
+    probe_deliver(start, {is_ok: true, data: {room_id: cue_room_id, room_name: "受控房间"}, error: ""})
+    let next = start + 1
+    if identity {
+        probe_deliver(next, {is_ok: true, data: {user_id: "@self:example.invalid"}, error: ""})
+        next += 1
+    }
+    probe_deliver(next, {is_ok: true, data: {messages: rows}, error: ""})
+}
+fn probe_complete_freshness(){
+    if cue_io_busy && cue_io_stage == "room" {
+        probe_window_reply(probe_requests.len() - 1, cue_source_window.rows, false)
+    }
 }
 fn probe_begin(case_id){
     probe_reset(case_id)
@@ -267,6 +338,9 @@ fn probe_parser_markers(){
 }
 fn probe_parser_accept(){
     probe_reset("parser.output_order_and_markers")
+    // This parser oracle invokes acceptance directly, so supply the immutable
+    // generation snapshot normally captured by cue_rehearse before host dispatch.
+    cue_route_window = cue_window_snapshot()
     cue_set_busy(true)
     cue_accept_reply(probe_good_reply(), cue_revision, 0)
     let mapping = probe_routes_match()
@@ -280,6 +354,7 @@ fn probe_parser_accept(){
             let text = cue_ws_text()
             rendered.push(text)
             cue_choose_route(i)
+            probe_complete_freshness()
             selected.push(ui.cue_draft.text())
             let expected = probe_fixtures.canonical_blocks[1 + i * 2] + "\n建议台词：" + probe_fixtures.canonical_blocks[2 + i * 2]
             mapping = mapping && text == expected && probe_join(cue_ws_pages, "") == expected
@@ -536,6 +611,7 @@ fn probe_refinements(){
     probe_deliver(1, probe_reply("重复回调不能改候选"))
     probe_assert("retry.refine_duplicate_callback_ignored", cue_pending_revision == staged && ui.cue_draft.text() == original && probe_count_service("octos.turn.start") == 1, {})
     cue_apply_refinement()
+    probe_complete_freshness()
     let applied_revision = cue_editor_revision
     let applied = cue_capture_slot().to_json()
     cue_apply_refinement()
@@ -1114,6 +1190,31 @@ fn probe_grounding_mask(){
     cue_sources = []
     probe_assert("grounding.empty_source_bounds", cue_source_excerpt("#1") == "" && !cue_references_valid("#1") && cue_references_valid("没有引用") && cue_numbers_grounded("77元") && !cue_numbers_grounded("500"), {source_count: cue_sources.len(), trial_is_still_allowed: true})
     probe_assert("grounding.no_host_calls", probe_requests.len() == 0 && probe_unexpected == 0, {calls: probe_requests.len()})
+    start_timeout(0.01, fn(){ probe_grounding_052() })
+}
+fn probe_grounding_052(){
+    let basis = "中午之后再讨论，预算300左右。先确认安排。"
+    probe_assert("grounding.052.reject_half_day", !cue_numbers_in("半天", basis), {})
+    probe_assert("grounding.052.reject_three_days", !cue_numbers_in("三天", basis), {})
+    probe_assert("grounding.052.reject_two_nights", !cue_numbers_in("两晚", basis), {})
+    probe_assert("grounding.052.reject_two_people", !cue_numbers_in("两个人", basis), {})
+    probe_assert("grounding.052.reject_twelve_oclock", !cue_numbers_in("十二点", basis), {})
+    probe_assert("grounding.052.reject_two_oclock", !cue_numbers_in("两点", basis), {})
+    probe_assert("grounding.052.reject_ten_minutes", !cue_numbers_in("十分钟", basis), {})
+    probe_assert("grounding.052.reject_digits_oclock", !cue_numbers_in("12点", basis), {})
+    probe_assert("grounding.052.allow_little_earlier", cue_numbers_in("早一点出发", basis), {})
+    probe_assert("grounding.052.allow_one_choice", cue_numbers_in("再给大家一个选择", basis), {})
+    probe_assert("grounding.052.allow_confirm_once", cue_numbers_in("我再确认一次", basis), {})
+    probe_assert("grounding.052.allow_apology", cue_numbers_in("十分抱歉", basis), {})
+    probe_assert("grounding.052.allow_two_directions", cue_numbers_in("给两个方向", basis), {})
+    probe_assert("grounding.052.allow_together", cue_numbers_in("我们一起去", basis), {})
+    probe_assert("grounding.052.reject_people_commitment", !cue_numbers_in("三个人都已经同意了", basis) || cue_has_commitment_claim("三个人都已经同意了"), {})
+    probe_assert("grounding.052.reject_nights_commitment", !cue_numbers_in("已经订好两晚", basis) || cue_has_commitment_claim("已经订好两晚"), {})
+    probe_assert("grounding.052.original_quantity", cue_numbers_in("住一晚", basis + "住一晚"), {})
+    probe_assert("grounding.052.half_units", cue_numeric_tokens("半天 半小时 半日 一个半小时").to_json() == "[\"半天\",\"半小时\",\"半日\",\"半小时\"]", {})
+    probe_assert("grounding.052.qualified_classifier", cue_numeric_tokens("两个人 一个小时 一个晚 两个月 一个星期").to_json() == "[\"两个人\",\"一个小时\",\"一个晚\",\"两个月\",\"一个星期\"]", {})
+    probe_assert("grounding.052.vague_ignored", cue_numeric_tokens("一个 两个 一次 两次 一点 十分 百分").len() == 0, {})
+    probe_assert("grounding.052.minutes_kept", cue_numeric_tokens("十分钟 百分钟").to_json() == "[\"十分钟\",\"百分钟\"]", {})
     probe_finish()
 }
 
@@ -1171,8 +1272,13 @@ fn probe_envelope_rooms(){
     probe_reset("envelope_room_sources_literal")
     cue_import_room()
     probe_deliver(0, {is_ok: true, data: {room_id: "probe-import-room", room_name: "受控房间"}, error: ""})
-    probe_deliver(1, {is_ok: true, data: {messages: [{sender: "真人标签不进prompt", body: " 原文保留\n次行 ", extra: "extra-host-field"}]}, error: ""})
-    probe_assert("envelope.valid_sources_copy_only_body_sender", !cue_busy && cue_sources.len() == 1 && cue_source_payload() == "[[1,\" 原文保留\\n次行 \"]]" && cue_consent_key == "" && cue_sources[0].to_json().search("extra-host-field") < 0, {payload: cue_source_payload()})
+    let imported = probe_row("$imported", "@fixture:example.invalid", " 原文保留\n次行 ")
+    imported.sender = "真人标签不进prompt"
+    imported.extra = "extra-host-field"
+    probe_deliver(1, {is_ok: true, data: {messages: [imported]}, error: ""})
+    // Preserve the core oracle's prompt boundary while requiring the new raw
+    // identity window to retain metadata; those fields still never enter G2.
+    probe_assert("envelope.valid_sources_copy_only_body_sender", !cue_busy && cue_sources.len() == 1 && cue_source_payload() == "[[1,\" 原文保留\\n次行 \"]]" && cue_consent_key == "" && cue_source_window.rows[0].event_id == "$imported" && cue_source_window.rows[0].sender_id == "@fixture:example.invalid" && cue_source_payload().search("extra-host-field") < 0, {payload: cue_source_payload(), retained_metadata: true})
     let many = []
     for i in 13 { many.push({sender: "fixture", body: "body"}) }
     probe_assert("envelope.source_schema_and_byte_limits", !cue_messages_valid(nil) && !cue_messages_valid([nil]) && !cue_messages_valid([{sender: "x", body: 7}]) && !cue_messages_valid(many) && !cue_messages_valid([{sender: "x", body: probe_repeat("界", 4001)}]) && cue_messages_valid([{sender: "x", body: probe_repeat("界", 4000)}]), {})
@@ -1190,7 +1296,36 @@ fn probe_envelope_switch(){
     cue_confirm_switch()
     probe_assert("envelope.dirty_switch_requires_explicit_discard", cue_demo && cue_room_id == "demo" && cue_editor_room == "demo" && ui.cue_draft.text() == "" && cue_switch_target == "" && !cue_discard_once, {})
     probe_assert("envelope.host_allowlist", probe_unexpected == 0, {unexpected: probe_unexpected})
-    probe_finish()
+    start_timeout(0.01, fn(){ probe_auth_case(0) })
+}
+fn probe_auth_case(index){
+    let cases = [
+        ["MiNi-App AUTHORIZATION EXPIRED", "授权已过期。Rinx 打开小程序一小时后，或关闭应用以后，会收回授权。请关闭 OnCue，再从小程序列表重新打开。草稿已经保存的不受影响。", true],
+        ["Mini-app ACCOUNT CHANGED", "账号已经切换。请用当前账号重新打开 OnCue。", true],
+        ["Not logged in", "Rinx 没有登录。请先登录，再打开 OnCue。", true],
+        ["Mini app was not granted access to this room", "宿主没有授权这项房间或账号服务，请重新打开并检查授权。", false],
+        ["not attached to a room", "这次打开没有选房间。请关闭应用，导入时填上房间再打开。", false],
+        ["no service answers", "当前宿主不提供群聊服务，请在 Rinx 里打开。", false]
+    ]
+    if index >= cases.len() { probe_finish() return }
+    let item = cases[index]
+    probe_reset("auth-room")
+    probe_manual("已保存的草稿")
+    cue_keep_draft()
+    let disk = fs.read("rehearsals-v1.json")
+    cue_import_room()
+    probe_manual("读取期间未保存的编辑")
+    probe_deliver(0, {is_ok: false, data: {}, error: item[0]})
+    probe_assert("envelope.auth_room_" + index, ui.cue_status.text() == item[1] && ui.cue_draft.text() == "读取期间未保存的编辑" && fs.read("rehearsals-v1.json") == disk && cue_consent_key == "", {status: ui.cue_status.text()})
+    probe_reset("auth-model")
+    probe_manual("已保存的草稿")
+    cue_keep_draft()
+    disk = fs.read("rehearsals-v1.json")
+    probe_manual("试映期间未保存的编辑")
+    cue_rehearse()
+    probe_deliver(0, {is_ok: false, data: {}, error: item[0]})
+    probe_assert("envelope.auth_model_" + index, ui.cue_status.text() == item[1] && ui.cue_draft.text() == "试映期间未保存的编辑" && fs.read("rehearsals-v1.json") == disk && (!item[2] || cue_consent_key == ""), {status: ui.cue_status.text()})
+    start_timeout(0.01, fn(){ probe_auth_case(index + 1) })
 }
 
 fn probe_boot(){
@@ -1204,8 +1339,429 @@ fn probe_boot(){
     if probe_meta.suite == "storage" { probe_storage() return }
     if probe_meta.suite == "grounding" { probe_grounding() return }
     if probe_meta.suite == "envelope" { probe_envelope() return }
+    if probe_meta.suite == "send" { probe_send() return }
+    if probe_meta.suite == "send2" { probe_send2() return }
+    if probe_meta.suite == "send3" { probe_send3() return }
+    if probe_meta.suite == "send4" { probe_send4() return }
     probe_assert("harness.unknown_suite", false, {suite: probe_meta.suite})
     probe_finish()
+}
+
+// Controlled 0.5.2 send/freshness tests. Only host is replaced; production,
+// native editor, filesystem, Unicode implementation and timers are real VM APIs.
+// All identities are synthetic; no callback can reach a live Matrix service.
+let probe_send_disk = ""
+let probe_send_late = nil
+let probe_send_wait_started = 0.0
+
+fn probe_draft_disk(){
+    let files = []
+    for name in ["rehearsals-v1.json", "draft.txt", "take-a.txt", "take-b.txt"] {
+        let exists = fs.exists(name)
+        let raw = nil
+        if exists { raw = fs.read(name) }
+        files.push([name, exists, raw])
+    }
+    files.to_json()
+}
+fn probe_send_reset(case_id, body){
+    probe_reset(case_id)
+    probe_manual(body)
+    probe_send_disk = probe_draft_disk()
+}
+fn probe_send_prepare_ready(){
+    let start = probe_requests.len()
+    cue_send_prepare()
+    probe_window_reply(start, cue_source_window.rows, true)
+}
+fn probe_send_submit(){
+    probe_send_prepare_ready()
+    let start = probe_requests.len()
+    cue_send_confirm_now()
+    probe_window_reply(start, cue_source_window.rows, true)
+    probe_requests.len() - 1
+}
+fn probe_send_observe(index, rows){
+    probe_deliver(index, {is_ok: true, data: {}, error: ""})
+    probe_window_reply(index + 1, rows, true)
+}
+fn probe_send_new_rows(body){
+    let rows = cue_source_window.rows.to_json().parse_json()
+    rows.push(probe_row("$new-self", "@self:example.invalid", body))
+    rows
+}
+fn probe_send(){
+    probe_send_reset("send.body", "正文")
+    probe_assert("send.blank_rejected", cue_send_body_error("") != "" && cue_send_body_error(" \n\t　") != "", {})
+    probe_assert("send.boundary_4096_4097_ascii", cue_send_body_error(probe_repeat("a", 4096)) == "" && cue_send_body_error(probe_repeat("a", 4097)) != "", {})
+    probe_assert("send.boundary_4096_unicode_scalars", cue_send_body_error(probe_repeat("界", 4096)) == "" && cue_send_body_error(probe_repeat("🙂", 4096)) == "" && cue_send_body_error(probe_repeat("🙂", 4097)) != "", {})
+    let cluster = "é👩‍👩‍👧‍👦"
+    probe_assert("send.combining_zwj_scalar_count", cluster.to_chars().len() == 9 && cue_send_body_error(probe_repeat(cluster, 455) + "a") == "" && cue_send_body_error(probe_repeat(cluster, 455) + "ab") != "", {})
+    probe_assert("send.whitespace_requires_explicit_edit", cue_send_body_error(" 正文 ") != "" && cue_send_body_error("正文\n第二行  内部") == "", {policy: "reject surrounding whitespace rather than silently trim"})
+    let prefix = probe_repeat("界🙂é", 125)
+    probe_assert("send.prefix500_unicode_exact", prefix.to_chars().len() == 500 && cue_send_prefix(prefix + "后文") == prefix, {})
+    probe_manual(" \n ")
+    cue_send_prepare()
+    probe_assert("send.blank_no_host_or_disk_change", probe_requests.len() == 0 && ui.cue_draft.text() == " \n " && probe_draft_disk() == probe_send_disk, {})
+    probe_manual(probe_repeat("a", 4097))
+    cue_send_prepare()
+    probe_assert("send.overlimit_no_host_or_editor_change", probe_requests.len() == 0 && ui.cue_draft.text().to_chars().len() == 4097 && probe_draft_disk() == probe_send_disk, {})
+    start_timeout(0.01, fn(){ probe_send_windows() })
+}
+fn probe_send_windows(){
+    probe_send_reset("send.window_validation", "正文")
+    let rows = []
+    for i in 30 { rows.push(probe_row("$window-" + i, "@fixture:example.invalid", "正文")) }
+    let valid30 = cue_window_valid(rows, cue_room_id)
+    rows.push(probe_row("$window-30", "@fixture:example.invalid", "正文"))
+    probe_assert("send.window_30_not_500_messages", valid30 && !cue_window_valid(rows, cue_room_id), {})
+    let row = probe_row("$row", "@self:example.invalid", "正文")
+    probe_assert("send.window_missing_ids_fail_closed", !cue_window_valid([{body: "正文", sender: "夹具", msgtype: "m.text"}], cue_room_id) && !cue_window_valid([probe_row("", "@self:example.invalid", "正文")], cue_room_id) && !cue_window_valid([probe_row("$row", "", "正文")], cue_room_id), {})
+    probe_assert("send.window_duplicate_ids_rejected", !cue_window_valid([row, row], cue_room_id), {})
+    row.room_id = "!other:example.invalid"
+    probe_assert("send.window_wrong_room_rejected", !cue_window_valid([row], cue_room_id), {})
+    probe_assert("send.window_body_500_scalar_bound", cue_window_valid([probe_row("$row", "@self:example.invalid", probe_repeat("🙂", 500))], cue_room_id) && !cue_window_valid([probe_row("$row", "@self:example.invalid", probe_repeat("🙂", 501))], cue_room_id), {})
+    let attempt = {room: cue_room_id, own: "@self:example.invalid", body: "正文", baseline: cue_source_window.rows}
+    probe_assert("send.matcher_new_own_full", cue_send_matches(attempt, probe_send_new_rows("正文")).len() == 1, {})
+    row = probe_row("$new", "@other:example.invalid", "正文")
+    row.sender = "self"
+    probe_assert("send.matcher_own_sender_not_display_label", cue_send_matches(attempt, [row]).len() == 0, {})
+    row = probe_row("$baseline-0", "@self:example.invalid", "正文")
+    probe_assert("send.matcher_old_same_body_id_rejected", cue_send_matches(attempt, [row]).len() == 0, {})
+    probe_assert("send.matcher_edited_old_event_rejected", attempt.baseline[0].body != row.body && cue_send_matches(attempt, [row]).len() == 0, {})
+    attempt.own = ""
+    probe_assert("send.matcher_unknown_own_id_fail_closed", cue_send_matches(attempt, probe_send_new_rows("正文")).len() == 0, {})
+    attempt.own = "@self:example.invalid"
+    row = probe_row("$new", attempt.own, "正文")
+    row.msgtype = "m.notice"
+    probe_assert("send.matcher_non_text_rejected", cue_send_matches(attempt, [row]).len() == 0, {})
+    probe_assert("send.matcher_ambiguity_preserved", cue_send_matches(attempt, [probe_row("$one", attempt.own, "正文"), probe_row("$two", attempt.own, "正文")]).len() == 2, {})
+    attempt.body = "> quoted\n\n正文"
+    probe_assert("send.reply_fallback_mismatch_unknown", cue_send_matches(attempt, [probe_row("$new", attempt.own, "正文")]).len() == 0, {})
+    start_timeout(0.01, fn(){ probe_send_success() })
+}
+fn probe_send_success(){
+    probe_send_reset("send.success", "正文🙂\n第二行  内部")
+    let body = ui.cue_draft.text()
+    probe_send_prepare_ready()
+    probe_assert("send.prepare_requires_explicit_confirmation", cue_send_phase == "confirm" && cue_send_confirmation.body == body && cue_send_confirmation.own == "@self:example.invalid" && probe_count_service("matrix.send_message") == 0, {})
+    let start = probe_requests.len()
+    cue_send_confirm_now()
+    cue_send_confirm_now()
+    probe_window_reply(start, cue_source_window.rows, true)
+    let index = probe_requests.len() - 1
+    cue_send_confirm_now()
+    cue_send_prepare()
+    probe_assert("send.doubleclick_one_dispatch", cue_send_phase == "submitted" && cue_send_latch && probe_count_service("matrix.send_message") == 1, {})
+    let services = []
+    let read30 = true
+    for request in probe_requests {
+        services.push(request.service)
+        if request.service == "matrix.read_messages" { read30 = read30 && request.payload.to_json() == "{\"limit\":30}" }
+    }
+    probe_assert("send.wire_exact_body_and_final_read_order", services.to_json() == "[\"matrix.room_info\",\"matrix.account_info\",\"matrix.read_messages\",\"matrix.room_info\",\"matrix.account_info\",\"matrix.read_messages\",\"matrix.send_message\"]" && read30 && probe_requests[index].payload.to_json() == {body: body}.to_json(), {services: services})
+    probe_deliver(index, {is_ok: true, data: {}, error: ""})
+    probe_assert("send.empty_ack_is_not_verified", cue_send_phase == "readback" && cue_send_history[0].ack && cue_send_history[0].receipt == nil && cue_editor_sent == nil && ui.cue_draft.text() == body && probe_draft_disk() == probe_send_disk, {})
+    probe_window_reply(index + 1, probe_send_new_rows(body), true)
+    probe_assert("send.success_new_own_readback", cue_send_phase == "observed_full" && cue_send_history[0].receipt.event_id == "$new-self" && !cue_send_latch && cue_send_text.search("已发到") >= 0 && cue_send_text.search("刚才读回时看到了这条") >= 0, {})
+    probe_assert("send.success_editor_disk_unchanged", ui.cue_draft.text() == body && probe_draft_disk() == probe_send_disk && cue_editor_sent != nil, {})
+    let before = cue_send_history.to_json()
+    probe_deliver(index, {is_ok: true, data: {}, error: ""})
+    cue_send_reread()
+    probe_assert("send.duplicate_ack_and_reread_never_resend", before == cue_send_history.to_json() && probe_count_service("matrix.send_message") == 1, {})
+    start_timeout(0.01, fn(){ probe_send_delayed() })
+}
+fn probe_send_delayed(){
+    probe_send_reset("send.ack_not_found", "延迟正文")
+    let index = probe_send_submit()
+    probe_send_observe(index, cue_source_window.rows)
+    probe_assert("send.ack_absent_is_unknown", cue_send_phase == "unknown" && cue_send_history[0].ack && cue_send_history[0].receipt == nil && !cue_send_allow_resend && cue_send_text.search("不能确认") >= 0, {})
+    let start = probe_requests.len()
+    cue_send_reread()
+    probe_window_reply(start, probe_send_new_rows("延迟正文"), true)
+    probe_assert("send.reread_found_original_attempt", cue_send_phase == "observed_full" && cue_send_history.len() == 1 && probe_count_service("matrix.send_message") == 1 && probe_draft_disk() == probe_send_disk, {})
+    probe_send_reset("send.error_manual_resend", "可能已发")
+    index = probe_send_submit()
+    probe_deliver(index, {is_ok: false, data: nil, error: "controlled transport error"})
+    cue_send_prepare()
+    cue_send_resend()
+    probe_assert("send.error_unknown_no_automatic_retry", cue_send_phase == "unknown" && !cue_send_allow_resend && probe_count_service("matrix.send_message") == 1 && cue_send_text.search("可能已发送") >= 0, {})
+    start = probe_requests.len()
+    cue_send_reread()
+    probe_window_reply(start, cue_source_window.rows, true)
+    probe_assert("send.reread_absent_enables_manual_resend_only", cue_send_phase == "unknown" && cue_send_allow_resend && cue_send_text == "本次最近消息仍未看到，无法确认。重新发送可能重复" && probe_count_service("matrix.send_message") == 1, {})
+    start = probe_requests.len()
+    cue_send_resend()
+    probe_window_reply(start, cue_source_window.rows, true)
+    probe_assert("send.manual_resend_needs_new_confirmation", cue_send_phase == "confirm" && cue_send_confirmation.resend_of == 0 && cue_send_history[0].state == "unknown" && probe_count_service("matrix.send_message") == 1, {})
+    start = probe_requests.len()
+    cue_send_confirm_now()
+    probe_window_reply(start, cue_source_window.rows, true)
+    probe_assert("send.manual_resend_linked_new_attempt", cue_send_history.len() == 2 && cue_send_history[1].resend_of == 0 && cue_send_history[0].state == "unknown" && probe_count_service("matrix.send_message") == 2 && probe_draft_disk() == probe_send_disk, {})
+    start_timeout(0.01, fn(){ probe_send_auth() })
+}
+fn probe_send_auth(){
+    probe_send_reset("send.auth_prepare", "保留编辑")
+    cue_keep_draft()
+    probe_manual("未保存编辑")
+    cue_grant_model()
+    probe_send_disk = probe_draft_disk()
+    cue_send_prepare()
+    probe_deliver(0, {is_ok: true, data: {room_id: cue_room_id}, error: ""})
+    probe_deliver(1, {is_ok: false, data: nil, error: "MiNi-App AUTHORIZATION EXPIRED"})
+    probe_assert("send.auth_failure_clears_consent_preserves_editor_disk", cue_consent_key == "" && ui.cue_draft.text() == "未保存编辑" && probe_draft_disk() == probe_send_disk && probe_count_service("matrix.send_message") == 0 && cue_send_text.search("授权已过期") >= 0, {})
+    probe_send_reset("send.identity_missing", "正文")
+    cue_send_prepare()
+    probe_deliver(0, {is_ok: true, data: {room_id: cue_room_id}, error: ""})
+    probe_deliver(1, {is_ok: true, data: {}, error: ""})
+    probe_assert("send.missing_account_id_no_dispatch", probe_count_service("matrix.send_message") == 0 && probe_count_service("matrix.read_messages") == 0 && cue_send_phase != "confirm", {})
+    probe_send_reset("send.identity_changed", "正文")
+    probe_send_prepare_ready()
+    cue_send_confirm_now()
+    probe_deliver(3, {is_ok: true, data: {room_id: cue_room_id}, error: ""})
+    probe_deliver(4, {is_ok: true, data: {user_id: "@other:example.invalid"}, error: ""})
+    probe_assert("send.account_switch_final_read_no_dispatch", probe_count_service("matrix.send_message") == 0 && cue_own_id == "" && ui.cue_draft.text() == "正文" && probe_draft_disk() == probe_send_disk, {})
+    probe_send_reset("send.auth_after_dispatch", "原正文")
+    let index = probe_send_submit()
+    cue_grant_model()
+    probe_deliver(index, {is_ok: false, data: nil, error: "MiNi-App AUTHORIZATION EXPIRED"})
+    probe_assert("send.postdispatch_auth_clears_consent_keeps_uncertainty", cue_consent_key == "" && cue_send_phase == "unknown" && cue_send_history[0].receipt == nil && ui.cue_draft.text() == "原正文" && probe_draft_disk() == probe_send_disk && probe_count_service("matrix.send_message") == 1, {})
+    start_timeout(0.01, fn(){ probe_send_confirmation() })
+}
+fn probe_send_confirmation(){
+    probe_send_reset("send.edit_after_confirm", "原正文")
+    probe_send_prepare_ready()
+    ui.cue_draft.set_text("原生输入尚未on_change")
+    cue_send_confirm_now()
+    probe_assert("send.queued_edit_after_confirm_refused", cue_send_phase != "confirm" && probe_count_service("matrix.send_message") == 0 && ui.cue_draft.text() == "原生输入尚未on_change", {})
+    probe_send_reset("send.edit_aba", "原正文")
+    probe_send_prepare_ready()
+    probe_manual("临时编辑")
+    probe_manual("原正文")
+    cue_send_confirm_now()
+    probe_assert("send.edit_back_does_not_restore_confirmation", cue_send_confirmation == nil && probe_count_service("matrix.send_message") == 0, {})
+    probe_send_reset("send.expired_confirm", "原正文")
+    probe_send_prepare_ready()
+    cue_send_confirmation.expires = time_now() - 1.0
+    cue_send_confirm_now()
+    probe_assert("send.expired_confirmation_refused", cue_send_phase == "idle" && probe_count_service("matrix.send_message") == 0, {clock: "real; confirmation expiry field made past"})
+    probe_send_reset("send.new_message_confirm_twice", "原正文")
+    probe_send_prepare_ready()
+    let nonce = cue_send_confirmation.nonce
+    let changed = cue_source_window.rows.to_json().parse_json()
+    changed.push(probe_row("$new-context", "@other:example.invalid", "新条件"))
+    cue_send_confirm_now()
+    probe_window_reply(3, changed, true)
+    probe_assert("send.new_messages_require_second_confirmation", cue_send_phase == "confirm" && cue_send_confirmation.nonce != nonce && cue_send_confirmation.rows.len() == 1 && probe_count_service("matrix.send_message") == 0, {})
+    let start = probe_requests.len()
+    cue_send_confirm_now()
+    probe_window_reply(start, changed, true)
+    probe_assert("send.second_confirm_uses_immediate_baseline", cue_send_phase == "submitted" && cue_send_history[0].baseline.len() == changed.len() && cue_send_history[0].baseline[4].event_id == "$new-context" && probe_count_service("matrix.send_message") == 1, {})
+    probe_send_reset("send.demo", "样例正文")
+    cue_demo = true
+    cue_send_prepare()
+    cue_send_confirm_now()
+    probe_assert("send.demo_never_requests_host", probe_requests.len() == 0 && cue_send_text.search("样例") >= 0 && probe_draft_disk() == probe_send_disk, {})
+    // Suite "send" ends here (44 assertions). Suite "send2" re-enters at probe_send_races
+    // so each real card-host process serializes its result within the 32 MiB heap quota.
+    probe_finish()
+}
+fn probe_send2(){
+    start_timeout(0.01, fn(){ probe_send_races() })
+}
+fn probe_send_races(){
+    probe_send_reset("send.late_prepare_room", "原正文")
+    cue_send_prepare()
+    let callback = probe_requests[0].callback
+    cue_room_id = "!changed:example.invalid"
+    callback({is_ok: true, data: {room_id: "probe-room"}, error: ""})
+    probe_assert("send.late_room_callback_cannot_dispatch", probe_requests.len() == 1 && ui.cue_draft.text() == "原正文" && cue_send_confirmation == nil, {})
+    probe_send_reset("send.late_final_editor", "原正文")
+    probe_send_prepare_ready()
+    cue_send_confirm_now()
+    probe_deliver(3, {is_ok: true, data: {room_id: cue_room_id}, error: ""})
+    probe_deliver(4, {is_ok: true, data: {user_id: "@self:example.invalid"}, error: ""})
+    ui.cue_draft.set_text("最终读取期间修改")
+    probe_deliver(5, {is_ok: true, data: {messages: cue_source_window.rows}, error: ""})
+    probe_assert("send.late_final_read_editor_changed_no_dispatch", probe_count_service("matrix.send_message") == 0 && ui.cue_draft.text() == "最终读取期间修改", {})
+    probe_send_reset("send.late_ack_editor", "原正文")
+    let index = probe_send_submit()
+    probe_manual("发送之后的新稿")
+    probe_send_observe(index, probe_send_new_rows("原正文"))
+    probe_assert("send.late_ack_never_marks_edited_draft", cue_send_history[0].state == "observed_full" && ui.cue_draft.text() == "发送之后的新稿" && cue_editor_sent == nil && probe_draft_disk() == probe_send_disk, {})
+    probe_send_reset("send.late_ack_room", "原正文")
+    index = probe_send_submit()
+    cue_room_id = "!changed:example.invalid"
+    probe_deliver(index, {is_ok: true, data: {}, error: ""})
+    probe_assert("send.late_ack_wrong_current_room_unknown", cue_send_history[0].state == "unknown" && cue_send_history[0].receipt == nil && probe_count_service("matrix.send_message") == 1 && ui.cue_draft.text() == "原正文", {})
+    start_timeout(0.01, fn(){ probe_send_adversarial() })
+}
+fn probe_send_adversarial(){
+    probe_send_reset("send.wrong_sender_readback", "同样正文")
+    let index = probe_send_submit()
+    let rows = cue_source_window.rows.to_json().parse_json()
+    rows.push(probe_row("$other-body", "@other:example.invalid", "同样正文"))
+    probe_send_observe(index, rows)
+    probe_assert("send.wrong_sender_readback_stays_unknown", cue_send_phase == "unknown" && cue_send_history[0].receipt == nil && probe_count_service("matrix.send_message") == 1, {})
+    probe_send_reset("send.old_same_body_baseline", "同样正文")
+    cue_source_window.rows.push(probe_row("$old-own", "@self:example.invalid", "同样正文"))
+    index = probe_send_submit()
+    probe_send_observe(index, cue_source_window.rows)
+    probe_assert("send.old_own_same_body_readback_unknown", cue_send_phase == "unknown" && cue_send_history[0].receipt == nil, {})
+    probe_send_reset("send.ambiguous_readback", "同样正文")
+    index = probe_send_submit()
+    rows = probe_send_new_rows("同样正文")
+    rows.push(probe_row("$second-self", "@self:example.invalid", "同样正文"))
+    probe_send_observe(index, rows)
+    probe_assert("send.ambiguous_readback_stays_unknown", cue_send_phase == "unknown" && cue_send_text.search("多条") >= 0 && cue_send_history[0].receipt == nil, {})
+    probe_send_reset("send.prefix_readback", probe_repeat("界🙂é", 125) + "未回读的尾部")
+    let body = ui.cue_draft.text()
+    index = probe_send_submit()
+    let sent_full = probe_requests[index].payload.body == body
+    probe_send_observe(index, probe_send_new_rows(probe_repeat("界🙂é", 125)))
+    probe_assert("send.long_unicode_prefix_only_full_body_sent", sent_full && cue_send_phase == "observed_prefix500" && cue_send_text.search("后续正文未能回读核对") >= 0 && ui.cue_draft.text() == body && probe_draft_disk() == probe_send_disk, {})
+    probe_send_reset("send.exact_500_readback", probe_repeat("界", 500))
+    index = probe_send_submit()
+    probe_send_observe(index, probe_send_new_rows(probe_repeat("界", 500)))
+    probe_assert("send.exact_500_boundary_full_match", cue_send_phase == "observed_full" && cue_send_history[0].receipt != nil, {limit: "500-char observable equality is not causal delivery proof"})
+    start_timeout(0.01, fn(){ probe_send_freshness() })
+}
+fn probe_send_freshness(){
+    probe_begin("send.fresh_route")
+    probe_deliver(1, probe_good_reply())
+    let snapshot = cue_route_window.to_json()
+    let start = probe_requests.len()
+    cue_choose_route(0)
+    let before = ui.cue_draft.text()
+    probe_assert("send.use_waits_for_real_read_gate", cue_io_busy && ui.cue_draft.text() == before && before != cue_routes[0].draft, {})
+    probe_window_reply(start, cue_source_window.rows, false)
+    probe_assert("send.nochange_use_applies_exact_candidate", ui.cue_draft.text() == cue_routes[0].draft && cue_fresh_state == "checked", {})
+    let applied = cue_editor_revision
+    probe_deliver(start + 1, {is_ok: true, data: {messages: cue_source_window.rows}, error: ""})
+    probe_assert("send.duplicate_freshness_callback_applies_once", cue_editor_revision == applied, {})
+    cue_source_window.rows[0].body = "修改可变源窗口"
+    probe_assert("send.generation_snapshot_is_value_clone", cue_route_window.to_json() == snapshot, {})
+    probe_begin("send.new_unselected_blocks_use")
+    probe_deliver(1, probe_good_reply())
+    probe_manual("手工稿保留")
+    start = probe_requests.len()
+    cue_choose_route(0)
+    let rows = cue_source_window.rows.to_json().parse_json()
+    rows.push(probe_row("$unselected-new", "@other:example.invalid", "未被模型引用的新消息"))
+    probe_window_reply(start, rows, false)
+    probe_assert("send.new_event_blocks_apply_preserves_editor", cue_fresh_state == "stale" && ui.cue_draft.text() == "手工稿保留" && cue_fresh_rows.len() == 1, {})
+    start_timeout(0.01, fn(){ probe_send_freshness_more() })
+}
+fn probe_send_freshness_more(){
+    probe_refine_begin("send.fresh_refine")
+    probe_deliver(1, probe_refine_reply())
+    let start = probe_requests.len()
+    cue_apply_refinement()
+    probe_window_reply(start, cue_source_window.rows, false)
+    probe_assert("send.nochange_refinement_applies", ui.cue_draft.text() == "这次先不参加，谢谢邀请。" && cue_pending_revision == "", {})
+    probe_refine_begin("send.changed_refine")
+    probe_deliver(1, probe_refine_reply())
+    let original = ui.cue_draft.text()
+    start = probe_requests.len()
+    cue_apply_refinement()
+    let rows = cue_source_window.rows.to_json().parse_json()
+    rows[0].body = "原事件编辑成新条件"
+    probe_window_reply(start, rows, false)
+    probe_assert("send.edited_same_event_blocks_refinement", ui.cue_draft.text() == original && cue_fresh_state == "stale", {})
+    probe_begin("send.missing_anchor")
+    probe_deliver(1, probe_good_reply())
+    start = probe_requests.len()
+    cue_choose_route(0)
+    probe_window_reply(start, [], false)
+    probe_assert("send.missing_anchor_never_applies", cue_fresh_state != "checked" && ui.cue_draft.text() == "", {})
+    probe_send_reset("send.known_own_exception", "本人消息")
+    let baseline = cue_source_window.rows.to_json().parse_json()
+    let index = probe_send_submit()
+    rows = probe_send_new_rows("本人消息")
+    probe_send_observe(index, rows)
+    let same = cue_window_diff(baseline, rows)
+    probe_assert("send.verified_own_new_message_not_stale", same.state == "same" && same.rows.len() == 0, {})
+    rows[4].body = "本人消息已被编辑"
+    probe_assert("send.known_own_receipt_changed_body_not_exempt", cue_window_diff(baseline, rows).state == "changed", {})
+    rows[4] = probe_row("$different-own", "@self:example.invalid", "本人消息")
+    probe_assert("send.other_client_own_message_not_exempt", cue_window_diff(baseline, rows).state == "changed", {})
+    probe_assert("send.empty_window_transition_is_new_context", cue_window_diff([], []).state == "same" && cue_window_diff([], [rows[0]]).state == "changed", {})
+    probe_finish()
+}
+fn probe_send3(){
+    start_timeout(0.01, fn(){ probe_send_known_own_use() })
+}
+fn probe_send_known_own_use(){
+    // Establish a verified-own readback first so the own-message exemption has
+    // a real receipt in history; then a fresh generation must pass the use gate
+    // even though that own row is new relative to the generation snapshot.
+    probe_send_reset("send.verified_own_use_gate", "本人消息")
+    let index = probe_send_submit()
+    probe_send_observe(index, probe_send_new_rows("本人消息"))
+    // No reset here: history must keep the verified-own receipt. Start a fresh
+    // generation on the unchanged room, then adopt route A while the read window
+    // contains that known-own row; the exemption must let the gate pass.
+    cue_rehearse()
+    let so = probe_requests.len() - 1
+    probe_deliver(so, {is_ok: true, data: {}, error: ""})
+    probe_deliver(so + 1, probe_good_reply())
+    let start_use = probe_requests.len()
+    cue_choose_route(0)
+    probe_window_reply(start_use, probe_send_new_rows("本人消息"), false)
+    probe_assert("send.verified_own_message_allows_real_use_gate", cue_fresh_state == "checked" && ui.cue_draft.text() == probe_fixtures.canonical_blocks[2], {})
+    start_timeout(0.01, fn(){ probe_send_metadata() })
+}
+fn probe_send_metadata(){
+    probe_send_reset("send.explicit_metadata", "保存已观察正文")
+    let index = probe_send_submit()
+    probe_send_observe(index, probe_send_new_rows("保存已观察正文"))
+    let marker = cue_editor_sent.to_json()
+    let old = ["旧九字段草稿", 1, "manual", "", "", "旧快照", "", "", 0]
+    probe_assert("send.old_nine_field_store_readable", cue_slot_valid(old) && cue_decode_store([1, 1, [[cue_room_id, old, nil, nil]]].to_json()) != nil, {})
+    cue_keep_draft()
+    let saved = fs.read("rehearsals-v1.json")
+    let slot = cue_room_record()[1]
+    probe_assert("send.metadata_only_written_on_explicit_save", saved != "" && probe_draft_disk() != probe_send_disk && slot.len() == 10 && slot[9].to_json() == marker, {compatibility: "new reader accepts old nine fields; ten fields are not downgrade-compatible"})
+    probe_manual("编辑清除当前标记")
+    probe_assert("send.edit_clears_marker_without_disk_write", cue_editor_sent == nil && fs.read("rehearsals-v1.json") == saved, {})
+    cue_send_history = []
+    cue_send_active = -1
+    cue_own_id = ""
+    cue_own_epoch = -1
+    cue_restore_draft()
+    probe_assert("send.restored_metadata_historical_not_identity", ui.cue_draft.text() == "保存已观察正文" && cue_editor_sent != nil && cue_own_id == "" && cue_send_history.len() == 0 && fs.read("rehearsals-v1.json") == saved, {})
+    let corrupt = slot.to_json().parse_json()
+    corrupt[9][0] = "UNKNOWN_TAG"
+    probe_assert("send.corrupt_metadata_fails_closed", !cue_slot_valid(corrupt) && cue_decode_store([1, 1, [[cue_room_id, corrupt, nil, nil]]].to_json()) == nil, {})
+    corrupt = slot.to_json().parse_json()
+    corrupt[9][4] = "不同正文"
+    probe_assert("send.metadata_body_binding_required", !cue_slot_valid(corrupt), {})
+    probe_finish()
+}
+fn probe_send4(){
+    start_timeout(0.01, fn(){ probe_send_timeout() })
+}
+fn probe_send_timeout(){
+    probe_send_reset("send.real_transport_timeout", "超时仍可能已发送")
+    let index = probe_send_submit()
+    probe_send_late = probe_requests[index].callback
+    probe_send_wait_started = time_now()
+    start_timeout(30.4, fn(){
+        probe_assert("send.real_timeout_unknown_no_retry", cue_send_phase == "unknown" && cue_send_history[0].state == "unknown" && !cue_send_latch && !cue_send_allow_resend && cue_send_text.search("超时") >= 0 && probe_count_service("matrix.send_message") == 1 && time_now() - probe_send_wait_started >= 30.0 && probe_draft_disk() == probe_send_disk, {})
+        // Fresh timer callbacks keep each JSON checkpoint write inside the real
+        // heap quota; the 30s-wait callback's accumulated heap otherwise fails
+        // its result serialization (the VM reports a garbage u64::MAX request).
+        start_timeout(0.01, fn(){
+            let before = cue_send_history.to_json()
+            let callback = probe_send_late
+            callback({is_ok: true, data: {}, error: ""})
+            probe_assert("send.late_success_after_timeout_no_state_rewrite", cue_send_history.to_json() == before && cue_send_phase == "unknown" && probe_count_service("matrix.send_message") == 1, {})
+            start_timeout(0.01, fn(){
+                probe_assert("send.no_unexpected_or_model_services", probe_unexpected == 0 && probe_count_service("octos.session.open") == 0 && probe_count_service("octos.turn.start") == 0, {})
+                probe_finish()
+            })
+        })
+    })
 }
 
 // ---- EXACT PRODUCTION FUNCTIONS/PAGE ----
@@ -1261,6 +1817,9 @@ fn cue_sync_workspace(){
     ui.cue_privacy.render()
     ui.cue_storage_state.render()
     ui.cue_refinement.render()
+    ui.cue_send_actions.render()
+    ui.cue_send_panel.render()
+    ui.cue_route_use.render()
 }
 fn cue_cancel_candidate(){
     cue_pending_revision = ""
@@ -1288,7 +1847,7 @@ fn cue_toggle_source(index){
     cue_invalidate()
     cue_consent_key = ""
     cue_sync_workspace()
-    cue_set_status("参考范围已变化；取消勾选不会清除宿主此前收到的内容。")
+    cue_set_status("勾选的消息变了，要再点一次「允许」才会发给助手。")
 }
 fn cue_model_consent_key(){
     [cue_room_id, cue_source_payload()].to_json()
@@ -1296,15 +1855,16 @@ fn cue_model_consent_key(){
 fn cue_grant_model(){
     cue_consent_key = cue_model_consent_key()
     cue_sync_workspace()
-    cue_set_status("已允许在当前房间/消息范围内，点击试映或修订时发送当时输入；可随时撤回。")
+    cue_set_status("已允许。点试映或修订时，会把台词、目标和勾选的消息发给助手。")
 }
 fn cue_revoke_model(){
     cue_consent_key = ""
     cue_invalidate()
     cue_sync_workspace()
-    cue_set_status("已停止本应用后续模型请求；宿主已有历史不会被清除。")
+    cue_set_status("已撤回，之后不会再发给助手。")
 }
 fn cue_set_editor(text, origin, base, refs, snapshot, goal, trial, created){
+    cue_send_editor_changed()
     cue_editor_revision += 1
     cue_editor_room = cue_room_id
     cue_editor_text = text
@@ -1320,6 +1880,7 @@ fn cue_set_editor(text, origin, base, refs, snapshot, goal, trial, created){
     cue_sync_workspace()
 }
 fn cue_edit_draft(text){
+    cue_send_editor_changed()
     cue_editor_revision += 1
     cue_editor_text = text
     cue_editor_origin = "manual"
@@ -1559,6 +2120,7 @@ fn cue_clear_routes(){
     cue_sync_reader()
 }
 fn cue_invalidate(){
+    cue_send_editor_changed()
     cue_revision += 1
     cue_summary = ""
     cue_result_key = ""
@@ -1606,7 +2168,7 @@ fn cue_boot_state(){
     cue_refresh_takes()
     if cue_store_ready && cue_room_record()[1] != nil { cue_restore_slot(0) }
     cue_sync_workspace()
-    cue_set_status("样例只在本机运行；旧版草稿须手动打开，不会自动归入群聊。")
+    cue_set_status("现在是样例群聊，消息都是虚构的。点「载入群聊」换成你授权的群。")
 }
 fn cue_edit_trial(text){
     cue_invalidate()
@@ -1621,6 +2183,7 @@ fn cue_dirty(){
     false == (cue_editor_text == cue_take_a || cue_editor_text == cue_take_b)
 }
 fn cue_guard_switch(target){
+    if cue_send_latch || cue_io_busy { cue_set_status("正在核对或等待发送结果，暂不能切换房间。") return false }
     if ui.cue_draft.text() != cue_editor_text { cue_edit_draft(ui.cue_draft.text()) }
     if cue_discard_once { cue_discard_once = false return true }
     if cue_dirty() {
@@ -1690,12 +2253,437 @@ fn cue_messages_valid(messages){
         true
     } catch { false }
 }
-fn cue_room_error(text){
-    if text.search("not attached to a room") >= 0 { return "这次打开没有选房间。请关闭应用，导入时填上房间再打开。" }
-    if text.search("not granted") >= 0 { return "宿主没有授权读取这个房间。" }
-    if text.search("no service answers") >= 0 { return "当前宿主不提供群聊服务，请在 Rinx 里打开。" }
+// ---- Recent-window observations, not a sync barrier or complete history ----
+fn cue_window_valid(rows, room){
+    try {
+        if !rows.is_array() || rows.len() > 30 || rows.to_json().len() > 131072 { return false }
+        let ids = []
+        for row in rows {
+            if !row.is_object() { return false }
+            for key in ["event_id", "sender_id", "sender", "body", "msgtype"] {
+                if !row[key].is_string() { return false }
+            }
+            if row.event_id == "" || row.event_id.len() > 512 || row.sender_id == "" || row.sender_id.len() > 512 || row.sender.len() > 512 { return false }
+            if row.body.to_chars().len() > 500 || row.msgtype.len() > 64 { return false }
+            if row["room_id"] != nil && (!row.room_id.is_string() || row.room_id != room) { return false }
+            if row["ts"] != nil && (!row.ts.is_number() || !(row.ts >= 0) || row.ts > 100000000000000) { return false }
+            for id in ids { if id == row.event_id { return false } }
+            ids.push(row.event_id)
+        }
+        true
+    } catch { false }
+}
+fn cue_window_copy(rows){
+    {room: cue_room_id, epoch: cue_room_epoch, time: time_now(), rows: rows.to_json().parse_json()}
+}
+fn cue_window_snapshot(){
+    if cue_source_window == nil { return nil }
+    cue_source_window.to_json().parse_json()
+}
+fn cue_row_key(row){ [row.body, row.sender_id, row["room_id"], row.msgtype].to_json() }
+fn cue_known_sent(row){
+    for attempt in cue_send_history {
+        if attempt.room == cue_room_id && attempt.epoch == cue_room_epoch && attempt.own == cue_own_id && cue_own_epoch == cue_room_epoch && attempt.receipt != nil {
+            if row.event_id == attempt.receipt.event_id && cue_row_key(row) == attempt.receipt.row_key { return true }
+        }
+    }
+    false
+}
+fn cue_window_diff(before, after){
+    let changed = []
+    let added = 0
+    let edited = 0
+    let anchor = before.len() == 0
+    for row in after {
+        let found = false
+        for old in before {
+            if row.event_id == old.event_id {
+                found = true
+                if cue_row_key(row) != cue_row_key(old) { changed.push(row) edited += 1 }
+            }
+        }
+        if !found && !cue_known_sent(row) { changed.push(row) added += 1 }
+        if before.len() > 0 && row.event_id == before[before.len() - 1].event_id { anchor = true }
+    }
+    // Missing rows are not assumed deleted. The newest old anchor must survive.
+    let state = "same"
+    if changed.len() > 0 { state = "changed" }
+    if !anchor { state = "gap" }
+    {state: state, rows: changed, added: added, edited: edited}
+}
+fn cue_fresh_expired(diff){
+    if diff.state == "gap" { return "最近消息窗口衔接不足，请点「载入群聊」后重新试映。" }
+    if diff.edited > 0 { return "已过期：群里新增 " + diff.added + " 条、改动 " + diff.edited + " 条消息，点「载入群聊」后重新试映。" }
+    "已过期：群里新增 " + diff.added + " 条消息，点「载入群聊」后重新试映。"
+}
+fn cue_binding(){
+    {room: cue_room_id, epoch: cue_room_epoch, editor: ui.cue_draft.text(), editor_rev: cue_editor_revision, context: cue_context_key(), candidate: cue_revision}
+}
+fn cue_binding_current(binding, editor){
+    if cue_demo || binding.room == "" || binding.room != cue_room_id || binding.epoch != cue_room_epoch { return false }
+    if editor && (binding.editor != ui.cue_draft.text() || binding.editor_rev != cue_editor_revision || binding.context != cue_context_key() || binding.candidate != cue_revision) { return false }
+    true
+}
+fn cue_io_current(id, binding, editor){
+    id == cue_io_epoch && cue_io_busy && time_now() < cue_io_until && cue_binding_current(binding, editor)
+}
+fn cue_checked_window(binding, editor, identity, done){
+    cue_io_epoch += 1
+    let id = cue_io_epoch
+    cue_io_busy = true
+    cue_io_stage = "room"
+    cue_io_until = time_now() + 30.0
+    cue_sync_workspace()
+    start_timeout(30.0, fn(){
+        if id != cue_io_epoch || !cue_io_busy { return }
+        cue_io_busy = false
+        cue_io_stage = ""
+        done("读取等待超时或上下文已变化，请重新读取。", nil, "")
+    })
+    host.request("matrix.room_info", {}, fn(result){
+        if !cue_io_current(id, binding, editor) || cue_io_stage != "room" { return }
+        cue_io_stage = ""
+        let room = try { result.data.room_id } catch { nil }
+        if !result.is_ok || room != binding.room {
+            cue_io_busy = false
+            let error = "房间身份不一致，未采用这次读取。"
+            if !result.is_ok { error = cue_host_error("" + result.error) }
+            done(error, nil, "")
+            return
+        }
+        if !identity { cue_checked_messages(id, binding, editor, "", done) return }
+        cue_io_stage = "account"
+        host.request("matrix.account_info", {}, fn(account){
+            if !cue_io_current(id, binding, editor) || cue_io_stage != "account" { return }
+            cue_io_stage = ""
+            let own = try { account.data.user_id } catch { nil }
+            if !account.is_ok || !own.is_string() || own == "" || own.len() > 512 {
+                cue_io_busy = false
+                let error = "宿主未提供可核验的当前账号；暂不发送。"
+                if !account.is_ok { error = cue_host_error("" + account.error) }
+                done(error, nil, "")
+                return
+            }
+            if cue_own_epoch == cue_room_epoch && cue_own_id != "" && cue_own_id != own {
+                cue_io_busy = false
+                cue_own_id = ""
+                cue_consent_key = ""
+                cue_own_epoch = -1
+                cue_room_epoch += 1
+                done("账号已经切换。请用当前账号重新打开 OnCue。", nil, "")
+                return
+            }
+            cue_own_id = own
+            cue_own_epoch = cue_room_epoch
+            cue_checked_messages(id, binding, editor, own, done)
+        })
+    })
+}
+fn cue_checked_messages(id, binding, editor, own, done){
+    cue_io_stage = "messages"
+    host.request("matrix.read_messages", {limit: 30}, fn(result){
+        if !cue_io_current(id, binding, editor) || cue_io_stage != "messages" { return }
+        cue_io_stage = ""
+        cue_io_busy = false
+        if !result.is_ok { done(cue_host_error("" + result.error), nil, own) return }
+        let rows = try { result.data.messages } catch { nil }
+        if !cue_window_valid(rows, binding.room) { done("最近消息格式或大小异常，无法核对。", nil, own) return }
+        done("", cue_window_copy(rows), own)
+    })
+}
+fn cue_fresh_reset(){
+    cue_fresh_state = ""
+    cue_fresh_text = ""
+    cue_fresh_rows = []
+}
+fn cue_fresh_check(snapshot, ready){
+    if cue_io_busy || cue_send_latch || cue_busy || cue_send_phase == "confirm" { cue_set_status("请先结束当前核对或发送确认。") return }
+    if cue_fresh_state == "stale" { cue_set_status("已看到新增或变化消息，请重新载入并试映。") return }
+    if snapshot == nil || snapshot.room != cue_room_id || snapshot.epoch != cue_room_epoch || !cue_window_valid(snapshot.rows, cue_room_id) {
+        cue_fresh_state = "unknown"
+        cue_fresh_text = "请重新载入群聊并试映，再采用这句。"
+        cue_set_status(cue_fresh_text)
+        cue_sync_workspace()
+        return
+    }
+    let binding = cue_binding()
+    cue_fresh_state = "checking"
+    cue_fresh_text = "正在重新读取最近30条，采用前再核对…"
+    cue_set_status(cue_fresh_text)
+    cue_checked_window(binding, true, false, fn(error, window, own){
+        if !cue_binding_current(binding, true) { cue_fresh_state = "unknown" cue_fresh_text = "核对期间草稿或上下文变化，候选未应用。" cue_set_status(cue_fresh_text) cue_sync_workspace() return }
+        if error != "" { cue_fresh_state = "unknown" cue_fresh_text = error cue_set_status(cue_fresh_text) cue_sync_workspace() return }
+        let diff = cue_window_diff(snapshot.rows, window.rows)
+        cue_fresh_rows = diff.rows
+        if diff.state != "same" {
+            cue_fresh_state = "stale"
+            cue_fresh_text = cue_fresh_expired(diff)
+            cue_set_status(cue_fresh_text)
+            cue_sync_workspace()
+            return
+        }
+        cue_fresh_state = "checked"
+        cue_fresh_text = "本次读取未见新增消息；读取后仍可能有变化。"
+        // ready() reports its own outcome status; do not clobber it with the note.
+        ready()
+        cue_sync_workspace()
+    })
+}
+
+// ---- Explicit confirmation, one invocation, and bounded readback evidence ----
+fn cue_send_body_error(body){
+    if !body.is_string() { return "草稿格式异常。" }
+    if body.len() > 16384 { return "发送正文最多4096个Unicode码点，请自行缩短；草稿未改变。" }
+    if body.trim() == "" { return "先写一份非空白草稿。" }
+    if body != body.trim() { return "草稿首尾有空白，宿主会裁掉；请自行修改后重新确认，应用不会静默改文。" }
+    if body.to_chars().len() > 4096 { return "发送正文最多4096个Unicode码点，请自行缩短；草稿未改变。" }
+    ""
+}
+fn cue_send_prefix(body){
+    let out = "".to_chars()
+    let chars = body.to_chars()
+    for i in chars.len() { if i < 500 { out.push(chars[i]) } }
+    out.to_string()
+}
+fn cue_send_matches(attempt, rows){
+    let matches = []
+    if attempt.own == "" || !cue_window_valid(rows, attempt.room) { return matches }
+    let expected = attempt.body
+    if expected.to_chars().len() > 500 { expected = cue_send_prefix(expected) }
+    for row in rows {
+        let old = false
+        for baseline in attempt.baseline { if baseline.event_id == row.event_id { old = true } }
+        if !old && row.sender_id == attempt.own && row.msgtype == "m.text" && row.body == expected { matches.push(row) }
+    }
+    matches
+}
+fn cue_send_notice(text){ cue_send_text = text cue_set_status(text) cue_sync_workspace() }
+fn cue_send_idle(){
+    cue_send_phase = "idle"
+    if cue_send_active >= 0 && cue_send_history[cue_send_active].state == "unknown" { cue_send_phase = "unknown" }
+}
+fn cue_send_editor_changed(){
+    cue_send_resend_of = -1
+    cue_editor_sent = nil
+    cue_send_confirmation = nil
+    cue_send_nonce += 1
+    if cue_send_phase == "confirm" || cue_send_phase == "preparing" || cue_send_phase == "final_read" {
+        cue_io_epoch += 1
+        cue_io_busy = false
+        cue_send_idle()
+        cue_send_text = "草稿或上下文已变化，原发送确认失效；尚未调用发送。"
+    }
+}
+fn cue_send_current_observed(){
+    cue_editor_sent != nil && cue_editor_sent[1] != "unknown" && cue_editor_sent[4] == ui.cue_draft.text()
+}
+fn cue_send_prepare(){
+    if cue_send_latch || cue_io_busy || cue_busy || cue_send_phase == "confirm" || cue_send_current_observed() { return }
+    if cue_demo { cue_send_notice("样例舞台不能发送；请载入你选择并授权的群聊。") return }
+    if !cue_editor_current() { return }
+    if cue_send_active >= 0 && cue_send_history[cue_send_active].state == "unknown" && cue_send_resend_of < 0 {
+        cue_send_notice("上次请求可能已发送，请先重新读取确认；再次发送可能重复。")
+        return
+    }
+    let error = cue_send_body_error(ui.cue_draft.text())
+    if error != "" { cue_send_notice(error + " 尚未调用发送。") return }
+    if cue_send_history.len() >= 10 { cue_send_notice("本次打开已保留10次发送记录，请先核对所有结果；不再发起请求。") return }
+    let binding = cue_binding()
+    cue_send_phase = "preparing"
+    cue_send_allow_resend = false
+    cue_send_notice("正在核对当前房间、账号和最近30条消息，尚未调用发送。")
+    cue_checked_window(binding, true, true, fn(error, window, own){
+        if cue_send_phase != "preparing" { return }
+        if error != "" || !cue_binding_current(binding, true) { cue_send_resend_of = -1 cue_send_idle() cue_send_notice(error + " 确认失效，尚未调用新的发送。") return }
+        let rows = []
+        let warning = "本次读取完成；发送前还会再读一次。"
+        if cue_source_window != nil && cue_source_window.room == binding.room && cue_source_window.epoch == binding.epoch {
+            let diff = cue_window_diff(cue_source_window.rows, window.rows)
+            rows = diff.rows
+            if diff.state != "same" {
+                warning = "相对上次载入，消息已有变化或窗口衔接不足；请读完再决定发送。"
+                cue_fresh_state = "stale"
+                cue_fresh_rows = diff.rows
+                cue_fresh_text = cue_fresh_expired(diff)
+            }
+        }
+        cue_send_show_confirmation(binding, window, own, rows, warning)
+    })
+}
+fn cue_send_show_confirmation(binding, window, own, rows, warning){
+    cue_send_nonce += 1
+    let nonce = cue_send_nonce
+    cue_send_confirmation = {nonce: nonce, binding: binding, body: binding.editor, own: own, window: window, rows: rows, expires: time_now() + 60.0, resend_of: cue_send_resend_of}
+    cue_send_phase = "confirm"
+    cue_send_notice(warning + " 请核对完整正文后点「确认发送」；60秒内有效。")
+    start_timeout(60.0, fn(){
+        if cue_send_confirmation != nil && cue_send_confirmation.nonce == nonce && cue_send_phase == "confirm" {
+            cue_send_confirmation = nil
+            cue_send_resend_of = -1
+            cue_send_idle()
+            cue_send_notice("发送确认已过期，尚未调用发送；请重新准备。")
+        }
+    })
+}
+fn cue_send_cancel(){
+    if cue_send_latch { return }
+    cue_io_epoch += 1
+    cue_io_busy = false
+    cue_send_confirmation = nil
+    cue_send_nonce += 1
+    cue_send_idle()
+    cue_send_resend_of = -1
+    cue_send_notice("已取消本次确认，尚未调用新的发送。")
+}
+fn cue_send_confirm_now(){
+    if cue_send_latch || cue_io_busy || cue_send_phase != "confirm" || cue_send_confirmation == nil { return }
+    let confirmation = cue_send_confirmation.to_json().parse_json()
+    if time_now() >= confirmation.expires || !cue_binding_current(confirmation.binding, true) || cue_own_epoch != cue_room_epoch || confirmation.own != cue_own_id || cue_send_body_error(ui.cue_draft.text()) != "" {
+        cue_send_cancel()
+        cue_send_notice("正文、账号、房间或确认时限已变化，尚未调用发送；请重新确认。")
+        return
+    }
+    cue_send_phase = "final_read"
+    cue_send_notice("正在做最后一次最近消息核对；请勿重复点击。")
+    cue_checked_window(confirmation.binding, true, true, fn(error, window, own){
+        if cue_send_phase != "final_read" || cue_send_confirmation == nil || cue_send_confirmation.nonce != confirmation.nonce { return }
+        if error != "" || own != confirmation.own || !cue_binding_current(confirmation.binding, true) || time_now() >= confirmation.expires {
+            cue_send_resend_of = -1
+            cue_send_idle()
+            cue_send_confirmation = nil
+            cue_send_notice(error + " 最终确认失效，尚未调用发送。")
+            return
+        }
+        let diff = cue_window_diff(confirmation.window.rows, window.rows)
+        if diff.state == "changed" {
+            cue_fresh_state = "stale"
+            cue_fresh_rows = diff.rows
+            cue_fresh_text = cue_fresh_expired(diff)
+            cue_send_show_confirmation(confirmation.binding, window, own, diff.rows, "群里刚有新消息，确认后仍会发送这句。请先读新消息，再点确认发送。")
+            return
+        }
+        if diff.state != "same" { cue_send_resend_of = -1 cue_send_idle() cue_send_confirmation = nil cue_send_notice("最近消息窗口衔接不足，尚未调用新的发送；请重新读取。") return }
+        cue_send_dispatch(confirmation, window)
+    })
+}
+fn cue_send_dispatch(confirmation, window){
+    if cue_send_latch || cue_send_phase != "final_read" || cue_send_confirmation == nil || confirmation.nonce != cue_send_confirmation.nonce || !cue_binding_current(confirmation.binding, true) || confirmation.own != cue_own_id || cue_own_epoch != cue_room_epoch || time_now() >= confirmation.expires { return }
+    let id = cue_send_history.len()
+    let attempt = {id: id, room: confirmation.binding.room, room_name: cue_scene, epoch: confirmation.binding.epoch, own: confirmation.own, body: confirmation.body, editor_rev: confirmation.binding.editor_rev, baseline: window.rows.to_json().parse_json(), invoked: time_now(), state: "submitted", ack: false, error: "", receipt: nil, observed: [], resend_of: confirmation.resend_of}
+    cue_send_history.push(attempt)
+    cue_send_active = id
+    cue_send_latch = true
+    cue_send_phase = "submitted"
+    cue_send_confirmation = nil
+    cue_send_resend_of = -1
+    cue_send_notice("请求已提交，正在等待宿主；不自动重试。")
+    start_timeout(30.0, fn(){
+        if id != cue_send_active || attempt.state != "submitted" { return }
+        attempt.error = "等待超时"
+        cue_send_unknown(attempt, "等待超时，可能已发送；请先重新读取确认。再次发送可能重复。", false)
+    })
+    // The host binds room/account through its lease. No room_id or retry token.
+    let requested = try { host.request("matrix.send_message", {body: attempt.body}, fn(result){
+        if id != cue_send_active || attempt.state != "submitted" { return }
+        if time_now() >= attempt.invoked + 30.0 {
+            attempt.error = "等待超时"
+            cue_send_unknown(attempt, "等待超时，可能已发送；请先重新读取确认。再次发送可能重复。", false)
+            return
+        }
+        if !result.is_ok {
+            attempt.error = "" + result.error
+            cue_send_unknown(attempt, "请求报错，可能已发送；请先重新读取确认。再次发送可能重复。" + cue_host_error(attempt.error), false)
+            return
+        }
+        // Host returns {}. This is acknowledgement, never an event receipt.
+        attempt.ack = true
+        cue_send_notice("宿主已受理，正在回读核验。")
+        cue_send_readback(attempt, false)
+    }) true } catch { false }
+    if !requested && attempt.state == "submitted" {
+        attempt.error = "调用异常"
+        cue_send_unknown(attempt, "调用异常，可能已发送；请先重新读取确认。再次发送可能重复。", false)
+    }
+}
+fn cue_send_unknown(attempt, text, reread){
+    attempt.state = "unknown"
+    cue_send_latch = false
+    cue_send_phase = "unknown"
+    cue_send_allow_resend = reread
+    if cue_editor_room == attempt.room && cue_editor_revision == attempt.editor_rev && ui.cue_draft.text() == attempt.body { cue_editor_sent = ["OC_SEND_1", "unknown", attempt.invoked, "", attempt.body] }
+    cue_send_notice(text)
+}
+fn cue_send_readback(attempt, reread){
+    if cue_io_busy { return }
+    cue_send_latch = true
+    cue_send_phase = "readback"
+    attempt.state = "readback"
+    let binding = cue_binding()
+    // An explicit reread may return to the original room after a local switch;
+    // the new read is bound to its current epoch and must reverify the same own ID.
+    if binding.room != attempt.room {
+        cue_send_unknown(attempt, "当前房间已变化，原请求可能已发送；请回原房间重新读取核对。", false)
+        return
+    }
+    cue_checked_window(binding, false, true, fn(error, window, own){
+        if cue_send_active != attempt.id || attempt.state != "readback" { return }
+        if error != "" || own != attempt.own || !cue_binding_current(binding, false) {
+            cue_send_unknown(attempt, "回读未能核验，原请求可能已发送；请重新读取确认。" + error, false)
+            return
+        }
+        attempt.observed = window.rows.to_json().parse_json()
+        let matches = cue_send_matches(attempt, window.rows)
+        if matches.len() != 1 {
+            let text = "最近30条未核验到唯一的本人同文消息；是否已发送尚不能确认。请先重新读取确认。"
+            if reread { text = "本次最近消息仍未看到，无法确认。重新发送可能重复" }
+            if matches.len() > 1 { text = "最近消息中有多条本人同文新消息，无法归属本次请求；重新发送可能重复。" }
+            cue_send_unknown(attempt, text, reread)
+            return
+        }
+        let matched = matches[0]
+        let kind = "observed_full"
+        let text = "已发到 " + attempt.room_name + "。刚才读回时看到了这条。"
+        if attempt.body.to_chars().len() > 500 {
+            kind = "observed_prefix500"
+            text = "已回读到本人新增消息，前500字一致；后续正文未能回读核对。"
+        }
+        attempt.state = kind
+        attempt.receipt = {event_id: matched.event_id, row_key: cue_row_key(matched), time: time_now(), kind: kind}
+        cue_send_latch = false
+        cue_send_phase = kind
+        cue_send_allow_resend = false
+        if cue_editor_room == attempt.room && cue_editor_revision == attempt.editor_rev && ui.cue_draft.text() == attempt.body { cue_editor_sent = ["OC_SEND_1", kind, attempt.receipt.time, matched.event_id, attempt.body] }
+        cue_send_notice(text + " 未自动修改或保存草稿。")
+    })
+}
+fn cue_send_reread(){
+    if cue_send_latch || cue_io_busy || cue_send_active < 0 || cue_send_history[cue_send_active].state != "unknown" { return }
+    cue_send_allow_resend = false
+    cue_send_notice("仅重新读取原请求的结果，不会再次发送。")
+    cue_send_readback(cue_send_history[cue_send_active], true)
+}
+fn cue_send_resend(){
+    if !cue_send_allow_resend || cue_send_latch || cue_io_busy || cue_send_active < 0 || cue_send_history[cue_send_active].state != "unknown" { return }
+    cue_send_resend_of = cue_send_active
+    cue_send_phase = "idle"
+    cue_send_prepare()
+}
+fn cue_host_error(text){
+    let chars = "".to_chars()
+    for c in text.to_chars() { if c >= 65 && c <= 90 { c = c + 32 } chars.push(c) }
+    let lower = chars.to_string()
+    if lower.search("authorization expired") >= 0 {
+        cue_consent_key = ""
+        return "授权已过期。Rinx 打开小程序一小时后，或关闭应用以后，会收回授权。请关闭 OnCue，再从小程序列表重新打开。草稿已经保存的不受影响。"
+    }
+    if lower.search("account changed") >= 0 { cue_consent_key = "" return "账号已经切换。请用当前账号重新打开 OnCue。" }
+    if lower.search("not logged in") >= 0 { cue_consent_key = "" return "Rinx 没有登录。请先登录，再打开 OnCue。" }
+    if lower.search("not attached to a room") >= 0 { return "这次打开没有选房间。请关闭应用，导入时填上房间再打开。" }
+    if lower.search("not granted") >= 0 { return "宿主没有授权这项房间或账号服务，请重新打开并检查授权。" }
+    if lower.search("no service answers") >= 0 { return "当前宿主不提供群聊服务，请在 Rinx 里打开。" }
     "没有读到群聊：" + text
 }
+fn cue_room_error(text){ cue_host_error(text) }
 fn cue_import_room(){
     if !cue_guard_switch("room") { return }
     cue_invalidate()
@@ -1710,7 +2698,7 @@ fn cue_import_room(){
     let reading_revision = cue_revision
     let reading_editor = [cue_editor_revision, ui.cue_draft.text()].to_json()
     cue_deadline(reading_revision, "消息读取")
-    cue_set_status("正在读取群聊最近 12 条消息…")
+    cue_set_status("正在读取群聊最近30条消息，显示最后12条…")
     host.request("matrix.room_info", {}, fn(room){
         if !cue_request_current(reading_revision) { return }
         if !room.is_ok {
@@ -1741,18 +2729,22 @@ fn cue_import_room(){
         cue_scene = "已授权群聊"
         if name.is_string() && name != "" { cue_scene = name }
         ui.cue_scene_label.set_text(cue_scene)
-        host.request("matrix.read_messages", {limit: 12}, fn(result){
+        let room_epoch = cue_room_epoch
+        host.request("matrix.read_messages", {limit: 30}, fn(result){
+            if cue_room_id != id || cue_room_epoch != room_epoch { return }
             if !cue_request_current(reading_revision) { return }
             cue_set_busy(false)
             if !result.is_ok {
-                cue_set_status("消息读取失败：" + result.error)
+                cue_set_status(cue_host_error("" + result.error))
                 return
             }
             let messages = try { result.data.messages } catch { nil }
-            let valid = cue_messages_valid(messages)
+            let valid = cue_window_valid(messages, id)
             if !valid { cue_set_status("宿主消息格式或大小异常，未载入。") return }
+            cue_source_window = cue_window_copy(messages)
             cue_sources = []
-            for item in messages { cue_sources.push({sender: item["sender"], body: item["body"]}) }
+            for i in messages.len() { if i + 12 >= messages.len() { cue_sources.push(messages[i].to_json().parse_json()) } }
+            cue_fresh_reset()
             cue_source_serial += 1
             cue_sync_reader()
             cue_sync_workspace()
@@ -1947,7 +2939,7 @@ fn cue_strip_refs(text){
 }
 fn cue_decimal(c){ c >= 48 && c <= 57 }
 fn cue_han_number(c){
-    for n in "零〇一二两三四五六七八九十百千万亿".to_chars() { if c == n { return true } }
+    for n in "零〇一二两三四五六七八九十百千万亿半".to_chars() { if c == n { return true } }
     false
 }
 fn cue_at_chars(chars, offset, value){
@@ -1996,7 +2988,20 @@ fn cue_numeric_tokens(text){
             for candidate in ["小时", "分钟", "公里", "元", "块", "点", "时", "分", "天", "晚", "夜", "人", "个", "张", "次", "米", "%", "岁", "月", "日"] {
                 if unit == "" && cue_at_chars(chars, unit_at, candidate) { unit = candidate }
             }
-            if !han || unit != "" { tokens.push(token.to_string() + unit) }
+            let amount = token.to_string()
+            let qualified = false
+            if unit == "个" {
+                for tail in ["人", "小时", "晚", "月", "星期"] {
+                    if !qualified && cue_at_chars(chars, unit_at + 1, tail) { unit += tail qualified = true }
+                }
+            }
+            let ignored = false
+            if han && !qualified {
+                let value = amount + unit
+                for vague in ["一个", "两个", "一次", "两次", "一点"] { if value == vague { ignored = true } }
+                if (value == "十分" || value == "百分") && !cue_at_chars(chars, unit_at + 1, "钟") { ignored = true }
+            }
+            if (!han || unit != "") && !ignored { tokens.push(amount + unit) }
             if unit != "" { i = unit_at + unit.to_chars().len() }
         } else { i += 1 }
     }
@@ -2163,7 +3168,7 @@ fn cue_accept_reply(reply, request_revision, attempt){
     if cue_request_kind == "refine" { cue_accept_refinement(reply, request_revision, attempt) return }
     if !reply.is_ok {
         cue_set_busy(false)
-        cue_set_status("这次试映没有完成：" + reply.error)
+        cue_set_status(cue_host_error("" + reply.error))
         return
     }
     // A malformed success envelope is a failed protocol response, not an
@@ -2186,7 +3191,7 @@ fn cue_accept_reply(reply, request_revision, attempt){
         cue_summary = cue_source_excerpt(blocks[0])
         cue_sync_message()
         cue_sync_workspace()
-        cue_set_status("三种建议已生成；检查仅覆盖格式/引用/数字/承诺规则，请核对原文后选用。")
+        cue_set_status("三种说法好了。每条下面是它依据的原文，选之前对一下。")
         return
     }
     if attempt < 1 {
@@ -2199,16 +3204,18 @@ fn cue_accept_reply(reply, request_revision, attempt){
     cue_set_status("助手候选未采用：" + cue_reject_reason + "。已用完一次修复，可改输入后重试或手工编辑。")
 }
 fn cue_rehearse(){
+    if cue_io_busy || cue_send_latch { cue_set_status("请先结束当前核对或发送请求。") return }
     if cue_busy { cue_set_status("这一幕正在展开，请稍等。") return }
     let trial = ui.cue_trial.text().trim()
     if trial == "" { cue_set_status("先写一句想接的话。") return }
     if ui.cue_trial.text().to_chars().len() > 240 || ui.cue_trial.text().len() > 1000 { cue_set_status("先把台词（含空白）缩到240字、1000字节以内。") return }
     if cue_sources.len() == 0 || cue_selected_count() == 0 { cue_set_status("请载入并至少勾选一条参考消息。") return }
     if ui.cue_goal_note.text().to_chars().len() > 240 { cue_set_status("补充条件请缩到240字以内。") return }
-    if !cue_demo && cue_consent_key != cue_model_consent_key() { cue_set_status("先核对勾选内容，在数据范围卡中允许本次模型请求。") return }
+    if !cue_demo && cue_consent_key != cue_model_consent_key() { cue_set_status("先看一下勾选的消息，再点「允许当前范围内的试映与修订」。") return }
     cue_invalidate()
     cue_request_kind = "generate"
     cue_request_key = cue_context_key()
+    cue_route_window = cue_window_snapshot()
     if cue_demo { cue_demo_routes() return }
     cue_set_busy(true)
     let request_revision = cue_revision
@@ -2219,13 +3226,21 @@ fn cue_rehearse(){
         if !cue_request_current(request_revision) { return }
         if !session.is_ok {
             cue_set_busy(false)
-            cue_set_status("助手暂时不可用：" + session.error)
+            cue_set_status(cue_host_error("" + session.error))
             return
         }
         cue_start_turn(prompt_text, request_revision, 0)
     })
 }
 fn cue_choose_route(index){
+    if index < 0 || index >= cue_routes.len() || cue_result_key != cue_context_key() { cue_set_status("请先生成当前来源与目标的候选。") return }
+    if cue_demo { cue_choose_route_ready(index) return }
+    let candidate = cue_routes[index].to_json()
+    cue_fresh_check(cue_route_window, fn(){
+        if index < cue_routes.len() && cue_routes[index].to_json() == candidate { cue_choose_route_ready(index) }
+    })
+}
+fn cue_choose_route_ready(index){
     if index < 0 || index >= cue_routes.len() {
         cue_set_status("先展开三条路线，再选择一份台词。")
         return
@@ -2257,6 +3272,7 @@ fn cue_refine_prompt(){
     rules
 }
 fn cue_refine(){
+    if cue_io_busy || cue_send_latch { cue_set_status("请先结束当前核对或发送请求。") return }
     if cue_busy { cue_set_status("请先结束当前请求。") return }
     if !cue_editor_current() { return }
     let note = ui.cue_refine_input.text().trim()
@@ -2268,13 +3284,14 @@ fn cue_refine(){
     if base.trim() == "" || base.len() > 8000 { cue_set_status("先写一份8000字节以内的草稿。") return }
     if note == "" || note.to_chars().len() > 240 { cue_set_status("写一句240字以内的修改要求，例如更简短、保留拒绝边界。") return }
     if cue_selected_count() == 0 { cue_set_status("请先勾选本次参考消息。") return }
-    if !cue_demo && cue_consent_key != cue_model_consent_key() { cue_set_status("先核对数据范围并允许本次模型请求。") return }
+    if !cue_demo && cue_consent_key != cue_model_consent_key() { cue_set_status("先看一下勾选的消息，再点「允许当前范围内的试映与修订」。") return }
     cue_cancel_candidate()
     cue_refine_base = base
     cue_refine_note = note
     cue_refine_key = cue_refine_identity()
     cue_request_key = cue_context_key()
     cue_request_kind = "refine"
+    cue_refine_window = cue_window_snapshot()
     cue_revision += 1
     if cue_demo {
         cue_pending_revision = "谢谢邀请，这次我先不参加；安排还请大家另行确认。"
@@ -2290,7 +3307,7 @@ fn cue_refine(){
     cue_set_status("正在按修改要求准备候选，当前草稿不会被覆盖。")
     host.request("octos.session.open", {}, fn(session){
         if !cue_request_current(revision) { return }
-        if !session.is_ok { cue_set_busy(false) cue_set_status("助手不可用，原草稿保留。") return }
+        if !session.is_ok { cue_set_busy(false) cue_set_status(cue_host_error("" + session.error)) return }
         cue_start_turn(cue_refine_prompt(), revision, 0)
     })
 }
@@ -2320,7 +3337,7 @@ fn cue_decode_refinement(text){
 }
 fn cue_accept_refinement(reply, revision, attempt){
     if cue_refine_key != cue_refine_identity() { cue_set_busy(false) cue_cancel_candidate() cue_set_status("原稿或修改要求已变化，旧修订未应用。") return }
-    if !reply.is_ok { cue_set_busy(false) cue_set_status("修订请求未完成，原草稿保留。") return }
+    if !reply.is_ok { cue_set_busy(false) cue_set_status(cue_host_error("" + reply.error)) return }
     let reply_text = try { reply.data.text } catch { nil }
     let parts = []
     if reply_text.is_string() && reply_text.len() <= 4000 { parts = try { cue_decode_refinement(reply_text) } catch { [] } }
@@ -2347,6 +3364,16 @@ fn cue_accept_refinement(reply, revision, attempt){
     cue_set_status("修订候选未采用：" + cue_reject_reason + "；原草稿保留。")
 }
 fn cue_apply_refinement(){
+    if cue_demo { cue_apply_refinement_ready() return }
+    if cue_pending_revision == "" { cue_set_status("没有可应用的当前修订。") return }
+    if cue_refine_key != cue_refine_identity() { cue_cancel_candidate() cue_sync_workspace() cue_set_status("没有可应用的当前修订，请重新提交修改要求。") return }
+    let candidate = cue_pending_revision
+    let key = cue_refine_identity()
+    cue_fresh_check(cue_refine_window, fn(){
+        if cue_pending_revision == candidate && cue_refine_identity() == key { cue_apply_refinement_ready() }
+    })
+}
+fn cue_apply_refinement_ready(){
     if cue_pending_revision == "" || cue_refine_key != cue_refine_identity() {
         cue_cancel_candidate()
         cue_sync_workspace()
@@ -2499,9 +3526,20 @@ fn cue_restart_playback(){
 // slot = [text, text_revision, origin, original, ref_ids, snapshot, goal, trial, time]
 // Array-only serialization is canonical; the old VM's parse_json accepts incomplete
 // JSON, so type checks alone are insufficient: exact reserialization is mandatory.
+// New reader accepts legacy 9-field slots; tenth field is historical evidence,
+// not current identity. Older 0.5.1 readers do not understand this extension.
+fn cue_sent_meta_valid(meta, body){
+    if !meta.is_array() || meta.len() != 5 || meta[0] != "OC_SEND_1" { return false }
+    if meta[1] != "unknown" && meta[1] != "observed_full" && meta[1] != "observed_prefix500" { return false }
+    if !meta[2].is_number() || !(meta[2] >= 0) || meta[2] > 100000000000000 { return false }
+    if !meta[3].is_string() || meta[3].len() > 512 || !meta[4].is_string() || meta[4] != body { return false }
+    if meta[1] != "unknown" && meta[3] == "" { return false }
+    true
+}
 fn cue_slot_valid(slot){
     if slot == nil { return true }
-    if !slot.is_array() || slot.len() != 9 { return false }
+    if !slot.is_array() || (slot.len() != 9 && slot.len() != 10) { return false }
+    if slot.len() == 10 && !cue_sent_meta_valid(slot[9], slot[0]) { return false }
     for i in [0, 2, 3, 4, 5, 6, 7] { if !slot[i].is_string() { return false } }
     if slot[0].len() > 8000 || slot[3].len() > 8000 || slot[4].len() > 1024 { return false }
     if slot[5].len() > 256 || slot[6].len() > 1024 || slot[7].len() > 1000 { return false }
@@ -2597,8 +3635,10 @@ fn cue_room_record(){
     [cue_room_id, nil, nil, nil]
 }
 fn cue_capture_slot(){
-    [ui.cue_draft.text(), cue_editor_revision, cue_editor_origin, cue_editor_base,
+    let slot = [ui.cue_draft.text(), cue_editor_revision, cue_editor_origin, cue_editor_base,
      cue_editor_refs, cue_editor_snapshot, cue_editor_goal, cue_editor_trial, cue_editor_time]
+    if cue_editor_sent != nil && cue_sent_meta_valid(cue_editor_sent, ui.cue_draft.text()) { slot.push(cue_editor_sent.to_json().parse_json()) }
+    slot
 }
 fn cue_save_slot(slot){
     if slot < 0 || slot > 2 || !cue_editor_current() { return false }
@@ -2615,7 +3655,7 @@ fn cue_save_slot(slot){
     next[2][index][slot + 1] = cue_capture_slot()
     next[1] += 1
     if !cue_store_write(next) { return false }
-    cue_set_status("当前房间草稿已保存并逐字回读。未发送消息。")
+    cue_set_status("草稿已保存在本机；本次保存不会发送消息。")
     true
 }
 fn cue_restore_slot(slot){
@@ -2623,10 +3663,20 @@ fn cue_restore_slot(slot){
     let record = cue_room_record()[slot + 1]
     if record == nil { cue_set_status("当前房间的这个草稿槽还没有内容。") return }
     cue_set_editor(record[0], record[2], record[3], record[4], record[5], record[6], record[7], record[8])
-    cue_set_status("已取回本房间草稿；旧来源需重新载入核对。")
+    if record.len() == 10 { cue_editor_sent = record[9].to_json().parse_json() cue_sync_workspace() }
+    cue_set_status("已取回这个群的草稿。")
 }
 fn cue_activate_room(id, restore){
     if id == cue_room_id && cue_editor_room == id { return }
+    cue_room_epoch += 1
+    cue_io_epoch += 1
+    cue_io_busy = false
+    cue_own_id = ""
+    cue_own_epoch = -1
+    cue_source_window = nil
+    cue_route_window = nil
+    cue_refine_window = nil
+    cue_fresh_reset()
     cue_room_id = id
     cue_consent_key = ""
     cue_set_editor("", "manual", "", "", "", "", "", 0.0)
@@ -2784,6 +3834,10 @@ let CuePrimary = CueButton{
     draw_bg +: {color: cue_green color_hover: cue_green color_down: #x0b5536 color_focus: cue_green}
     draw_text +: {color: #xffffff color_hover: #ffffff color_down: #ffffff color_focus: #xffffff}
 }
+let CueDisabled = CueButton{
+    draw_bg +: {color: #xe5e5e5 color_hover: #xe5e5e5 color_down: #xe5e5e5 color_focus: #xe5e5e5}
+    draw_text +: {color: #x888888 color_hover: #x888888 color_down: #x888888 color_focus: #x888888}
+}
 let CueLink = CueButton{
     padding: Inset{left: 6 right: 6}
     draw_bg +: {color: #xffffff color_hover: #xe5eee7 color_down: #xd7e7db color_focus: #ffffff}
@@ -2839,14 +3893,14 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
                                 CueButton{text: "留在当前房间" on_click: || {cue_switch_target = "" cue_sync_workspace()}}
                             }
                         }
-                        CueText{text: "允许后，每次点击试映/修订将发送当时台词、目标、原稿和要求；仅限当前房间和勾选范围，关闭或撤回后失效。宿主可能保留历史。" draw_text.color: cue_muted draw_text.text_style.font_size: 10}
+                        CueText{text: "允许后，点试映或修订时会把台词、目标和勾选的消息发给助手。改了勾选、撤回或关闭应用后，要重新允许。" draw_text.color: cue_muted draw_text.text_style.font_size: 10}
                         CueLink{text: "查看数据与宿主边界" on_click: || cue_toggle_privacy()}
                         if cue_privacy_open {
-                            CueText{text: "生成含台词/目标，修订另含原稿和要求。发送者标签省略，正文仍可能识别人。宿主可能保留此前历史和提供工具；取消勾选/停止/本地删除不清除宿主历史。应用不申请或调用Matrix发送。" draw_text.color: cue_muted draw_text.text_style.font_size: 10}
+                            CueText{text: "发给助手的是你的台词、目标和勾选消息的正文，不带发送者名字。修订时还会发草稿和修改要求。助手由宿主提供，宿主可能保留对话记录；在这里删草稿，删不掉那边的记录。只有你核对房间、账号和完整正文后明确确认，OnCue 才会请求发送。发送后只回读最近30条，不能保证立即看到结果。" draw_text.color: cue_muted draw_text.text_style.font_size: 10}
                         }
                         if !cue_demo {
                             if cue_consent_key == cue_model_consent_key() {
-                                CueButton{text: "当前范围持续允许 · 撤回后续请求" on_click: || cue_revoke_model()}
+                                CueButton{text: "已允许 · 点这里撤回" on_click: || cue_revoke_model()}
                             } else {
                                 CueButton{text: "允许当前范围内的试映与修订" on_click: || cue_grant_model()}
                             }
@@ -2861,14 +3915,19 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
             result_panel := View{width: Fill height: Fit flow: Down spacing: 4
                 CueCard{
                     cue_overview := View{width: Fill height: Fit flow: Down spacing: 5 on_render: || {
-                        if cue_routes.len() == 0 { CueText{text: "先试映，三种建议会直接呈现在这里；不用播放完再选句。" draw_text.color: cue_muted draw_text.text_style.font_size: 11} }
+                        if cue_fresh_text != "" {
+                            CueText{text: cue_fresh_text draw_text.color: #xa03425 draw_text.text_style.font_size: 11}
+                            for row in cue_fresh_rows { CueText{text: row.sender + "：" + row.body draw_text.text_style.font_size: 11} }
+                        }
+                        if cue_routes.len() == 0 { CueText{text: "点「试映下一幕」后，三种说法会出现在这里。" draw_text.color: cue_muted draw_text.text_style.font_size: 11} }
                         for i in cue_routes.len() {
                             let route = cue_routes[i]
                             RoundedView{width: Fill height: Fit flow: Down padding: 6 new_batch: true draw_bg.color: #xf5f7f3
                                 CueText{text: route.title + "：" + route.draft draw_text.text_style.font_size: 12}
                                 CueText{text: "相关原文片段：\n" + cue_refs_excerpt(cue_route_refs(route.body)) draw_text.color: cue_muted draw_text.text_style.font_size: 10}
                                 View{width: Fill height: Fit flow: Right spacing: 3
-                                    CueButton{text: "选用这句" on_click: || cue_choose_route(i)}
+                                    if cue_fresh_state == "stale" || cue_io_busy || cue_send_latch || cue_send_phase == "confirm" { CueDisabled{text: "选用这句"} }
+                                    else { CueButton{text: "选用这句" on_click: || cue_choose_route(i)} }
                                     CueLink{text: "查看假设对白" on_click: || cue_select_preview(i)}
                                 }
                             }
@@ -2884,6 +3943,15 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
                         }
                     }
                     View{width: Fill height: Fit flow: Right{wrap: true} spacing: 2
+                        cue_send_actions := View{width: Fit height: Fit on_render: || {
+                            if !cue_demo {
+                                if cue_send_current_observed() { CueDisabled{text: "已发送"} }
+                                else {
+                                    if cue_io_busy || cue_send_latch || cue_send_phase == "confirm" { CueDisabled{text: "发到群里"} }
+                                    else { CueButton{text: "发到群里" on_click: || cue_send_prepare()} }
+                                }
+                            }
+                        }}
                         CueButton{text: "保留这句" on_click: || cue_keep_draft()}
                         CueLink{text: "取回草稿" padding: Inset{left: 4 right: 4} on_click: || cue_restore_draft()}
                         CueButton{text: "存 A" on_click: || cue_keep_take(0)}
@@ -2905,13 +3973,13 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
                             CueText{text: "前：" + before draw_text.color: cue_muted draw_text.text_style.font_size: 11}
                             CueText{text: "后：" + after draw_text.text_style.font_size: 12}
                         }
-                        let label = "人工编辑，未作完整事实校验"
+                        let label = "你改过这句，应用没有再检查"
                         if cue_editor_origin == "model" { label = "助手候选，仅经格式/引用/数字/承诺规则检查" }
                         if cue_editor_origin == "demo" { label = "本地虚构样例" }
                         if cue_editor_origin == "legacy" { label = "旧版未分组草稿的手动复制" }
                         if cue_compare_mode == 0 {
                             CueText{text: label + " · 文本版本 " + cue_editor_revision draw_text.color: cue_muted draw_text.text_style.font_size: 10}
-                            if cue_editor_snapshot != "" { CueText{text: "来源快照：" + cue_editor_snapshot + "；重新载入后须复核，旧稿不会自动更新。" draw_text.color: cue_muted draw_text.text_style.font_size: 10} }
+                            if cue_editor_snapshot != "" { CueText{text: "这份草稿基于上次载入的消息。群里有新消息的话，重新载入再看一遍。" draw_text.color: cue_muted draw_text.text_style.font_size: 10} }
                         } else { CueText{text: "A/B为本房间已保存文本；取回后再核对各自来源。" draw_text.color: cue_muted draw_text.text_style.font_size: 10} }
                     }}
                     cue_refine_input := TextInput{width: Fill height: 48 is_multiline: true empty_text: "修改要求，例如更短但保留拒绝" on_change: |text| cue_edit_refine(text)
@@ -2926,8 +3994,43 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
                             CueText{text: cue_pending_note draw_text.color: cue_muted draw_text.text_style.font_size: 11}
                             CueText{text: "依据原文片段：\n" + cue_refs_excerpt(cue_refine_refs) draw_text.color: cue_muted draw_text.text_style.font_size: 10}
                             View{width: Fill height: Fit flow: Right spacing: 4
-                                CuePrimary{text: "应用修订" on_click: || cue_apply_refinement()}
+                                if cue_fresh_state == "stale" || cue_io_busy || cue_send_latch || cue_send_phase == "confirm" { CueDisabled{text: "应用修订"} }
+                                else { CuePrimary{text: "应用修订" on_click: || cue_apply_refinement()} }
                                 CueButton{text: "不采用" on_click: || {cue_cancel_candidate() cue_sync_workspace()}}
+                            }
+                        }
+                    }}
+                    cue_send_panel := View{width: Fill height: Fit flow: Down spacing: 3 on_render: || {
+                        if cue_send_text != "" { CueText{text: cue_send_text draw_text.text_style.font_size: 11} }
+                        if cue_send_confirmation != nil {
+                            let confirmation = cue_send_confirmation
+                            CueText{text: "将发到：" + cue_scene draw_text.text_style.font_size: 12}
+                            CueLink{text: "核对房间与账号" on_click: || {cue_send_evidence_open = !cue_send_evidence_open cue_sync_workspace()}}
+                            if cue_send_evidence_open { CueText{text: "房间ID：" + confirmation.binding.room + "\n账号：" + confirmation.own + "（宿主提供）" draw_text.text_style.font_size: 10} }
+                            for row in confirmation.rows { CueText{text: "新增/变化：" + row.sender + "：" + row.body draw_text.color: #xa03425 draw_text.text_style.font_size: 11} }
+                            CueText{text: "完整发送正文（" + confirmation.body.to_chars().len() + " / 4096 码点）：\n" + confirmation.body}
+                            CueText{text: "原样发送，不改草稿；不会自动保存。最近消息读取可能缓存，不能保证此后没有新消息。" draw_text.color: cue_muted draw_text.text_style.font_size: 10}
+                            if confirmation.body.to_chars().len() > 500 { CueText{text: "宿主最多回读正文前500字，无法核对这之后是否还有正文。" draw_text.color: #xa03425 draw_text.text_style.font_size: 11} }
+                            if confirmation.resend_of >= 0 { CueText{text: "这是另一次发送；上次请求仍可能成功，可能重复。" draw_text.color: #xa03425} }
+                            View{width: Fill height: Fit flow: Right spacing: 4
+                                if cue_io_busy || cue_send_latch { CueDisabled{text: "确认发送"} }
+                                else { CuePrimary{text: "确认发送" on_click: || cue_send_confirm_now()} }
+                                CueButton{text: "返回修改" on_click: || cue_send_cancel()}
+                            }
+                        }
+                        if cue_send_phase == "unknown" || cue_send_phase == "readback" {
+                            if cue_io_busy || cue_send_latch { CueDisabled{text: "重新读取确认"} }
+                            else { CueButton{text: "重新读取确认" on_click: || cue_send_reread()} }
+                            if cue_send_allow_resend && !cue_send_latch && !cue_io_busy { CueButton{text: "我已核对，仍要再次发送（可能重复）" on_click: || cue_send_resend()} }
+                        }
+                        if cue_send_active >= 0 {
+                            CueLink{text: "查看本次打开的发送核对记录" on_click: || {cue_send_evidence_open = !cue_send_evidence_open cue_sync_workspace()}}
+                            if cue_send_evidence_open {
+                                for attempt in cue_send_history {
+                                    CueText{text: "请求 " + (attempt.id + 1) + " · " + attempt.state + " · " + attempt.room + "\n账号：" + attempt.own + "\n原始正文：" + attempt.body draw_text.text_style.font_size: 10}
+                                    if attempt.receipt != nil { CueText{text: "回读事件：" + attempt.receipt.event_id + " · " + attempt.receipt.kind draw_text.text_style.font_size: 10} }
+                                }
+                                CueText{text: "回读仅作账号/正文关联核对，不能区分另一个客户端同时发出的同文。仅点保留/存A/B才把当前草稿的记录存本机。" draw_text.color: cue_muted draw_text.text_style.font_size: 10}
                             }
                         }
                     }}
@@ -2970,7 +4073,10 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
                         CueButton{text: "B 换问法" on_click: || cue_select_preview(1)}
                         CueButton{text: "C 换玩法" on_click: || cue_select_preview(2)}
                         Label{text: "" width: Fill}
-                        CueButton{text: "用这句" on_click: || cue_choose_route(cue_play_index)}
+                        cue_route_use := View{width: Fit height: Fit on_render: || {
+                            if cue_fresh_state == "stale" || cue_io_busy || cue_send_latch || cue_send_phase == "confirm" { CueDisabled{text: "用这句"} }
+                            else { CueButton{text: "用这句" on_click: || cue_choose_route(cue_play_index)} }
+                        }}
                     }
                     header := View{width: Fill height: Fit flow: Right spacing: 6 align: Align{y: 0.5} on_render: || {
                     if cue_read_mode == 1 {
@@ -3071,6 +4177,6 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
                     }}
                     CueText{text: "浅绿是助手选出的关联，不是事实支持已核验。" draw_text.color: cue_muted draw_text.text_style.font_size: 11}
                 }
-        CueText{text: "三种说法是助手的假设。应用不会替你发送任何消息。" draw_text.color: cue_muted draw_text.text_style.font_size: 10}
+        CueText{text: "三种说法是助手的假设。采用前重新核对消息；发送须另行确认，不会自动发送或重试。" draw_text.color: cue_muted draw_text.text_style.font_size: 10}
     }
 }

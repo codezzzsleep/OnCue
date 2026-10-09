@@ -1,0 +1,23 @@
+{
+  "agent": null,
+  "capabilities": [
+    "storage"
+  ],
+  "compute": {
+    "instruction_budget": 8000000,
+    "memory_bytes": 33554432
+  },
+  "id": "oncue-probe-send2",
+  "integrity": {
+    "bundle_blake3": "1e0c692034f741a4797ebec33b4f278a8a9771af712f9520478f4588165973bb"
+  },
+  "name": "OnCue controlled send2 probe",
+  "network": {
+    "hosts": []
+  },
+  "schema": 1,
+  "storage": {
+    "max_bytes": 4194304
+  },
+  "version": "0.5.2"
+}
