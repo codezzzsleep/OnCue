@@ -750,8 +750,8 @@ fn cue_fresh_check(snapshot, ready){
         }
         cue_fresh_state = "checked"
         cue_fresh_text = "本次读取未见新增消息；读取后仍可能有变化。"
+        // ready() reports its own outcome status; do not clobber it with the note.
         ready()
-        cue_set_status(cue_fresh_text)
         cue_sync_workspace()
     })
 }
@@ -2340,7 +2340,7 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
                             View{width: Fill height: Fit flow: Right spacing: 4
                                 if cue_io_busy || cue_send_latch { CueDisabled{text: "确认发送"} }
                                 else { CuePrimary{text: "确认发送" on_click: || cue_send_confirm_now()} }
-                                CueButton{text: "取消" on_click: || cue_send_cancel()}
+                                CueButton{text: "返回修改" on_click: || cue_send_cancel()}
                             }
                         }
                         if cue_send_phase == "unknown" || cue_send_phase == "readback" {
