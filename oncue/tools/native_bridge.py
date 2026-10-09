@@ -224,6 +224,25 @@ class Bridge:
                 self._scroll_viewport(viewport, 150)
         raise ValueError('Cannot reveal a unique widget fully inside app_scroll viewport')
 
+    def click_app_visible(self, text=None, id=None, *, ty=None):
+        """Click only a currently exposed app control, without scrolling or retries.
+
+        Playback pause checks must not spend the remaining route duration walking
+        back down the page. Refuse stale, clipped, duplicate or covered controls;
+        use the same fresh snapshot for the target and its viewport.
+        """
+        rows = self.snap()
+        matches = self._targets(rows, text=text, id=id, ty=ty)
+        if len(matches) != 1:
+            raise ValueError(f'Expected unique visible widget, found {len(matches)}')
+        row = matches[0]
+        x, y, w, h = row['r']
+        vx, vy, vw, vh = self._viewport(rows)
+        if not (vx <= x and x + w <= vx + vw and vy <= y and y + h <= vy + vh):
+            raise ValueError('Control is not fully inside app_scroll; no timed input was sent')
+        self._uncovered(rows, row)
+        return self._click_row(row)
+
     def click_app(self, text=None, id=None, *, ty=None):
         # Click the exact row verified by reveal: do NOT take another snapshot or
         # repeat an unscoped text/id search that might select a different widget.
