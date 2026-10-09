@@ -1,0 +1,7 @@
+{
+  "opened_local": "2026-10-10T04:04:54+0800",
+  "observed_local": "2026-10-10T05:08+08",
+  "elapsed_min": 65.1,
+  "result": "Rinx pump在租赁过期后停止小程序会话，界面显示\"Session ended. Review and run again.\"（导入表单）。应用内\"授权已过期\"文案由界面场景04a与envelope注入测试覆盖；真实机过期表现为会话被宿主结束。",
+  "source_sha256": "5d6db93e931040d10eb926c96a3d47d27f1da8ecee8e2e30af9818cac52c9b8d"
+}

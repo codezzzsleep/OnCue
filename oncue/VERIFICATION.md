@@ -81,9 +81,12 @@ done
 
 **Palpo 房间密钥备份对无密钥房间返回 404，导致任何邀请失败。** Rinx `src/sliding_sync.rs:147` 开启"邀请时分享历史"，matrix-sdk `6892cb2` 的 `share_room_history`（`crates/matrix-sdk/src/room/shared_room_history.rs`）在邀请前先从**邀请人自己的备份**下载该房间密钥（`GET /room_keys/keys/{roomId}`），且不检查房间是否加密。Palpo（`crates/server/src/routing/client/room_key.rs:96`）对没有备份密钥的房间返回 `404 M_NOT_FOUND`，而 Matrix 规范要求返回 `200` 和 `{"sessions": {}}`。因此主账号（已开密钥备份）在新房间邀请任何人都会失败，不加密房间同样失败；第二账号未开备份时由其发起邀请则不会触发该查询。最小复现：开密钥备份的账号创建任意房间（可不加密），邀请任意用户 → 邀请接口报 `404 M_NOT_FOUND Backup key not found for this user's room`。是否向 Palpo 提 issue 由作者决定。
 
+## 授权到期实测（61 分钟）
+
+真实 Rinx、最终源码（`5d6db93e…`）实测：04:04:54+08 打开应用并载入房间，05:08+08（约 65 分钟）观察——Rinx 在租赁过期后由 `pump()` 检查（`src/miniapps/ui.rs:569-584`）停止了小程序会话，界面显示 "Session ended. Review and run again." 并回到导入表单；截图在 `evidence/native-052/session-ended.png`。即**真实宿主到期表现为会话被结束**，应用内的"授权已过期"中文文案（含撤销允许、保留草稿）由界面场景 `04a` 与 envelope 注入测试确定性覆盖。
+
 ## 未验证
 
-- 61 分钟授权过期实测（Rinx 授权一小时收回）：需真实等待，未执行。
 - 跨账号"群里有新消息"实机演示：由界面场景 `13`/`15`/`21` 注入覆盖；真人第二账号演示待作者在场时进行。
 - 最终源码上的真实发送（当前发送证据对应更早源码）。
 - macOS、Windows、移动端；商店安装路径；并发写入与断电一致性。
