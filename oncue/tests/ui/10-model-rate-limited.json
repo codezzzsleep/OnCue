@@ -1,0 +1,35 @@
+{
+  "name": "S11 模型限流（429）：说明是限流、稍后再试，不显示英文原文",
+  "use": "_room.json",
+  "host": {
+    "octos.turn.start": {
+      "error": "provider returned 429 Too Many Requests: rate limit exceeded"
+    }
+  },
+  "steps": [
+    {
+      "run": "_load.json"
+    },
+    {
+      "run": "_allow.json"
+    },
+    {
+      "scroll_to": "试映下一幕"
+    },
+    {
+      "click": "试映下一幕"
+    },
+    {
+      "wait": {
+        "text": [
+          "限流"
+        ],
+        "absent": [
+          "Too Many Requests",
+          "没有读到群聊"
+        ]
+      },
+      "timeout": 5
+    }
+  ]
+}

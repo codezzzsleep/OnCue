@@ -1,0 +1,75 @@
+{
+  "name": "S2 样例试映：本地出三条说法，不调用任何宿主服务，选用后进草稿",
+  "sizes": [
+    "412x892",
+    "954x448"
+  ],
+  "steps": [
+    {
+      "click": "试映下一幕"
+    },
+    {
+      "wait": {
+        "text": [
+          "样例的三种说法已显示。"
+        ]
+      }
+    },
+    {
+      "scroll_to": [
+        {
+          "contains": "顺着这句："
+        },
+        {
+          "text": "选用这句",
+          "after": {
+            "contains": "顺着这句："
+          }
+        }
+      ]
+    },
+    {
+      "click": {
+        "text": "选用这句",
+        "after": {
+          "contains": "顺着这句："
+        }
+      }
+    },
+    {
+      "wait": {
+        "text": [
+          "已放进草稿框"
+        ]
+      }
+    },
+    {
+      "scroll_to": {
+        "id": "cue_draft"
+      }
+    },
+    {
+      "expect": {
+        "count": [
+          {
+            "of": {
+              "id": "cue_draft",
+              "contains": "先按 12 点后出发、当天回来讨论。"
+            },
+            "n": 1
+          }
+        ],
+        "calls": [
+          {
+            "service": "octos.session.open",
+            "count": 0
+          },
+          {
+            "service": "matrix.read_messages",
+            "count": 0
+          }
+        ]
+      }
+    }
+  ]
+}

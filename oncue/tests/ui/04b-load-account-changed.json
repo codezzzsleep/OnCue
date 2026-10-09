@@ -1,0 +1,25 @@
+{
+  "name": "S11 载入群聊时 matrix.room_info 报「Mini-app account changed」：显示中文，不显示原文",
+  "use": "_room.json",
+  "host": {
+    "matrix.room_info": {
+      "error": "Mini-app account changed"
+    }
+  },
+  "steps": [
+    {
+      "click": "载入群聊"
+    },
+    {
+      "wait": {
+        "text": [
+          "账号已经切换。请用当前账号重新打开 OnCue。"
+        ],
+        "absent": [
+          "Mini-app account changed"
+        ]
+      },
+      "timeout": 5
+    }
+  ]
+}

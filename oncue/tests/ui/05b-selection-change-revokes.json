@@ -1,0 +1,66 @@
+{
+  "name": "A3 改勾选就撤销允许，之后试映不调用助手",
+  "use": "_room.json",
+  "steps": [
+    {
+      "run": "_load.json"
+    },
+    {
+      "run": "_allow.json"
+    },
+    {
+      "scroll_to": "展开/收起参考消息"
+    },
+    {
+      "click": "展开/收起参考消息"
+    },
+    {
+      "scroll_to": "☑ #1"
+    },
+    {
+      "click": "☑ #1"
+    },
+    {
+      "wait": {
+        "text": [
+          "勾选的消息变了，要再点一次「允许」才会发给助手。",
+          "□ #1"
+        ]
+      }
+    },
+    {
+      "scroll_to": "允许当前范围内的试映与修订"
+    },
+    {
+      "expect": {
+        "absent": [
+          "已允许 · 点这里撤回"
+        ]
+      }
+    },
+    {
+      "scroll_to": "试映下一幕"
+    },
+    {
+      "click": "试映下一幕"
+    },
+    {
+      "wait": {
+        "text": [
+          "先看一下勾选的消息"
+        ]
+      }
+    },
+    {
+      "expect": {
+        "calls": [
+          {
+            "service": "octos.session.open",
+            "count": 0
+          }
+        ]
+      },
+      "timeout": 1
+    }
+  ]
+}

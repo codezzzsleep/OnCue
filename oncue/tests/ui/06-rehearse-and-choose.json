@@ -1,0 +1,90 @@
+{
+  "name": "S6/A6 允许后试映：三条说法带依据原文；发给助手的只有正文不带发送者；选用前重读一次，没变化就进草稿",
+  "use": "_room.json",
+  "sizes": [
+    "412x892",
+    "954x448"
+  ],
+  "steps": [
+    {
+      "run": "_load.json"
+    },
+    {
+      "run": "_rehearse.json"
+    },
+    {
+      "expect": {
+        "calls": [
+          {
+            "service": "octos.turn.start",
+            "count": 1,
+            "contains": "我中午 12 点以后才能走。"
+          },
+          {
+            "service": "octos.turn.start",
+            "excludes": "ayou"
+          },
+          {
+            "service": "octos.turn.start",
+            "excludes": "@qixi"
+          }
+        ]
+      }
+    },
+    {
+      "scroll_to": [
+        "顺着这句：那就中午以后出发、当天回来，大家看行吗？",
+        {
+          "contains": "#2 我中午 12 点以后才能走。"
+        },
+        "换个问法：预算 300 左右包括车票吗？",
+        "换个玩法：要不先定杭州，再一起看时间？",
+        {
+          "text": "选用这句",
+          "after": {
+            "contains": "顺着这句："
+          }
+        }
+      ]
+    },
+    {
+      "click": {
+        "text": "选用这句",
+        "after": {
+          "contains": "顺着这句："
+        }
+      }
+    },
+    {
+      "wait": {
+        "text": [
+          "已放进草稿框，可以继续修改；尚未保存或发送。"
+        ],
+        "calls": [
+          {
+            "service": "matrix.read_messages",
+            "count": 2
+          }
+        ]
+      }
+    },
+    {
+      "scroll_to": {
+        "id": "cue_draft"
+      }
+    },
+    {
+      "expect": {
+        "count": [
+          {
+            "of": {
+              "id": "cue_draft",
+              "contains": "那就中午以后出发、当天回来，大家看行吗？"
+            },
+            "n": 1
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1213,6 +1213,10 @@ fn probe_auth_case(index){
     ]
     if index >= cases.len() { probe_finish() return }
     let item = cases[index]
+    // The model path names its own service: an assistant-side "no service
+    // answers" is reported as an assistant problem, not a chat-read problem.
+    let model_text = item[1]
+    if index == 5 { model_text = "这个宿主现在没有可用的助手。可以先手写草稿；在 Rinx 设置里打开助手后再试。" }
     probe_reset("auth-room")
     probe_manual("已保存的草稿")
     cue_keep_draft()
@@ -1228,7 +1232,7 @@ fn probe_auth_case(index){
     probe_manual("试映期间未保存的编辑")
     cue_rehearse()
     probe_deliver(0, {is_ok: false, data: {}, error: item[0]})
-    probe_assert("envelope.auth_model_" + index, ui.cue_status.text() == item[1] && ui.cue_draft.text() == "试映期间未保存的编辑" && fs.read("rehearsals-v1.json") == disk && (!item[2] || cue_consent_key == ""), {status: ui.cue_status.text()})
+    probe_assert("envelope.auth_model_" + index, ui.cue_status.text() == model_text && ui.cue_draft.text() == "试映期间未保存的编辑" && fs.read("rehearsals-v1.json") == disk && (!item[2] || cue_consent_key == ""), {status: ui.cue_status.text()})
     start_timeout(0.01, fn(){ probe_auth_case(index + 1) })
 }
 

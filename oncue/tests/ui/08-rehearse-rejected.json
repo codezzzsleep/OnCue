@@ -1,0 +1,46 @@
+{
+  "name": "A4 助手两次都不合格：说明未采用，不再重试",
+  "use": "_room.json",
+  "host": {
+    "octos.turn.start": {
+      "data": {
+        "turn_id": "t1",
+        "text": "好的，我想了三种说法：一是中午走，二是当天回，三是先定杭州。"
+      }
+    }
+  },
+  "steps": [
+    {
+      "run": "_load.json"
+    },
+    {
+      "run": "_allow.json"
+    },
+    {
+      "scroll_to": "试映下一幕"
+    },
+    {
+      "click": "试映下一幕"
+    },
+    {
+      "wait": {
+        "text": [
+          "助手候选未采用",
+          "已用完一次修复"
+        ]
+      },
+      "timeout": 5
+    },
+    {
+      "expect": {
+        "calls": [
+          {
+            "service": "octos.turn.start",
+            "count": 2
+          }
+        ]
+      },
+      "timeout": 1
+    }
+  ]
+}

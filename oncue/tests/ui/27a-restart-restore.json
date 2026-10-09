@@ -1,0 +1,61 @@
+{
+  "name": "A13 重新打开后载入同一房间：恢复主稿，A 可以取回",
+  "use": "_room.json",
+  "storage": {
+    "rehearsals-v1.json": "[1,4,[[\"!trip:example.org\",[\"上次存的：中午以后出发。\",2,\"manual\",\"\",\"\",\"\",\"\",\"\",0],[\"版本A：当天回来。\",1,\"manual\",\"\",\"\",\"\",\"\",\"\",0],null]]]"
+  },
+  "steps": [
+    {
+      "run": "_load.json"
+    },
+    {
+      "scroll_to": {
+        "id": "cue_draft"
+      }
+    },
+    {
+      "expect": {
+        "count": [
+          {
+            "of": {
+              "id": "cue_draft",
+              "contains": "上次存的：中午以后出发。"
+            },
+            "n": 1
+          }
+        ]
+      }
+    },
+    {
+      "scroll_to": "取 A"
+    },
+    {
+      "click": "取 A"
+    },
+    {
+      "wait": {
+        "text": [
+          "已取回这个群的草稿。"
+        ]
+      }
+    },
+    {
+      "scroll_to": {
+        "id": "cue_draft"
+      }
+    },
+    {
+      "expect": {
+        "count": [
+          {
+            "of": {
+              "id": "cue_draft",
+              "contains": "版本A：当天回来。"
+            },
+            "n": 1
+          }
+        ]
+      }
+    }
+  ]
+}

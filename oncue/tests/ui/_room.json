@@ -1,0 +1,78 @@
+{
+  "sizes": [
+    "412x892"
+  ],
+  "host": {
+    "matrix.room_info": {
+      "data": {
+        "room_id": "!trip:example.org",
+        "room_name": "周末出游群"
+      }
+    },
+    "matrix.account_info": {
+      "data": {
+        "user_id": "@me:example.org",
+        "display_name": "我",
+        "has_avatar": false,
+        "ignored": false
+      }
+    },
+    "matrix.read_messages": {
+      "data": {
+        "messages": [
+          {
+            "sender": "xiaolin",
+            "sender_id": "@xiaolin:example.org",
+            "event_id": "$e1",
+            "body": "国庆找一天去杭州？",
+            "ts": 1759800000000,
+            "msgtype": "m.text",
+            "room_id": "!trip:example.org",
+            "unread": false
+          },
+          {
+            "sender": "ayou",
+            "sender_id": "@ayou:example.org",
+            "event_id": "$e2",
+            "body": "我中午 12 点以后才能走。",
+            "ts": 1759800060000,
+            "msgtype": "m.text",
+            "room_id": "!trip:example.org",
+            "unread": false
+          },
+          {
+            "sender": "qixi",
+            "sender_id": "@qixi:example.org",
+            "event_id": "$e3",
+            "body": "我想当天回来，预算 300 左右。",
+            "ts": 1759800120000,
+            "msgtype": "m.text",
+            "room_id": "!trip:example.org",
+            "unread": false
+          }
+        ],
+        "has_more": false
+      }
+    },
+    "octos.session.open": {
+      "data": {
+        "open": true,
+        "model": {
+          "lane": "primary"
+        }
+      }
+    },
+    "octos.turn.start": {
+      "data": {
+        "turn_id": "turn-1",
+        "text": "【摘要】\n#2\n#3\n【A对白】\n虚构回应甲：中午以后出发我可以。\n虚构回应乙：当天回来要看车次。\n依据：#2、#3\n待确认：是否都能当天回来？\n【A建议】\n那就中午以后出发、当天回来，大家看行吗？\n【B对白】\n虚构回应甲：预算想先说清楚。\n虚构回应乙：车票算不算在里面？\n依据：#3\n待确认：是否包含车票？\n【B建议】\n预算 300 左右包括车票吗？\n【C对白】\n虚构回应甲：先定地方再说时间。\n虚构回应乙：杭州可以考虑。\n依据：#1\n待确认：是否先定杭州？\n【C建议】\n要不先定杭州，再一起看时间？"
+      }
+    },
+    "matrix.send_message": {
+      "data": {}
+    },
+    "octos.turn.interrupt": {
+      "data": {}
+    }
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "name": "A10 确认区点返回修改：不发送，草稿不变",
+  "use": "_room.json",
+  "steps": [
+    {
+      "run": "_load.json"
+    },
+    {
+      "run": "_confirm.json"
+    },
+    {
+      "scroll_to": "返回修改"
+    },
+    {
+      "click": "返回修改"
+    },
+    {
+      "wait": {
+        "text": [
+          "已取消本次确认，尚未调用新的发送。"
+        ],
+        "absent": [
+          "确认发送"
+        ]
+      }
+    },
+    {
+      "scroll_to": {
+        "id": "cue_draft"
+      }
+    },
+    {
+      "expect": {
+        "count": [
+          {
+            "of": {
+              "id": "cue_draft",
+              "contains": "我中午以后可以出发。"
+            },
+            "n": 1
+          }
+        ],
+        "calls": [
+          {
+            "service": "matrix.send_message",
+            "count": 0
+          }
+        ]
+      }
+    }
+  ]
+}
