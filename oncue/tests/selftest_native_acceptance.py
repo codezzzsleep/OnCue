@@ -362,7 +362,7 @@ class NativeAcceptanceTests(unittest.TestCase):
     def test_turn_success_is_exact_and_failure_contracts_current(self):
         self.assertEqual(native.turn_state(native.SUCCESS), "success")
         self.assertEqual(native.turn_state(native.SUCCESS + " stale suffix"), "unknown")
-        for status in ("先核对勾选内容，在数据范围卡中允许本次模型请求。",
+        for status in ("先看一下勾选的消息，再点「允许当前范围内的试映与修订」。",
                        "请求超过宿主32 KiB限制，请减少参考消息或输入。",
                        "助手候选未采用：数字。已用完一次修复。"):
             self.assertEqual(native.turn_state(status), "failure")

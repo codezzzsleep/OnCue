@@ -1043,6 +1043,31 @@ fn probe_grounding_mask(){
     cue_sources = []
     probe_assert("grounding.empty_source_bounds", cue_source_excerpt("#1") == "" && !cue_references_valid("#1") && cue_references_valid("没有引用") && cue_numbers_grounded("77元") && !cue_numbers_grounded("500"), {source_count: cue_sources.len(), trial_is_still_allowed: true})
     probe_assert("grounding.no_host_calls", probe_requests.len() == 0 && probe_unexpected == 0, {calls: probe_requests.len()})
+    start_timeout(0.01, fn(){ probe_grounding_052() })
+}
+fn probe_grounding_052(){
+    let basis = "中午之后再讨论，预算300左右。先确认安排。"
+    probe_assert("grounding.052.reject_half_day", !cue_numbers_in("半天", basis), {})
+    probe_assert("grounding.052.reject_three_days", !cue_numbers_in("三天", basis), {})
+    probe_assert("grounding.052.reject_two_nights", !cue_numbers_in("两晚", basis), {})
+    probe_assert("grounding.052.reject_two_people", !cue_numbers_in("两个人", basis), {})
+    probe_assert("grounding.052.reject_twelve_oclock", !cue_numbers_in("十二点", basis), {})
+    probe_assert("grounding.052.reject_two_oclock", !cue_numbers_in("两点", basis), {})
+    probe_assert("grounding.052.reject_ten_minutes", !cue_numbers_in("十分钟", basis), {})
+    probe_assert("grounding.052.reject_digits_oclock", !cue_numbers_in("12点", basis), {})
+    probe_assert("grounding.052.allow_little_earlier", cue_numbers_in("早一点出发", basis), {})
+    probe_assert("grounding.052.allow_one_choice", cue_numbers_in("再给大家一个选择", basis), {})
+    probe_assert("grounding.052.allow_confirm_once", cue_numbers_in("我再确认一次", basis), {})
+    probe_assert("grounding.052.allow_apology", cue_numbers_in("十分抱歉", basis), {})
+    probe_assert("grounding.052.allow_two_directions", cue_numbers_in("给两个方向", basis), {})
+    probe_assert("grounding.052.allow_together", cue_numbers_in("我们一起去", basis), {})
+    probe_assert("grounding.052.reject_people_commitment", !cue_numbers_in("三个人都已经同意了", basis) || cue_has_commitment_claim("三个人都已经同意了"), {})
+    probe_assert("grounding.052.reject_nights_commitment", !cue_numbers_in("已经订好两晚", basis) || cue_has_commitment_claim("已经订好两晚"), {})
+    probe_assert("grounding.052.original_quantity", cue_numbers_in("住一晚", basis + "住一晚"), {})
+    probe_assert("grounding.052.half_units", cue_numeric_tokens("半天 半小时 半日 一个半小时").to_json() == "[\"半天\",\"半小时\",\"半日\",\"半小时\"]", {})
+    probe_assert("grounding.052.qualified_classifier", cue_numeric_tokens("两个人 一个小时 一个晚 两个月 一个星期").to_json() == "[\"两个人\",\"一个小时\",\"一个晚\",\"两个月\",\"一个星期\"]", {})
+    probe_assert("grounding.052.vague_ignored", cue_numeric_tokens("一个 两个 一次 两次 一点 十分 百分").len() == 0, {})
+    probe_assert("grounding.052.minutes_kept", cue_numeric_tokens("十分钟 百分钟").to_json() == "[\"十分钟\",\"百分钟\"]", {})
     probe_finish()
 }
 
@@ -1119,7 +1144,36 @@ fn probe_envelope_switch(){
     cue_confirm_switch()
     probe_assert("envelope.dirty_switch_requires_explicit_discard", cue_demo && cue_room_id == "demo" && cue_editor_room == "demo" && ui.cue_draft.text() == "" && cue_switch_target == "" && !cue_discard_once, {})
     probe_assert("envelope.host_allowlist", probe_unexpected == 0, {unexpected: probe_unexpected})
-    probe_finish()
+    start_timeout(0.01, fn(){ probe_auth_case(0) })
+}
+fn probe_auth_case(index){
+    let cases = [
+        ["MiNi-App AUTHORIZATION EXPIRED", "授权已过期。Rinx 打开小程序一小时后，或关闭应用以后，会收回授权。请关闭 OnCue，再从小程序列表重新打开。草稿已经保存的不受影响。", true],
+        ["Mini-app ACCOUNT CHANGED", "账号已经切换。请用当前账号重新打开 OnCue。", true],
+        ["Not logged in", "Rinx 没有登录。请先登录，再打开 OnCue。", true],
+        ["Mini app was not granted access to this room", "宿主没有授权读取这个房间。", false],
+        ["not attached to a room", "这次打开没有选房间。请关闭应用，导入时填上房间再打开。", false],
+        ["no service answers", "当前宿主不提供群聊服务，请在 Rinx 里打开。", false]
+    ]
+    if index >= cases.len() { probe_finish() return }
+    let item = cases[index]
+    probe_reset("auth-room")
+    probe_manual("已保存的草稿")
+    cue_keep_draft()
+    let disk = fs.read("rehearsals-v1.json")
+    cue_import_room()
+    probe_manual("读取期间未保存的编辑")
+    probe_deliver(0, {is_ok: false, data: {}, error: item[0]})
+    probe_assert("envelope.auth_room_" + index, ui.cue_status.text() == item[1] && ui.cue_draft.text() == "读取期间未保存的编辑" && fs.read("rehearsals-v1.json") == disk && cue_consent_key == "", {status: ui.cue_status.text()})
+    probe_reset("auth-model")
+    probe_manual("已保存的草稿")
+    cue_keep_draft()
+    disk = fs.read("rehearsals-v1.json")
+    probe_manual("试映期间未保存的编辑")
+    cue_rehearse()
+    probe_deliver(0, {is_ok: false, data: {}, error: item[0]})
+    probe_assert("envelope.auth_model_" + index, ui.cue_status.text() == item[1] && ui.cue_draft.text() == "试映期间未保存的编辑" && fs.read("rehearsals-v1.json") == disk && (!item[2] || cue_consent_key == ""), {status: ui.cue_status.text()})
+    start_timeout(0.01, fn(){ probe_auth_case(index + 1) })
 }
 
 fn probe_boot(){

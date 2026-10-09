@@ -27,10 +27,10 @@ from rinx_session import module, resize
 
 APP_ID = "oncue-screening-room"
 DEFAULT_RELEASE = Path(__file__).resolve().parents[1] / "bundle"
-SUCCESS = "三种建议已生成；检查仅覆盖格式/引用/数字/承诺规则，请核对原文后选用。"
+SUCCESS = "三种说法好了。每条下面是它依据的原文，选之前对一下。"
 CONSENT = "允许当前范围内的试映与修订"
-CONSENT_GRANTED = "已允许在当前房间/消息范围内，点击试映或修订时发送当时输入；可随时撤回。"
-SAVE_SUCCESS = "当前房间草稿已保存并逐字回读。未发送消息。"
+CONSENT_GRANTED = "已允许。点试映或修订时，会把台词、目标和勾选的消息发给助手。"
+SAVE_SUCCESS = "草稿已保存在本机，没有发到群里。"
 STORE_FILE = "rehearsals-v1.json"
 LEGACY_FILES = ("draft.txt", "take-a.txt", "take-b.txt")
 SLOT_INDEX = {"draft": 1, "A": 2, "B": 3}
@@ -145,7 +145,9 @@ def turn_state(status):
     if status.startswith(("这次试映没有完成", "助手暂时不可用", "助手候选未采用：",
                           "输入或来源已变化，旧回复未应用", "请求超过宿主32 KiB限制",
                           "已停止等待", "先写一句", "先把台词缩到", "补充条件请缩到",
-                          "请载入并至少勾选一条参考消息", "先核对勾选内容")):
+                          "请载入并至少勾选一条参考消息", "先看一下勾选的消息",
+                          "授权已过期", "账号已经切换", "Rinx 没有登录", "没有读到群聊",
+                          "当前宿主不提供", "宿主没有授权")):
         return "failure"
     if "等待超过 90 秒" in status:
         return "failure"
@@ -160,7 +162,7 @@ def room_state(status):
     if status.startswith(("没有读到群聊", "这次打开没有选房间", "宿主没有授权读取这个房间",
                           "当前宿主不提供群聊服务", "消息读取失败", "这个群聊暂时没有", "已停止等待",
                           "宿主未提供稳定房间ID", "宿主消息格式或大小异常", "当前有未保存编辑",
-                          "读取期间草稿改变，未切换房间")) or "等待超过 90 秒" in status:
+                          "读取期间草稿改变，未切换房间", "授权已过期", "账号已经切换", "Rinx 没有登录")) or "等待超过 90 秒" in status:
         return "failure"
     return "unknown"
 

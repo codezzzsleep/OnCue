@@ -110,13 +110,14 @@ class InfrastructureTests(unittest.TestCase):
         # IDs are reviewed fixture literals, not generated from the harness at run time.
         self.assertEqual(set(self.fixtures["assertion_ids"]), set(generate_probe.SUITES))
         literal = re.findall(r'probe_assert\("((?:parser|pagination|retry|deadline|playback|storage|grounding|envelope)\.[^"\n]+)"', self.harness)
-        literal = [name for name in literal if name != "storage.legacy_explicit_copy_"]
+        literal = [name for name in literal if name not in ("storage.legacy_explicit_copy_", "envelope.auth_room_", "envelope.auth_model_")]
         self.assertEqual(len(literal), len(set(literal)))
         dynamic = {
             "parser": {"parser." + case["id"] for case in self.fixtures["parser"] + self.fixtures["refinement"]},
             "pagination": {"pagination." + case["id"] for case in self.fixtures["pagination"]},
             "grounding": {"grounding." + case["id"] for group in ("excerpts", "tokens", "numbers", "references")
                           for case in self.fixtures["grounding"][group]},
+            "envelope": {"envelope.auth_" + mode + "_" + str(i) for mode in ("room", "model") for i in range(6)},
             "storage": {"storage." + case["id"] for case in self.fixtures["storage"]["invalid_cases"]}
                        | {"storage.legacy_explicit_copy_" + name for name in ("draft", "a", "b")},
         }

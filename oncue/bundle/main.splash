@@ -145,7 +145,7 @@ fn cue_toggle_source(index){
     cue_invalidate()
     cue_consent_key = ""
     cue_sync_workspace()
-    cue_set_status("参考范围已变化；取消勾选不会清除宿主此前收到的内容。")
+    cue_set_status("勾选的消息变了，要再点一次「允许」才会发给助手。")
 }
 fn cue_model_consent_key(){
     [cue_room_id, cue_source_payload()].to_json()
@@ -153,13 +153,13 @@ fn cue_model_consent_key(){
 fn cue_grant_model(){
     cue_consent_key = cue_model_consent_key()
     cue_sync_workspace()
-    cue_set_status("已允许在当前房间/消息范围内，点击试映或修订时发送当时输入；可随时撤回。")
+    cue_set_status("已允许。点试映或修订时，会把台词、目标和勾选的消息发给助手。")
 }
 fn cue_revoke_model(){
     cue_consent_key = ""
     cue_invalidate()
     cue_sync_workspace()
-    cue_set_status("已停止本应用后续模型请求；宿主已有历史不会被清除。")
+    cue_set_status("已撤回，之后不会再发给助手。")
 }
 fn cue_set_editor(text, origin, base, refs, snapshot, goal, trial, created){
     cue_editor_revision += 1
@@ -463,7 +463,7 @@ fn cue_boot_state(){
     cue_refresh_takes()
     if cue_store_ready && cue_room_record()[1] != nil { cue_restore_slot(0) }
     cue_sync_workspace()
-    cue_set_status("样例只在本机运行；旧版草稿须手动打开，不会自动归入群聊。")
+    cue_set_status("现在是样例群聊，消息都是虚构的。点「载入群聊」换成你授权的群。")
 }
 fn cue_edit_trial(text){
     cue_invalidate()
@@ -547,12 +547,22 @@ fn cue_messages_valid(messages){
         true
     } catch { false }
 }
-fn cue_room_error(text){
-    if text.search("not attached to a room") >= 0 { return "这次打开没有选房间。请关闭应用，导入时填上房间再打开。" }
-    if text.search("not granted") >= 0 { return "宿主没有授权读取这个房间。" }
-    if text.search("no service answers") >= 0 { return "当前宿主不提供群聊服务，请在 Rinx 里打开。" }
+fn cue_host_error(text){
+    let chars = "".to_chars()
+    for c in text.to_chars() { if c >= 65 && c <= 90 { c = c + 32 } chars.push(c) }
+    let lower = chars.to_string()
+    if lower.search("authorization expired") >= 0 {
+        cue_consent_key = ""
+        return "授权已过期。Rinx 打开小程序一小时后，或关闭应用以后，会收回授权。请关闭 OnCue，再从小程序列表重新打开。草稿已经保存的不受影响。"
+    }
+    if lower.search("account changed") >= 0 { cue_consent_key = "" return "账号已经切换。请用当前账号重新打开 OnCue。" }
+    if lower.search("not logged in") >= 0 { cue_consent_key = "" return "Rinx 没有登录。请先登录，再打开 OnCue。" }
+    if lower.search("not attached to a room") >= 0 { return "这次打开没有选房间。请关闭应用，导入时填上房间再打开。" }
+    if lower.search("not granted") >= 0 { return "宿主没有授权读取这个房间。" }
+    if lower.search("no service answers") >= 0 { return "当前宿主不提供群聊服务，请在 Rinx 里打开。" }
     "没有读到群聊：" + text
 }
+fn cue_room_error(text){ cue_host_error(text) }
 fn cue_import_room(){
     if !cue_guard_switch("room") { return }
     cue_invalidate()
@@ -602,7 +612,7 @@ fn cue_import_room(){
             if !cue_request_current(reading_revision) { return }
             cue_set_busy(false)
             if !result.is_ok {
-                cue_set_status("消息读取失败：" + result.error)
+                cue_set_status(cue_host_error("" + result.error))
                 return
             }
             let messages = try { result.data.messages } catch { nil }
@@ -804,7 +814,7 @@ fn cue_strip_refs(text){
 }
 fn cue_decimal(c){ c >= 48 && c <= 57 }
 fn cue_han_number(c){
-    for n in "零〇一二两三四五六七八九十百千万亿".to_chars() { if c == n { return true } }
+    for n in "零〇一二两三四五六七八九十百千万亿半".to_chars() { if c == n { return true } }
     false
 }
 fn cue_at_chars(chars, offset, value){
@@ -853,7 +863,20 @@ fn cue_numeric_tokens(text){
             for candidate in ["小时", "分钟", "公里", "元", "块", "点", "时", "分", "天", "晚", "夜", "人", "个", "张", "次", "米", "%", "岁", "月", "日"] {
                 if unit == "" && cue_at_chars(chars, unit_at, candidate) { unit = candidate }
             }
-            if !han || unit != "" { tokens.push(token.to_string() + unit) }
+            let amount = token.to_string()
+            let qualified = false
+            if unit == "个" {
+                for tail in ["人", "小时", "晚", "月", "星期"] {
+                    if !qualified && cue_at_chars(chars, unit_at + 1, tail) { unit += tail qualified = true }
+                }
+            }
+            let ignored = false
+            if han && !qualified {
+                let value = amount + unit
+                for vague in ["一个", "两个", "一次", "两次", "一点"] { if value == vague { ignored = true } }
+                if (value == "十分" || value == "百分") && !cue_at_chars(chars, unit_at + 1, "钟") { ignored = true }
+            }
+            if (!han || unit != "") && !ignored { tokens.push(amount + unit) }
             if unit != "" { i = unit_at + unit.to_chars().len() }
         } else { i += 1 }
     }
@@ -1020,7 +1043,7 @@ fn cue_accept_reply(reply, request_revision, attempt){
     if cue_request_kind == "refine" { cue_accept_refinement(reply, request_revision, attempt) return }
     if !reply.is_ok {
         cue_set_busy(false)
-        cue_set_status("这次试映没有完成：" + reply.error)
+        cue_set_status(cue_host_error("" + reply.error))
         return
     }
     // A malformed success envelope is a failed protocol response, not an
@@ -1043,7 +1066,7 @@ fn cue_accept_reply(reply, request_revision, attempt){
         cue_summary = cue_source_excerpt(blocks[0])
         cue_sync_message()
         cue_sync_workspace()
-        cue_set_status("三种建议已生成；检查仅覆盖格式/引用/数字/承诺规则，请核对原文后选用。")
+        cue_set_status("三种说法好了。每条下面是它依据的原文，选之前对一下。")
         return
     }
     if attempt < 1 {
@@ -1062,7 +1085,7 @@ fn cue_rehearse(){
     if ui.cue_trial.text().to_chars().len() > 240 || ui.cue_trial.text().len() > 1000 { cue_set_status("先把台词（含空白）缩到240字、1000字节以内。") return }
     if cue_sources.len() == 0 || cue_selected_count() == 0 { cue_set_status("请载入并至少勾选一条参考消息。") return }
     if ui.cue_goal_note.text().to_chars().len() > 240 { cue_set_status("补充条件请缩到240字以内。") return }
-    if !cue_demo && cue_consent_key != cue_model_consent_key() { cue_set_status("先核对勾选内容，在数据范围卡中允许本次模型请求。") return }
+    if !cue_demo && cue_consent_key != cue_model_consent_key() { cue_set_status("先看一下勾选的消息，再点「允许当前范围内的试映与修订」。") return }
     cue_invalidate()
     cue_request_kind = "generate"
     cue_request_key = cue_context_key()
@@ -1076,7 +1099,7 @@ fn cue_rehearse(){
         if !cue_request_current(request_revision) { return }
         if !session.is_ok {
             cue_set_busy(false)
-            cue_set_status("助手暂时不可用：" + session.error)
+            cue_set_status(cue_host_error("" + session.error))
             return
         }
         cue_start_turn(prompt_text, request_revision, 0)
@@ -1125,7 +1148,7 @@ fn cue_refine(){
     if base.trim() == "" || base.len() > 8000 { cue_set_status("先写一份8000字节以内的草稿。") return }
     if note == "" || note.to_chars().len() > 240 { cue_set_status("写一句240字以内的修改要求，例如更简短、保留拒绝边界。") return }
     if cue_selected_count() == 0 { cue_set_status("请先勾选本次参考消息。") return }
-    if !cue_demo && cue_consent_key != cue_model_consent_key() { cue_set_status("先核对数据范围并允许本次模型请求。") return }
+    if !cue_demo && cue_consent_key != cue_model_consent_key() { cue_set_status("先看一下勾选的消息，再点「允许当前范围内的试映与修订」。") return }
     cue_cancel_candidate()
     cue_refine_base = base
     cue_refine_note = note
@@ -1147,7 +1170,7 @@ fn cue_refine(){
     cue_set_status("正在按修改要求准备候选，当前草稿不会被覆盖。")
     host.request("octos.session.open", {}, fn(session){
         if !cue_request_current(revision) { return }
-        if !session.is_ok { cue_set_busy(false) cue_set_status("助手不可用，原草稿保留。") return }
+        if !session.is_ok { cue_set_busy(false) cue_set_status(cue_host_error("" + session.error)) return }
         cue_start_turn(cue_refine_prompt(), revision, 0)
     })
 }
@@ -1177,7 +1200,7 @@ fn cue_decode_refinement(text){
 }
 fn cue_accept_refinement(reply, revision, attempt){
     if cue_refine_key != cue_refine_identity() { cue_set_busy(false) cue_cancel_candidate() cue_set_status("原稿或修改要求已变化，旧修订未应用。") return }
-    if !reply.is_ok { cue_set_busy(false) cue_set_status("修订请求未完成，原草稿保留。") return }
+    if !reply.is_ok { cue_set_busy(false) cue_set_status(cue_host_error("" + reply.error)) return }
     let reply_text = try { reply.data.text } catch { nil }
     let parts = []
     if reply_text.is_string() && reply_text.len() <= 4000 { parts = try { cue_decode_refinement(reply_text) } catch { [] } }
@@ -1472,7 +1495,7 @@ fn cue_save_slot(slot){
     next[2][index][slot + 1] = cue_capture_slot()
     next[1] += 1
     if !cue_store_write(next) { return false }
-    cue_set_status("当前房间草稿已保存并逐字回读。未发送消息。")
+    cue_set_status("草稿已保存在本机，没有发到群里。")
     true
 }
 fn cue_restore_slot(slot){
@@ -1480,7 +1503,7 @@ fn cue_restore_slot(slot){
     let record = cue_room_record()[slot + 1]
     if record == nil { cue_set_status("当前房间的这个草稿槽还没有内容。") return }
     cue_set_editor(record[0], record[2], record[3], record[4], record[5], record[6], record[7], record[8])
-    cue_set_status("已取回本房间草稿；旧来源需重新载入核对。")
+    cue_set_status("已取回这个群的草稿。")
 }
 fn cue_activate_room(id, restore){
     if id == cue_room_id && cue_editor_room == id { return }
@@ -1695,14 +1718,14 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
                                 CueButton{text: "留在当前房间" on_click: || {cue_switch_target = "" cue_sync_workspace()}}
                             }
                         }
-                        CueText{text: "允许后，每次点击试映/修订将发送当时台词、目标、原稿和要求；仅限当前房间和勾选范围，关闭或撤回后失效。宿主可能保留历史。" draw_text.color: cue_muted draw_text.text_style.font_size: 10}
+                        CueText{text: "允许后，点试映或修订时会把台词、目标和勾选的消息发给助手。改了勾选、撤回或关闭应用后，要重新允许。" draw_text.color: cue_muted draw_text.text_style.font_size: 10}
                         CueLink{text: "查看数据与宿主边界" on_click: || cue_toggle_privacy()}
                         if cue_privacy_open {
-                            CueText{text: "生成含台词/目标，修订另含原稿和要求。发送者标签省略，正文仍可能识别人。宿主可能保留此前历史和提供工具；取消勾选/停止/本地删除不清除宿主历史。应用不申请或调用Matrix发送。" draw_text.color: cue_muted draw_text.text_style.font_size: 10}
+                            CueText{text: "发给助手的是你的台词、目标和勾选消息的正文，不带发送者名字。修订时还会发草稿和修改要求。助手由宿主提供，宿主可能保留对话记录；在这里删草稿，删不掉那边的记录。OnCue 不会往群里发消息。" draw_text.color: cue_muted draw_text.text_style.font_size: 10}
                         }
                         if !cue_demo {
                             if cue_consent_key == cue_model_consent_key() {
-                                CueButton{text: "当前范围持续允许 · 撤回后续请求" on_click: || cue_revoke_model()}
+                                CueButton{text: "已允许 · 点这里撤回" on_click: || cue_revoke_model()}
                             } else {
                                 CueButton{text: "允许当前范围内的试映与修订" on_click: || cue_grant_model()}
                             }
@@ -1717,7 +1740,7 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
             result_panel := View{width: Fill height: Fit flow: Down spacing: 4
                 CueCard{
                     cue_overview := View{width: Fill height: Fit flow: Down spacing: 5 on_render: || {
-                        if cue_routes.len() == 0 { CueText{text: "先试映，三种建议会直接呈现在这里；不用播放完再选句。" draw_text.color: cue_muted draw_text.text_style.font_size: 11} }
+                        if cue_routes.len() == 0 { CueText{text: "点「试映下一幕」后，三种说法会出现在这里。" draw_text.color: cue_muted draw_text.text_style.font_size: 11} }
                         for i in cue_routes.len() {
                             let route = cue_routes[i]
                             RoundedView{width: Fill height: Fit flow: Down padding: 6 new_batch: true draw_bg.color: #xf5f7f3
@@ -1761,13 +1784,13 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
                             CueText{text: "前：" + before draw_text.color: cue_muted draw_text.text_style.font_size: 11}
                             CueText{text: "后：" + after draw_text.text_style.font_size: 12}
                         }
-                        let label = "人工编辑，未作完整事实校验"
+                        let label = "你改过这句，应用没有再检查"
                         if cue_editor_origin == "model" { label = "助手候选，仅经格式/引用/数字/承诺规则检查" }
                         if cue_editor_origin == "demo" { label = "本地虚构样例" }
                         if cue_editor_origin == "legacy" { label = "旧版未分组草稿的手动复制" }
                         if cue_compare_mode == 0 {
                             CueText{text: label + " · 文本版本 " + cue_editor_revision draw_text.color: cue_muted draw_text.text_style.font_size: 10}
-                            if cue_editor_snapshot != "" { CueText{text: "来源快照：" + cue_editor_snapshot + "；重新载入后须复核，旧稿不会自动更新。" draw_text.color: cue_muted draw_text.text_style.font_size: 10} }
+                            if cue_editor_snapshot != "" { CueText{text: "这份草稿基于上次载入的消息。群里有新消息的话，重新载入再看一遍。" draw_text.color: cue_muted draw_text.text_style.font_size: 10} }
                         } else { CueText{text: "A/B为本房间已保存文本；取回后再核对各自来源。" draw_text.color: cue_muted draw_text.text_style.font_size: 10} }
                     }}
                     cue_refine_input := TextInput{width: Fill height: 48 is_multiline: true empty_text: "修改要求，例如更短但保留拒绝" on_change: |text| cue_edit_refine(text)
