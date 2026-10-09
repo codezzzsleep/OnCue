@@ -116,6 +116,15 @@ class NativeAcceptanceTests(unittest.TestCase):
         self.assertEqual(native.turn_state(native.SUCCESS), "success")
         self.assertEqual(native.turn_state("unrecognized production contract"), "unknown")
 
+    def test_preuse_freshness_is_pending_and_fail_closed(self):
+        self.assertEqual(native.use_state("正在重新读取最近30条，采用前再核对…"), "pending")
+        self.assertEqual(native.use_state("已放进草稿框，可以继续修改；尚未保存或发送。"), "success")
+        for text in ("最近消息已变化或窗口衔接不足；旧候选不能直接采用，请重新载入并试映。",
+                     "缺少这份候选的原始消息快照，请重新载入并试映。",
+                     "读取等待超时或上下文已变化，请重新读取。", "授权已过期。请重新打开。"):
+            self.assertEqual(native.use_state(text), "failure")
+        self.assertEqual(native.use_state("unknown changed production contract"), "unknown")
+
     def test_room_empty_errors_and_pending_are_distinct(self):
         for text in ("这个群聊暂时没有可读取的文本消息。", "没有读到群聊：denied", "消息读取失败：offline",
                      "这次打开没有选房间。请关闭应用，导入时填上房间再打开。",
@@ -420,6 +429,64 @@ class NativeAcceptanceTests(unittest.TestCase):
                     patch.object(native.subprocess, "run") as run, self.assertRaises(RuntimeError):
                 recorder.capture("not-created")
             run.assert_not_called()
+
+    def send_store(self, marker=None):
+        slot = ["literal🙂", 1, "manual", "", "", "plain snapshot", "", "", 0]
+        if marker is not None:
+            slot.append(marker)
+        return [1, 1, [["!offline:example.invalid", slot, None, None]]]
+
+    def encode_store(self, value):
+        return json.dumps(value, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+
+    def test_decode_old_nine_fields_unchanged(self):
+        value = self.send_store()
+        raw = self.encode_store(value)
+        self.assertEqual(native.decode_store(raw), value)
+        self.assertEqual(len(native.decode_store(raw)[2][0][1]), 9)
+        self.assertEqual(self.encode_store(native.decode_store(raw)), raw)
+
+    def test_decode_optional_send_metadata_states(self):
+        for state, event in (("unknown", ""), ("unknown", "$historical"), ("observed_full", "$synthetic"),
+                             ("observed_prefix500", "$synthetic")):
+            with self.subTest(state=state):
+                value = self.send_store(["OC_SEND_1", state, 1234.5, event, "literal🙂"])
+                self.assertEqual(native.decode_store(self.encode_store(value)), value)
+                self.assertEqual(len(value[2][0][1]), 10)
+
+    def test_decode_send_metadata_shape_tag_and_state_fail_closed(self):
+        invalid = ([], {}, "historical", ["OC_SEND_1"],
+                   ["UNKNOWN", "unknown", 0, "", "literal🙂"],
+                   ["OC_SEND_1", "sent", 0, "$e", "literal🙂"],
+                   ["OC_SEND_1", True, 0, "", "literal🙂"],
+                   ["OC_SEND_1", "unknown", 0, "", "literal🙂", "extra"])
+        for marker in invalid:
+            with self.subTest(marker=marker), self.assertRaises(RuntimeError):
+                native.decode_store(self.encode_store(self.send_store(marker)))
+
+    def test_decode_send_metadata_timestamp_bounds(self):
+        for stamp in (True, -1, float("nan"), float("inf"), 100000000000001, "0"):
+            marker = ["OC_SEND_1", "unknown", stamp, "", "literal🙂"]
+            with self.subTest(stamp=stamp), self.assertRaises(RuntimeError):
+                native.decode_store(self.encode_store(self.send_store(marker)))
+
+    def test_decode_send_metadata_body_and_event_binding(self):
+        for state, event, body in (("observed_full", "", "literal🙂"),
+                                   ("observed_prefix500", "", "literal🙂"),
+                                   ("observed_full", "界" * 171, "literal🙂"),
+                                   ("observed_full", 4, "literal🙂"),
+                                   ("unknown", "", "edited"), ("unknown", "", None)):
+            marker = ["OC_SEND_1", state, 0, event, body]
+            with self.subTest(marker=marker), self.assertRaises(RuntimeError):
+                native.decode_store(self.encode_store(self.send_store(marker)))
+
+    def test_optional_metadata_never_adds_native_send_mode(self):
+        parser = native.build_parser()
+        mode = next(action for action in parser._actions if action.dest == "mode")
+        self.assertEqual(tuple(mode.choices), ("routes", "playback", "draft", "reopen"))
+        source = (TOOLS / "native_acceptance.py").read_text(encoding="utf-8")
+        self.assertNotIn('click("确认发送")', source)
+        self.assertNotIn('click("发送到群聊…")', source)
 
     def test_require_stays_active_in_optimized_python(self):
         program = "import sys;sys.path.insert(0,sys.argv[1]);from native_acceptance import require;require(False,'guard-active')"

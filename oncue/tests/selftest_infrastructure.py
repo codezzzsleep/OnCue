@@ -26,7 +26,7 @@ class InfrastructureTests(unittest.TestCase):
         cls.source = generate_probe.DEFAULT_SOURCE.read_bytes().decode("utf-8")
         cls.fixture_bytes = (HERE / "fixtures.json").read_bytes()
         cls.fixtures = json.loads(cls.fixture_bytes)
-        cls.harness = (HERE / "probe_harness.splash").read_text(encoding="utf-8")
+        cls.harness = generate_probe.load_harness()
 
     def test_exact_production_functions_for_every_suite(self):
         before = generate_probe.extract_functions(self.source)
@@ -109,7 +109,7 @@ class InfrastructureTests(unittest.TestCase):
     def test_all_new_assertion_ids_have_one_oracle(self):
         # IDs are reviewed fixture literals, not generated from the harness at run time.
         self.assertEqual(set(self.fixtures["assertion_ids"]), set(generate_probe.SUITES))
-        literal = re.findall(r'probe_assert\("((?:parser|pagination|retry|deadline|playback|storage|grounding|envelope)\.[^"\n]+)"', self.harness)
+        literal = re.findall(r'probe_assert\("((?:parser|pagination|retry|deadline|playback|storage|grounding|envelope|send)\.[^"\n]+)"', self.harness)
         literal = [name for name in literal if name not in ("storage.legacy_explicit_copy_", "envelope.auth_room_", "envelope.auth_model_")]
         self.assertEqual(len(literal), len(set(literal)))
         dynamic = {
@@ -121,11 +121,25 @@ class InfrastructureTests(unittest.TestCase):
             "storage": {"storage." + case["id"] for case in self.fixtures["storage"]["invalid_cases"]}
                        | {"storage.legacy_explicit_copy_" + name for name in ("draft", "a", "b")},
         }
+        # "send"/"send2"/"send3" share the send.* ID namespace but run as three
+        # suites to keep each real card-host process inside the 32 MiB heap quota;
+        # partition them by the reviewed fixture lists, not by ID prefix.
+        send_suites = ("send", "send2", "send3", "send4")
+        send_union = set().union(*(set(self.fixtures["assertion_ids"][s]) for s in send_suites))
+        for s in send_suites:
+            others = set().union(*(set(self.fixtures["assertion_ids"][o]) for o in send_suites if o != s))
+            self.assertEqual(set(self.fixtures["assertion_ids"][s]) & others, set())
         for suite in generate_probe.SUITES:
-            defined = {name for name in literal if name.startswith(suite + ".")}
-            defined |= dynamic.get(suite, set())
-            self.assertEqual(defined, set(self.fixtures["assertion_ids"][suite]), suite)
+            if suite in send_suites:
+                defined = set(self.fixtures["assertion_ids"][suite])
+                for name in defined:
+                    self.assertIn(name, literal, f"{name} missing a probe_assert oracle")
+            else:
+                defined = {name for name in literal if name.startswith(suite + ".")}
+                defined |= dynamic.get(suite, set())
+                self.assertEqual(defined, set(self.fixtures["assertion_ids"][suite]), suite)
             self.assertIn(f'if probe_meta.suite == "{suite}" {{ probe_{suite}() return }}', self.harness)
+        self.assertEqual({n for n in literal if n.startswith("send.")}, send_union)
 
     def test_production_api_drift_and_shadowing_refused(self):
         for name in ("cue_source_excerpt", "cue_keep_take", "cue_play_pulse"):
@@ -215,6 +229,41 @@ class InfrastructureTests(unittest.TestCase):
             self.assertTrue(check_result.validate_result(changed, provenance))
         sample["observed_at"] = 1001
         self.assertTrue(check_result.validate_result(sample, provenance))
+
+    def test_core_eight_suites_preserved_with_send_quadruplet(self):
+        self.assertEqual(generate_probe.CORE_SUITES,
+                         ("parser", "pagination", "retry", "deadline", "playback", "storage", "grounding", "envelope"))
+        self.assertEqual(generate_probe.SUITES, (*generate_probe.CORE_SUITES, "send", "send2", "send3", "send4"))
+        self.assertEqual(sum(len(self.fixtures["assertion_ids"][suite])
+                             for suite in generate_probe.CORE_SUITES), 293)
+        self.assertEqual(len(self.fixtures["assertion_ids"]["send"]), 44)
+        self.assertEqual(len(self.fixtures["assertion_ids"]["send2"]), 21)
+        self.assertEqual(len(self.fixtures["assertion_ids"]["send3"]), 7)
+        self.assertEqual(len(self.fixtures["assertion_ids"]["send4"]), 3)
+
+    def test_send_timeout_and_injection_metadata_checked(self):
+        # The real 30s transport-timeout oracle lives in suite "send3"; "send"
+        # and "send2" are the preparation/confirmation/freshness halves with no
+        # long timer window.
+        _, provenance = generate_probe.build_probe(self.source, self.fixture_bytes, self.harness, "send4")
+        sample = {"schema": 1, "complete": True, "meta": copy.deepcopy(provenance),
+                  "passed": True, "unexpected_host_requests": 0,
+                  "started_at": 1000, "observed_at": 1031,
+                  "assertions": [{"id": name, "passed": True, "detail": {"synthetic_checker_unit_input": True}}
+                                 for name in provenance["expected_assertion_ids"]]}
+        self.assertEqual(check_result.validate_result(sample, provenance), [])
+        for key in ("real_send_timeout_seconds", "send_transport", "send_identity"):
+            changed = copy.deepcopy(sample)
+            changed["meta"][key] = "incorrect"
+            self.assertTrue(check_result.validate_result(changed, provenance))
+        sample["observed_at"] = 1029
+        self.assertTrue(check_result.validate_result(sample, provenance))
+
+    def test_send_host_allowlist_fail_hard_no_forwarding(self):
+        self.assertIn('service != "matrix.account_info"', self.harness)
+        self.assertIn('service != "matrix.send_message"', self.harness)
+        self.assertIn("nil.probe_unexpected_service()", self.harness)
+        self.assertIn("probe_checkpoint(false)", self.harness)
 
     def test_no_native_host_forwarding(self):
         self.assertNotIn("mod.host", self.harness)

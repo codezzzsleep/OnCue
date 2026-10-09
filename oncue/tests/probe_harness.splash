@@ -14,8 +14,11 @@ let probe_storage_baseline = ""
 let host = {request: fn(service, payload, callback){
     probe_requests.push({service: service, payload: payload, callback: callback})
     probe_events.push({kind: "request", case_id: probe_current_case, service: service, payload: payload, revision: cue_revision, at: time_now()})
-    if service != "octos.session.open" && service != "octos.turn.start" && service != "octos.turn.interrupt" && service != "matrix.room_info" && service != "matrix.read_messages" {
+    if service != "octos.session.open" && service != "octos.turn.start" && service != "octos.turn.interrupt" && service != "matrix.room_info" && service != "matrix.read_messages" && service != "matrix.account_info" && service != "matrix.send_message" {
         probe_unexpected += 1
+        probe_checkpoint(false)
+        // Fail hard after persisting evidence; never forward an unknown service.
+        nil.probe_unexpected_service()
     }
     probe_requests.len()
 }}
@@ -79,6 +82,23 @@ fn probe_count_service(service){
     count
 }
 fn probe_reset(case_id){
+    // Expire prior test operations without resetting monotonic callback epochs.
+    for attempt in cue_send_history { attempt.state = "probe_case_complete" }
+    cue_send_history = []
+    cue_send_active = -1
+    cue_send_latch = false
+    cue_send_phase = "idle"
+    cue_send_confirmation = nil
+    cue_send_nonce += 1
+    cue_send_allow_resend = false
+    cue_send_resend_of = -1
+    cue_io_epoch += 1
+    cue_io_busy = false
+    cue_io_stage = ""
+    cue_room_epoch += 1
+    cue_own_id = ""
+    cue_own_epoch = -1
+    cue_fresh_reset()
     cue_invalidate()
     cue_demo = false
     cue_sources = [{sender: "受控夹具", body: "明早9点出发，预算500。"},
@@ -95,6 +115,14 @@ fn probe_reset(case_id){
     cue_load_store()
     cue_activate_room("probe-room", false)
     cue_set_editor("", "manual", "", "", "", "", "", 0.0)
+    let raw = []
+    for i in cue_sources.len() {
+        raw.push(probe_row("$baseline-" + i, "@fixture:example.invalid", cue_sources[i].body))
+    }
+    cue_sources = raw.to_json().parse_json()
+    cue_source_window = cue_window_copy(raw)
+    cue_route_window = nil
+    cue_refine_window = nil
     cue_refine_base = ""
     cue_refine_note = ""
     cue_refine_refs = []
@@ -113,6 +141,24 @@ fn probe_reset(case_id){
     cue_set_status("受控测试准备")
     probe_requests = []
     probe_current_case = case_id
+}
+fn probe_row(id, sender, body){
+    {event_id: id, sender_id: sender, sender: "受控夹具", body: body,
+     room_id: cue_room_id, msgtype: "m.text", ts: 1000, unread: false}
+}
+fn probe_window_reply(start, rows, identity){
+    probe_deliver(start, {is_ok: true, data: {room_id: cue_room_id, room_name: "受控房间"}, error: ""})
+    let next = start + 1
+    if identity {
+        probe_deliver(next, {is_ok: true, data: {user_id: "@self:example.invalid"}, error: ""})
+        next += 1
+    }
+    probe_deliver(next, {is_ok: true, data: {messages: rows}, error: ""})
+}
+fn probe_complete_freshness(){
+    if cue_io_busy && cue_io_stage == "room" {
+        probe_window_reply(probe_requests.len() - 1, cue_source_window.rows, false)
+    }
 }
 fn probe_begin(case_id){
     probe_reset(case_id)
@@ -196,6 +242,9 @@ fn probe_parser_markers(){
 }
 fn probe_parser_accept(){
     probe_reset("parser.output_order_and_markers")
+    // This parser oracle invokes acceptance directly, so supply the immutable
+    // generation snapshot normally captured by cue_rehearse before host dispatch.
+    cue_route_window = cue_window_snapshot()
     cue_set_busy(true)
     cue_accept_reply(probe_good_reply(), cue_revision, 0)
     let mapping = probe_routes_match()
@@ -209,6 +258,7 @@ fn probe_parser_accept(){
             let text = cue_ws_text()
             rendered.push(text)
             cue_choose_route(i)
+            probe_complete_freshness()
             selected.push(ui.cue_draft.text())
             let expected = probe_fixtures.canonical_blocks[1 + i * 2] + "\n建议台词：" + probe_fixtures.canonical_blocks[2 + i * 2]
             mapping = mapping && text == expected && probe_join(cue_ws_pages, "") == expected
@@ -465,6 +515,7 @@ fn probe_refinements(){
     probe_deliver(1, probe_reply("重复回调不能改候选"))
     probe_assert("retry.refine_duplicate_callback_ignored", cue_pending_revision == staged && ui.cue_draft.text() == original && probe_count_service("octos.turn.start") == 1, {})
     cue_apply_refinement()
+    probe_complete_freshness()
     let applied_revision = cue_editor_revision
     let applied = cue_capture_slot().to_json()
     cue_apply_refinement()
@@ -1125,8 +1176,13 @@ fn probe_envelope_rooms(){
     probe_reset("envelope_room_sources_literal")
     cue_import_room()
     probe_deliver(0, {is_ok: true, data: {room_id: "probe-import-room", room_name: "受控房间"}, error: ""})
-    probe_deliver(1, {is_ok: true, data: {messages: [{sender: "真人标签不进prompt", body: " 原文保留\n次行 ", extra: "extra-host-field"}]}, error: ""})
-    probe_assert("envelope.valid_sources_copy_only_body_sender", !cue_busy && cue_sources.len() == 1 && cue_source_payload() == "[[1,\" 原文保留\\n次行 \"]]" && cue_consent_key == "" && cue_sources[0].to_json().search("extra-host-field") < 0, {payload: cue_source_payload()})
+    let imported = probe_row("$imported", "@fixture:example.invalid", " 原文保留\n次行 ")
+    imported.sender = "真人标签不进prompt"
+    imported.extra = "extra-host-field"
+    probe_deliver(1, {is_ok: true, data: {messages: [imported]}, error: ""})
+    // Preserve the core oracle's prompt boundary while requiring the new raw
+    // identity window to retain metadata; those fields still never enter G2.
+    probe_assert("envelope.valid_sources_copy_only_body_sender", !cue_busy && cue_sources.len() == 1 && cue_source_payload() == "[[1,\" 原文保留\\n次行 \"]]" && cue_consent_key == "" && cue_source_window.rows[0].event_id == "$imported" && cue_source_window.rows[0].sender_id == "@fixture:example.invalid" && cue_source_payload().search("extra-host-field") < 0, {payload: cue_source_payload(), retained_metadata: true})
     let many = []
     for i in 13 { many.push({sender: "fixture", body: "body"}) }
     probe_assert("envelope.source_schema_and_byte_limits", !cue_messages_valid(nil) && !cue_messages_valid([nil]) && !cue_messages_valid([{sender: "x", body: 7}]) && !cue_messages_valid(many) && !cue_messages_valid([{sender: "x", body: probe_repeat("界", 4001)}]) && cue_messages_valid([{sender: "x", body: probe_repeat("界", 4000)}]), {})
@@ -1151,7 +1207,7 @@ fn probe_auth_case(index){
         ["MiNi-App AUTHORIZATION EXPIRED", "授权已过期。Rinx 打开小程序一小时后，或关闭应用以后，会收回授权。请关闭 OnCue，再从小程序列表重新打开。草稿已经保存的不受影响。", true],
         ["Mini-app ACCOUNT CHANGED", "账号已经切换。请用当前账号重新打开 OnCue。", true],
         ["Not logged in", "Rinx 没有登录。请先登录，再打开 OnCue。", true],
-        ["Mini app was not granted access to this room", "宿主没有授权读取这个房间。", false],
+        ["Mini app was not granted access to this room", "宿主没有授权这项房间或账号服务，请重新打开并检查授权。", false],
         ["not attached to a room", "这次打开没有选房间。请关闭应用，导入时填上房间再打开。", false],
         ["no service answers", "当前宿主不提供群聊服务，请在 Rinx 里打开。", false]
     ]
@@ -1187,6 +1243,10 @@ fn probe_boot(){
     if probe_meta.suite == "storage" { probe_storage() return }
     if probe_meta.suite == "grounding" { probe_grounding() return }
     if probe_meta.suite == "envelope" { probe_envelope() return }
+    if probe_meta.suite == "send" { probe_send() return }
+    if probe_meta.suite == "send2" { probe_send2() return }
+    if probe_meta.suite == "send3" { probe_send3() return }
+    if probe_meta.suite == "send4" { probe_send4() return }
     probe_assert("harness.unknown_suite", false, {suite: probe_meta.suite})
     probe_finish()
 }

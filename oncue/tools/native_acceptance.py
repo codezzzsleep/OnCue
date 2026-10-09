@@ -30,7 +30,7 @@ DEFAULT_RELEASE = Path(__file__).resolve().parents[1] / "bundle"
 SUCCESS = "三种说法好了。每条下面是它依据的原文，选之前对一下。"
 CONSENT = "允许当前范围内的试映与修订"
 CONSENT_GRANTED = "已允许。点试映或修订时，会把台词、目标和勾选的消息发给助手。"
-SAVE_SUCCESS = "草稿已保存在本机，没有发到群里。"
+SAVE_SUCCESS = "草稿已保存在本机；本次保存不会发送消息。"
 STORE_FILE = "rehearsals-v1.json"
 LEGACY_FILES = ("draft.txt", "take-a.txt", "take-b.txt")
 SLOT_INDEX = {"draft": 1, "A": 2, "B": 3}
@@ -160,9 +160,25 @@ def room_state(status):
     if status.startswith("正在读取群聊"):
         return "pending"
     if status.startswith(("没有读到群聊", "这次打开没有选房间", "宿主没有授权读取这个房间",
-                          "当前宿主不提供群聊服务", "消息读取失败", "这个群聊暂时没有", "已停止等待",
+                          "当前宿主不提供群聊服务", "宿主没有授权这项房间或账号服务", "消息读取失败", "这个群聊暂时没有", "已停止等待",
                           "宿主未提供稳定房间ID", "宿主消息格式或大小异常", "当前有未保存编辑",
                           "读取期间草稿改变，未切换房间", "授权已过期", "账号已经切换", "Rinx 没有登录")) or "等待超过 90 秒" in status:
+        return "failure"
+    return "unknown"
+
+
+def use_state(status):
+    """Adoption is asynchronous: wait for the production freshness gate, not a click."""
+    if status in ("已放进草稿框，可以继续修改；尚未保存或发送。",
+                  "本次读取未见新增消息；读取后仍可能有变化。"):
+        return "success"
+    if status.startswith("正在重新读取最近30条，采用前再核对"):
+        return "pending"
+    if status.startswith(("最近消息已变化", "最近消息窗口衔接不足", "已过期：群里新增",
+                          "请重新载入群聊并试映", "缺少这份候选", "核对期间草稿", "读取等待超时",
+                          "已看到新增", "房间身份不一致", "最近消息格式", "没有读到群聊",
+                          "授权已过期", "账号已经切换", "Rinx 没有登录", "宿主没有授权",
+                          "当前宿主不提供", "请先结束当前核对", "请先生成当前来源")):
         return "failure"
     return "unknown"
 
@@ -198,7 +214,7 @@ def decode_store(raw):
         for slot in room[1:]:
             if slot is None:
                 continue
-            require(isinstance(slot, list) and len(slot) == 9, "Invalid room draft slot")
+            require(isinstance(slot, list) and len(slot) in (9, 10), "Invalid room draft slot")
             require(all(isinstance(slot[i], str) for i in (0, 2, 3, 4, 5, 6, 7)),
                     "Invalid room draft text or provenance")
             require(all(len(slot[i].encode("utf-8")) <= bound for i, bound in
@@ -208,6 +224,23 @@ def decode_store(raw):
                     "Invalid room draft revision or origin")
             require(type(slot[8]) in (int, float) and 0 <= slot[8] <= 100000000000000
                     and math.isfinite(slot[8]), "Invalid room draft timestamp")
+            if len(slot) == 10:
+                # Historical evidence only; never infer current identity or send
+                # authority from persisted data. Older nine-field slots stay valid,
+                # but a ten-field slot is not readable by the 0.5.1 reader.
+                sent = slot[9]
+                require(isinstance(sent, list) and len(sent) == 5
+                        and sent[0] == "OC_SEND_1", "Invalid saved send metadata")
+                require(sent[1] in ("unknown", "observed_full", "observed_prefix500"),
+                        "Invalid saved send state")
+                require(type(sent[2]) in (int, float) and 0 <= sent[2] <= 100000000000000
+                        and math.isfinite(sent[2]), "Invalid saved send timestamp")
+                require(isinstance(sent[3], str) and len(sent[3].encode("utf-8")) <= 512,
+                        "Invalid saved send event id")
+                require(sent[1] == "unknown" or sent[3] != "",
+                        "Observed send metadata requires an event id")
+                require(isinstance(sent[4], str) and sent[4] == slot[0],
+                        "Saved send body differs from draft")
     return value
 
 
@@ -585,8 +618,7 @@ class Recorder:
             require(result[label].endswith("\n建议台词：" + suggestions[title]),
                     "Complete dialogue suggestion differs from overview")
             self.click("用这句")  # Unique selected-route button, not the three identical overview labels.
-            require(self.status() == "已放进草稿框，可以继续修改；尚未保存或发送。",
-                    "Suggestion selection did not confirm editor-only use")
+            self.wait_status(use_state, "pre-use freshness and suggestion selection")
             require(self.editor_text() == suggestions[title], "Selected suggestion differs from editor text")
             self.assert_no_save(stored, "select suggestion " + label)
         require(len(set(result.values())) == 3, "Three route texts are not distinct")

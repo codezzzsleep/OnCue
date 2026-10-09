@@ -23,7 +23,8 @@ def validate_result(result: dict, provenance: dict) -> list[str]:
     for key in ("suite", "source_sha256", "fixtures_sha256", "harness_sha256",
                 "expected_assertion_ids", "controlled_injection", "natural_model_test",
                 "production_functions_unchanged", "real_deadline_seconds",
-                "real_playback_interval_seconds", "filesystem",
+                "real_playback_interval_seconds", "real_send_timeout_seconds",
+                "send_transport", "send_identity", "filesystem",
                 "semantic_fact_verification", "storage_expectation"):
         if meta.get(key) != provenance.get(key):
             errors.append(f"Provenance mismatch: {key}")
@@ -54,6 +55,8 @@ def validate_result(result: dict, provenance: dict) -> list[str]:
         errors.append("Deadline probe did not run for the full real-time observation window")
     elif meta.get("suite") == "playback" and observed - started < 6.5:
         errors.append("Playback probe did not run for the real-timer observation window")
+    elif meta.get("suite") == "send4" and observed - started < 30.0:
+        errors.append("Send probe did not run for the real transport-timeout window")
     return errors
 
 

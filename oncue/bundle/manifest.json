@@ -4,6 +4,8 @@
     "storage",
     "matrix.room_info",
     "matrix.read_messages",
+    "matrix.account_info",
+    "matrix.send_message",
     "octos.session.open",
     "octos.turn.start",
     "octos.turn.interrupt"

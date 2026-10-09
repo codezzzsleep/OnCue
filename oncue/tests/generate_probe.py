@@ -15,7 +15,8 @@ import sys
 
 HERE = Path(__file__).resolve().parent
 DEFAULT_SOURCE = HERE.parent / "bundle" / "main.splash"
-SUITES = ("parser", "pagination", "retry", "deadline", "playback", "storage", "grounding", "envelope")
+CORE_SUITES = ("parser", "pagination", "retry", "deadline", "playback", "storage", "grounding", "envelope")
+SUITES = (*CORE_SUITES, "send", "send2", "send3", "send4")
 REQUIRED_FUNCTIONS = {
     "cue_split_blocks", "cue_validate_blocks", "cue_paginate",
     "cue_rehearse", "cue_start_turn", "cue_accept_reply", "cue_deadline",
@@ -169,6 +170,9 @@ def build_probe(source: str, fixture_bytes: bytes, harness: str, suite: str) -> 
         "production_functions_unchanged": True,
         "real_deadline_seconds": 90,
         "real_playback_interval_seconds": 1.4,
+        "real_send_timeout_seconds": 30,
+        "send_transport": "injected only; no Matrix service forwarding or native sends",
+        "send_identity": "synthetic @self:example.invalid; never inferred from readback",
         "filesystem": "real card-host jail; fs is not shadowed",
         "semantic_fact_verification": False,
         "storage_expectation": {
@@ -216,6 +220,12 @@ def build_probe(source: str, fixture_bytes: bytes, harness: str, suite: str) -> 
     return generated, inventory
 
 
+def load_harness() -> str:
+    """The eight core suites plus the separately maintained injected send suite."""
+    return "\n".join((HERE / name).read_text(encoding="utf-8")
+                     for name in ("probe_harness.splash", "probe_send.splash"))
+
+
 def generate(source_path: Path, workdir: Path, suite: str) -> Path:
     source_path = source_path.resolve(strict=True)
     workdir = workdir.resolve()
@@ -233,7 +243,7 @@ def generate(source_path: Path, workdir: Path, suite: str) -> Path:
     original = source_path.read_bytes()
     source = original.decode("utf-8")
     fixture_bytes = (HERE / "fixtures.json").read_bytes()
-    harness = (HERE / "probe_harness.splash").read_text(encoding="utf-8")
+    harness = load_harness()
     generated, inventory = build_probe(source, fixture_bytes, harness, suite)
     manifest = json.loads((source_path.parent / "manifest.json").read_text(encoding="utf-8"))
     app_id = "oncue-probe-" + suite
