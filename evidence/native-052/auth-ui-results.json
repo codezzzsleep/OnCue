@@ -1,0 +1,36 @@
+{
+  "version": "0.5.2",
+  "source_sha256": "049bced508c020c9c3240f154afc8c47c5e150d2cd881a650dd7503da72801a5",
+  "cases": [
+    {
+      "case": "no-room",
+      "passed": true,
+      "status": "这次打开没有选房间。请关闭应用，导入时填上房间再打开。",
+      "screenshot": "no-room.png"
+    },
+    {
+      "case": "model-not-allowed",
+      "passed": true,
+      "status": "先看一下勾选的消息，再点「允许当前范围内的试映与修订」。",
+      "screenshot": "model-not-allowed.png"
+    },
+    {
+      "case": "refine-not-allowed",
+      "passed": true,
+      "status": "先看一下勾选的消息，再点「允许当前范围内的试映与修订」。",
+      "screenshot": "refine-not-allowed.png"
+    },
+    {
+      "case": "model-revoked",
+      "passed": true,
+      "status": "先看一下勾选的消息，再点「允许当前范围内的试映与修订」。",
+      "screenshot": "model-revoked.png"
+    },
+    {
+      "case": "selection-changed",
+      "passed": false,
+      "status": "Recorder could not identify source toggle; manual check needed"
+    }
+  ],
+  "scope": "2026-10-10 真实Rinx授权状态实测：未选房间/应用内未允许试映/未允许修订/撤回后，界面提示与草稿保留均正确。改勾选用例由记录器控件识别限制改为注入覆盖。"
+}
