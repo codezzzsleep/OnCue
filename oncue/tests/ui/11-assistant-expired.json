@@ -1,0 +1,45 @@
+{
+  "name": "S11 试映时授权过期：中文说明，允许状态同时撤销并显示出来",
+  "use": "_room.json",
+  "host": {
+    "octos.session.open": {
+      "error": "Mini-app authorization expired"
+    }
+  },
+  "steps": [
+    {
+      "run": "_load.json"
+    },
+    {
+      "run": "_allow.json"
+    },
+    {
+      "scroll_to": "试映下一幕"
+    },
+    {
+      "click": "试映下一幕"
+    },
+    {
+      "wait": {
+        "text": [
+          "授权已过期。"
+        ],
+        "absent": [
+          "Mini-app authorization expired"
+        ]
+      },
+      "timeout": 5
+    },
+    {
+      "scroll_to": "查看数据与宿主边界"
+    },
+    {
+      "expect": {
+        "absent": [
+          "已允许 · 点这里撤回"
+        ]
+      },
+      "note": "授权过期时应用已在内部撤销允许（cue_host_error 清空 cue_consent_key），界面要同步显示"
+    }
+  ]
+}

@@ -1,34 +1,38 @@
 #!/usr/bin/env python3
 """Collect visible OnCue pages by clicking its real native reader controls."""
-import argparse,json,time
+import argparse,json,re
 from pathlib import Path
 from native_bridge import Bridge
 
 def bottom(b):
-    rect=next(r['r'] for r in b.snap() if r.get('i')=='app_scroll')
-    x,y,w,h=rect
-    b.scroll(x+w-18,y+h*.6,3000)
+    # References now follow the result panel; the page bottom is not the reader.
+    b.reveal(id='readout')
 
 def reader(b):
-    rows=b.snap(); box=next(r['r'] for r in rows if r.get('i')=='readout')
-    x,y,w,h=box
+    rows=b.snap(); boxes=[r['r'] for r in rows if r.get('i')=='readout']
+    if len(boxes)!=1:raise RuntimeError('Expected exactly one native reader')
+    box=boxes[0]; x,y,w,h=box
     labels=[r for r in rows if r.get('ty')=='Label' and r['r'][0]>=x and r['r'][1]>=y and r['r'][0]+r['r'][2]<=x+w+1 and r['r'][1]+r['r'][3]<=y+h+1]
+    if not labels:raise RuntimeError('Reader has no visible text widgets')
     return {'rect':box,'text':'\n'.join(r['t'] for r in labels),'labels':labels}
 
 def pages(b):
     bottom(b)
-    b.click(text='上一页')
-    # Page indicator belongs to the result header, after the source pane.
     def index():
-        candidates=[r for r in b.snap() if r.get('ty')=='Label' and r.get('t','').startswith('第 ')]
-        text=candidates[-1]['t']; nums=[int(s) for s in text.split() if s.isdigit()]
-        return nums[0],nums[1]
+        candidates=[r['t'] for r in b.snap() if r.get('ty')=='Label'
+                    and re.fullmatch(r'第 \d+ 页 / 共 \d+ 页',r.get('t',''))]
+        if len(candidates)!=1:raise RuntimeError('Expected exactly one result page counter')
+        current,total=map(int,re.findall(r'\d+',candidates[0]))
+        if not 1<=current<=total:raise RuntimeError('Invalid result page counter')
+        return current,total
     cur,total=index()
-    for _ in range(cur-1): b.click(text='上一页')
+    for _ in range(cur-1): b.click_app(text='上一页')
     result=[]
     for i in range(total):
-        bottom(b); result.append(reader(b))
-        if i+1<total: b.click(text='下一页')
+        bottom(b)
+        if index()!=(i+1,total):raise RuntimeError('Reader page did not advance or total changed')
+        result.append(reader(b))
+        if i+1<total: b.click_app(text='下一页')
     return result
 
 if __name__=='__main__':
@@ -44,6 +48,6 @@ if __name__=='__main__':
             if '全部' in state:break
         else:raise RuntimeError('Too many dialogue lines')
         records[title]={'pages':pages(b),'status':state}
-    b.click(text='相关原文');records['相关原文']={'pages':pages(b)}
+    b.click_app(text='相关原文');records['相关原文']={'pages':pages(b)}
     a.out.parent.mkdir(parents=True,exist_ok=True);a.out.write_text(json.dumps(records,ensure_ascii=False,indent=2)+'\n')
     print(json.dumps({k:''.join(p['text'] for p in v['pages']) for k,v in records.items()},ensure_ascii=False,indent=2))

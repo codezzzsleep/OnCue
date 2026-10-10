@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "version": "0.5.0",
+  "source_sha256": "015d7666fd58152955cb8931f54b894f5fa62789f033a8483a2bc2ce10bd43f9",
+  "mode": "real card-host UI, local deterministic demo, no Matrix/model",
+  "events": [
+    {
+      "case": "initial_draft_empty",
+      "passed": true
+    },
+    {
+      "case": "three_refusal_suggestions",
+      "passed": true
+    },
+    {
+      "case": "selection_no_save",
+      "passed": true
+    },
+    {
+      "case": "demo_revision_staged",
+      "passed": true
+    },
+    {
+      "case": "explicit_apply_no_save",
+      "passed": true
+    },
+    {
+      "case": "main_write_readback",
+      "passed": true
+    },
+    {
+      "case": "ab_slots_exact",
+      "passed": true
+    },
+    {
+      "case": "restore_a_exact",
+      "passed": true
+    },
+    {
+      "case": "host_restart_restores_main",
+      "passed": true
+    },
+    {
+      "case": "dirty_switch_confirmation",
+      "passed": true
+    },
+    {
+      "case": "delete_exact_record",
+      "passed": true
+    },
+    {
+      "case": "deleted_draft_not_resurrected",
+      "passed": true
+    },
+    {
+      "case": "unsupported_room_service_honest",
+      "passed": true
+    },
+    {
+      "case": "no_script_runtime_error",
+      "passed": true,
+      "errors": []
+    }
+  ]
+}

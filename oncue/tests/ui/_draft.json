@@ -1,0 +1,30 @@
+{
+  "steps": [
+    {
+      "scroll_to": {
+        "id": "cue_draft"
+      }
+    },
+    {
+      "type": {
+        "into": {
+          "id": "cue_draft"
+        },
+        "text": "我中午以后可以出发。"
+      }
+    },
+    {
+      "expect": {
+        "count": [
+          {
+            "of": {
+              "id": "cue_draft",
+              "contains": "我中午以后可以出发。"
+            },
+            "n": 1
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "agent": null,
+  "capabilities": [
+    "storage",
+    "matrix.room_info",
+    "matrix.read_messages",
+    "matrix.account_info",
+    "matrix.send_message",
+    "octos.session.open",
+    "octos.turn.start",
+    "octos.turn.interrupt"
+  ],
+  "compute": {
+    "instruction_budget": 8000000,
+    "memory_bytes": 33554432
+  },
+  "id": "oncue-screening-room",
+  "integrity": {
+    "bundle_blake3": "e951acaabc181a5362ece22f245390810d901afbf6e2e1911b1d2364475fe691"
+  },
+  "name": "OnCue · 群聊试映室",
+  "network": {
+    "hosts": []
+  },
+  "schema": 1,
+  "storage": {
+    "max_bytes": 4194304
+  },
+  "version": "0.5.2"
+}

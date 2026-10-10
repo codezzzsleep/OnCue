@@ -1,0 +1,59 @@
+{
+  "name": "S12 存储文件损坏：说明并锁定写入，保存不覆盖原文件",
+  "use": "_room.json",
+  "storage": {
+    "rehearsals-v1.json": "[1,0,[[\"!trip:example.org\""
+  },
+  "steps": [
+    {
+      "scroll_to": {
+        "contains": "存储无法读取、格式损坏或版本未知；保留原文件，暂停写入。"
+      }
+    },
+    {
+      "run": "_load.json"
+    },
+    {
+      "run": "_draft.json"
+    },
+    {
+      "scroll_to": "保留这句"
+    },
+    {
+      "click": "保留这句"
+    },
+    {
+      "wait": {
+        "text": [
+          "存储无法读取"
+        ],
+        "files": [
+          {
+            "name": "rehearsals-v1.json",
+            "contains": [
+              "[1,0,[[\"!trip:example.org\""
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "scroll_to": {
+        "id": "cue_draft"
+      }
+    },
+    {
+      "expect": {
+        "count": [
+          {
+            "of": {
+              "id": "cue_draft",
+              "contains": "我中午以后可以出发。"
+            },
+            "n": 1
+          }
+        ]
+      }
+    }
+  ]
+}

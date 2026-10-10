@@ -1,0 +1,53 @@
+{
+  "name": "S3 载入群聊：读房间再读最近30条，展开后每条带编号和勾选",
+  "use": "_room.json",
+  "sizes": [
+    "412x892",
+    "954x448"
+  ],
+  "steps": [
+    {
+      "run": "_load.json"
+    },
+    {
+      "expect": {
+        "calls": [
+          {
+            "service": "matrix.room_info",
+            "count": 1
+          },
+          {
+            "service": "matrix.read_messages",
+            "count": 1,
+            "contains": "30"
+          }
+        ]
+      }
+    },
+    {
+      "scroll_to": [
+        "周末出游群",
+        "展开/收起参考消息"
+      ]
+    },
+    {
+      "click": "展开/收起参考消息"
+    },
+    {
+      "scroll_to": [
+        "☑ #1",
+        {
+          "contains": "ayou：我中午 12 点以后才能走。"
+        },
+        "☑ #3"
+      ]
+    },
+    {
+      "expect": {
+        "absent": [
+          "国庆搭子局"
+        ]
+      }
+    }
+  ]
+}

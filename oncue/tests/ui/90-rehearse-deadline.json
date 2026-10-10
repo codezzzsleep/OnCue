@@ -1,0 +1,31 @@
+{
+  "name": "A4 助手一直不回复：90 秒后应用自己结束等待（慢）",
+  "use": "_room.json",
+  "host": {
+    "octos.turn.start": {
+      "never": true
+    }
+  },
+  "steps": [
+    {
+      "run": "_load.json"
+    },
+    {
+      "run": "_allow.json"
+    },
+    {
+      "scroll_to": "试映下一幕"
+    },
+    {
+      "click": "试映下一幕"
+    },
+    {
+      "wait": {
+        "text": [
+          "助手试映等待超过 90 秒，已结束等待。"
+        ]
+      },
+      "timeout": 100
+    }
+  ]
+}

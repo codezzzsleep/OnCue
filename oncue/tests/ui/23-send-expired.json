@@ -1,0 +1,53 @@
+{
+  "name": "S11 准备发送时授权过期：中文说明，没有发出",
+  "use": "_room.json",
+  "host": {
+    "matrix.room_info": [
+      {
+        "data": {
+          "room_id": "!trip:example.org",
+          "room_name": "周末出游群"
+        }
+      },
+      {
+        "error": "Mini-app authorization expired"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "run": "_load.json"
+    },
+    {
+      "run": "_draft.json"
+    },
+    {
+      "scroll_to": "发到群里"
+    },
+    {
+      "click": "发到群里"
+    },
+    {
+      "wait": {
+        "text": [
+          "授权已过期。",
+          "尚未调用"
+        ],
+        "absent": [
+          "Mini-app authorization expired"
+        ]
+      },
+      "timeout": 5
+    },
+    {
+      "expect": {
+        "calls": [
+          {
+            "service": "matrix.send_message",
+            "count": 0
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "name": "S11 宿主没有群聊服务（card-host、OctoSense）：说明要在 Rinx 里打开",
+  "steps": [
+    {
+      "click": "载入群聊"
+    },
+    {
+      "wait": {
+        "text": [
+          "当前宿主不提供群聊服务"
+        ],
+        "absent": [
+          "no service answers"
+        ]
+      },
+      "timeout": 5
+    }
+  ]
+}

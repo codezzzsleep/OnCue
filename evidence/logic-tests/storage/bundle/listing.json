@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "subtitle": "先试着说，再决定要不要发",
-  "description": "把一句还没发出去的话放进群聊试映室。助手会参考你授权的群聊，给出顺着说、换个问法、换个玩法三种说法。挑一种逐句看完，把建议放进编辑框修改。草稿可以存成 A、B 两版，随时取回。三种说法是助手的假设，发不发由你决定。",
+  "description": "在群里开口之前，先在这里试一下。写下想说的话，选一个目标（澄清条件、礼貌拒绝或推动下一步），助手参考你勾选的群聊消息给出三种说法，每种都附上它依据的原文。挑一句放进草稿，可以自己改，也可以让助手按你的要求再改一版，对照前后再决定用不用。草稿按群分开保存在本机。采用建议前会重新读取最近消息。你可以核对房间、账号和完整草稿后明确确认发送；应用不自动发送或重试。发送后会回读核对，结果不明时仅重新读取，避免重复发送。",
   "category": "productivity",
   "keywords": [
     "群聊",
@@ -12,8 +12,8 @@
     "假设对白"
   ],
   "screenshots": [
-    "screenshots/01-native-rinx.png",
-    "screenshots/02-real-room-and-agent.png"
+    "screenshots/01-goal-and-draft.png",
+    "screenshots/02-revision-review.png"
   ],
   "icon": "assets/icon.svg",
   "platforms": [
@@ -24,7 +24,7 @@
     "support": "https://github.com/codezzzsleep/OnCue/issues",
     "privacy_policy_url": "https://github.com/codezzzsleep/OnCue/blob/main/oncue/PRIVACY.md"
   },
-  "release_notes": "0.4.8：助手的回答没通过检查时，重试会告诉它上一次错在哪。数字检查更严：消息编号不再算作数字的出处，全角数字也会检查。读取群聊失败时显示中文原因。界面文案精简，「摘要」改名为「相关原文」。",
+  "release_notes": "0.5.2：先选表达目标再试映；草稿可以让助手按要求修订，对照后再应用；草稿按群分开保存；数字检查覆盖中文数字；采用前重新读取消息，确认后原样发送并回读核对，不自动重试。",
   "age_rating": "all",
   "license": "Apache-2.0"
 }

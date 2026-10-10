@@ -1,88 +1,103 @@
 # OnCue · 群聊试映室
 
-**先试着说，再决定要不要发。**
+**在群里开口之前，先在这里试一下。** 当前版本 **0.5.2（未签名）**。
 
-OnCue 是一个运行在 Rinx 里的 OctoScript 小程序。在群里发言之前，先把想说的话写在这里：它读取你授权的那个群的最近消息，请助手给出三种不同的说法（顺着说、换个问法、换个玩法），你挑一种改好，存成草稿。**应用自身不发送任何消息。**
+OnCue 是运行在 Rinx 里的群聊排练工具：选一个表达目标，参考你勾选的群消息，比较三种说法；挑一句改草稿，再决定要不要发到群里。草稿按房间存在本机。
 
-演示录屏：[2 分 08 秒](evidence/demo/oncue-demo.mp4)
+## 助手做什么，程序做什么
+
+**助手只写措辞，事实和执行由程序把关。** 助手根据目标提出候选台词并按修改要求改写；程序负责读取来源、核对身份、执行格式/引用/数字/承诺规则、控制采用、发送和存储。每一步要你确认：允许模型请求是一次确认，应用修订是一次确认，**发到群里是最后一次确认**。
+
+## 流程
+
+| 步骤 | 你做什么 | 失败时怎么办 |
+| --- | --- | --- |
+| 读群聊 | 点「载入群聊」，勾选本次参考的消息 | 未选房间/未授权/授权过期有中文提示，草稿不动 |
+| 试映 | 写台词、选目标、允许本次范围、点「试映下一幕」 | 助手不可用或限流提示原因；改勾选/撤回后要重新允许 |
+| 检查 | 对照每条建议和它依据的原文 | 引用或数字不合规则会被拒并说明原因，可重试 |
+| 选句、修订 | 「选用这句」进草稿；或提修改要求，候选对照后「应用修订」 | 期间群里来了新消息，旧候选作废并提示重新试映 |
+| 确认发送 | 「发到群里」核对房间和全文，点「确认发送」 | 发送期间又来新消息要再确认一次；改一个字确认就作废 |
+| 读回核验 | 程序自动读回，按新增消息、你的账号、正文核对 | 最近消息里没看到就说"尚不能确认"，只给「再读一次」，绝不自动重发 |
+
+## 权限
+
+| 能力 | 用途 |
+| --- | --- |
+| `storage` | 本地草稿按房间保存 |
+| `matrix.room_info` | 房间名称与稳定身份 |
+| `matrix.read_messages` | 读取授权房间最近消息，核对变化与发送结果 |
+| `matrix.account_info` | 当前账号身份（核对"是我刚发的"） |
+| `matrix.send_message` | 你确认后向该房间发送原样草稿 |
+| `octos.session.open` / `octos.turn.start` / `octos.turn.interrupt` | 助手试映与停止 |
+
+应用不直连网络；Rinx 与宿主模型可能联网并保留历史，本地删除不影响那边。
+
+## 宿主
+
+Rinx `c515e5fc9b6dc22e67f7d551b09fdd793ec685a1`（v1.1.0-3，2026-10-09）。Rinx 打开小程序一小时后或关闭应用后收回授权。
+
+## 验证（详见[验证记录](oncue/VERIFICATION.md)）
+
+- 界面场景 43 次全部通过（38 场景，412×892 与 954×448 双尺寸，宿主回复注入）
+- 逻辑测试 12 套 368 项全部通过（真实 card-host 虚拟机，生产函数逐字节复核）
+- 工具单元测试 109 项全部通过
+- `hub check` 通过（仅未签名警告）
+- 真实 Rinx：6 次真实模型试映、授权状态 4 项实拍、完整流程含真实发送 1 条并读回确认
+
+## 界面
 
 <p align="center">
-  <img src="evidence/screenshots/hero.png"
-       alt="OnCue 在宽窗口和窄窗口下的界面">
+  <img src="evidence/screenshots/hero.png" alt="OnCue 在宽窗口和窄窗口下的界面">
 </p>
-<p align="center">
-  <sub>宽窗口和窄窗口下的界面</sub>
-</p>
+<p align="center"><sub>宽窗口和窄窗口下的界面</sub></p>
 
-提交的应用包在 [`oncue/bundle/`](oncue/bundle/)。
+真实 Rinx 中的发送确认区与结果（[更多实机证据](evidence/native-052/)）：
+
+![发送确认区](evidence/native-052/send-confirm.png)
 
 ## 一分钟怎么玩
 
-1. 打开内置样例「国庆搭子局」，试一句「明早 9 点出发，住一晚」。群里有人说过中午才能走，也有人想当天回来。
-2. 改成「中午出发、当天回来，先核实预算」，重新试映，比较三个不同的接法。
-3. 选「换个玩法」，把讨论变成半日旅行盲盒：每人给一个想做的事，再找条件的交集。
-4. 播放、暂停或逐句查看假设对白，把喜欢的建议放进草稿；改两种写法，分别存 A、存 B，再取回对照。
+1. 打开本地样例，写一句想接的话，选「澄清条件」「礼貌拒绝」或「推动下一步」，点「试映下一幕」。
+2. 比较三种说法，「选用这句」放进草稿；假设对白可另行播放。
+3. 改草稿或提修改要求，候选对照后「应用修订」；保存是独立动作（保留这句/存 A/存 B）。
+4. 点「发到群里」核对房间和全文，「确认发送」后程序读回核验；草稿始终在你手里，发送不自动保存也不清空。
+5. 样例的三种说法和修订是本地固定演示，不调用模型；真实房间要先允许模型请求。
 
-<p align="center">
-  <img src="evidence/screenshots/app-row.png"
-       alt="左侧：打开样例并试映下一幕；右侧：逐句播放假设对白">
-</p>
-<p align="center">
-  <sub>左：打开内置样例、回看群聊消息 · 右：逐句播放「顺着这句」的假设对白</sub>
-</p>
-
-三种说法是助手的假设，不是群友的真实回复。
+演示录影为 0.4.8 时期录制，界面以当前截图为准。
 
 ## 在 Rinx 里运行
 
-**从 App Hub 安装**
+**从 App Hub 安装**：Rinx 的 **Discover → Mini apps** 进入应用库，找到 OnCue 后 **Add**、**Open**；打开时宿主列出申请的八项服务和所选房间，确认后授权本次运行。
 
-在 Rinx 的 **Discover → Mini apps** 进入 App Hub 应用库，找到 OnCue 后 **Add** 安装、**Open** 打开；打开时宿主会列出应用申请的六项服务和所选房间，确认后为本次运行授权。上架申请：<https://github.com/OctoSense-org/OctoSense-App-Hub/issues/78>。
-
-**本地导入**
-
-Rinx 的本地导入不接受已签名的包，先生成一份未签名副本：
+**本地导入**（不接受已签名包，先生成未签名副本）：
 
 ```sh
-# OCTO_HUB 指向本地构建的 hub，可执行文件的构建方法见 OctoScript-App-Design-Flow 的 QUICKSTART
 export OCTO_HUB=/path/to/OctoSense-App-Hub/target/release/hub
 DEV_ROOT="$(mktemp -d)"
 python3 oncue/tools/prepare_dev_bundle.py "${DEV_ROOT}/bundle" --hub "$OCTO_HUB"
 ```
 
-1. Rinx 里打开 **Discover → Mini apps → Import an app**。
-2. 包路径填上一步打印出的目录，房间填你自己的 Matrix 房间 ID。
-3. **Review** 核对名称、版本、六项服务与 Allowed room → **Run**。
+在 Rinx 里打开 **Discover → Mini apps → Import an app**，填入打印出的目录与你的房间 ID，**Review** 核对名称、版本、八项服务与 Allowed room 后 **Run**。每次打开都要重新授权。
 
-每次打开都要重新授权，关闭后授权失效。完整步骤见[运行说明](oncue/docs/RUNNING.md)。
+## 复赛版本改了什么
 
-## 数据与权限
+评审四条建议的对应：授权到期/拒绝授权行为已实测并记录在案（`evidence/native-052/auth-ui-results.json`）；数字检查扩展到中文数字与复合单位；应用包移到仓库根目录 `bundle/`；改用 GitHub 发布流程（tag 触发，`publish-app.yml` 已就位）。另加确认发送与新消息复核两项能力及界面场景测试。
 
-- **申请的六项能力**：`storage`（草稿 A/B）、`matrix.room_info` 与 `matrix.read_messages`（载入授权房间消息）、`octos.session.open` / `octos.turn.start` / `octos.turn.interrupt`（助手试映与停止）。
-- **发给助手的内容**：点「试映下一幕」时，已载入的全部消息（编号、发送者、正文）和你的台词会交给宿主配置的助手。应用自己不联网，但宿主的助手可能是远程服务。详见[数据说明](oncue/PRIVACY.md)。
-- **草稿**按账号保存在应用自己的存储目录里。
-- **防编造**：「相关原文」由应用按编号从群聊里原样取出，不经过助手改写。助手的回答里如果出现群聊和你的台词里都没有的数字、不存在的消息编号，或者「已同意」「已订票」这类说法，整份回答会被丢弃并重试一次。
+## 对 OctoSense 的贡献
 
-## 验证
-
-- **包检查**：发布包已签名，`hub check --publisher-key` 通过。
-- **逻辑测试**：8 套共 149 项断言。测试把 `main.splash` 的函数原样放进 card-host 的脚本虚拟机运行，宿主服务的返回值由测试脚本模拟。覆盖回答格式解析、重试、90 秒超时、播放计时、存储和来源检查。结果文件和复核命令见[测试说明](oncue/tests/README.md)。CI 只跑测试工具自身的 91 项单元测试，不包含这 149 项。
-- **实机**：2026-10-04 在 Rinx（OctoSense `6c4746f` + Rinx `c515e5f`，Linux aarch64）上，990×613 与 412×892 两尺寸各跑四种验收模式：990×613 四种全部通过；412×892 的 routes、draft、reopen 通过，playback 记为未判定（暂停后剩余行数不足，三次尝试均如此）。连续 10 次真实试映为 7 次首轮通过、2 次自动重试后通过、1 次失败。逐项结果见[验证记录](oncue/VERIFICATION.md)。
+1. **splash-app-verify Skill**：把"先写界面契约和场景、再写代码、每改一次全量跑场景"变成 Splash 应用的标准做法；今天它帮 OnCue 在交付前抓到 5 个真 bug（错误归因、限流翻译、两处状态与界面脱节）。13 号随 App Flow 提交 PR。
+2. **Palpo 密钥备份 404 复现**：开密钥备份的账号邀请任何人到新房间都失败（规范要求 200 空 sessions，Palpo 返回 404），最小复现已写进[验证记录](oncue/VERIFICATION.md)。
+3. App Flow 文档的一处写法问题（链接待提交后补充）。
 
 ## 尚未验证
 
-- 助手的回答是否符合事实。应用只检查编号、阿拉伯数字和几个固定用语，中文写的数字不检查。
-- macOS、Windows 和移动端。目前只在 Linux aarch64 上运行过。
-- 用户拒绝授权、授权到期时应用的表现。
+- ~~61 分钟授权过期实测~~ 已实测：Rinx 在授权到期后结束小程序会话（界面显示 Session ended）；应用内"授权已过期"提示由界面场景 04a 和 envelope 注入测试覆盖（[实测记录](evidence/native-052/expiry-record.json)）
+- 跨账号"群里有新消息"实机演示（已由界面场景注入覆盖）
+- macOS、Windows、移动端；商店安装；并发写入与断电一致性
 
 ## 文档
 
-- [产品说明](oncue/BRIEF.md)
-- [数据说明](oncue/PRIVACY.md)
-- [运行说明](oncue/docs/RUNNING.md)
-- [验证记录](oncue/VERIFICATION.md)
-- [测试说明](oncue/tests/README.md)
-- [演示录屏说明](evidence/demo/README.md)
-- [更新记录](CHANGELOG.md)
-- [App Hub 审核七问](build/REVIEW-ANSWERS.md)
+- [产品说明](oncue/BRIEF.md) · [数据说明](oncue/PRIVACY.md) · [运行说明](oncue/docs/RUNNING.md)
+- [验证记录](oncue/VERIFICATION.md) · [测试说明](oncue/tests/README.md)
+- [更新记录](CHANGELOG.md) · [审核问答](build/REVIEW-ANSWERS.md)
 - [Apache License 2.0](LICENSE)

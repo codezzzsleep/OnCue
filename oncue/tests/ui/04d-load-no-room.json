@@ -1,0 +1,25 @@
+{
+  "name": "S11 载入群聊时 matrix.room_info 报「this mini-app is not attached to a room」：显示中文，不显示原文",
+  "use": "_room.json",
+  "host": {
+    "matrix.room_info": {
+      "error": "this mini-app is not attached to a room"
+    }
+  },
+  "steps": [
+    {
+      "click": "载入群聊"
+    },
+    {
+      "wait": {
+        "text": [
+          "这次打开没有选房间。"
+        ],
+        "absent": [
+          "this mini-app is not attached to a room"
+        ]
+      },
+      "timeout": 5
+    }
+  ]
+}

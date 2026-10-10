@@ -1,0 +1,56 @@
+{
+  "source_sha256": "21c8e8a6c77adceae59e43f90c6d5faf7c4c1081e0fd99daadb5e61c1f1e1ac7",
+  "version": "0.5.2",
+  "natural_host": true,
+  "controlled_injection": false,
+  "cases": [
+    {
+      "case": "real_room_loaded",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "case": "generated_without_saving",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "case": "freshness_checked_before_adoption",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "case": "candidate_staged_without_overwriting",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "case": "revision_applied_without_save",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "case": "explicit_save_exact",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "case": "send_readback_outcome_recorded",
+      "passed": true,
+      "detail": "已发到 OnCue 试映室测试房。刚才读回时看到了这条。 未自动修改或保存草稿。"
+    },
+    {
+      "case": "send_preserves_draft_and_saved_bytes",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "case": "reopen_restores_exact_saved_revision",
+      "passed": true,
+      "detail": ""
+    }
+  ],
+  "scope": "2026-10-10 真实 Rinx + 宿主模型：生成→选句→修订→应用→保存→确认发送→读回→重开恢复。真实发送1条至授权测试房。",
+  "send_budget_used": 1,
+  "send_budget_limit": 3
+}

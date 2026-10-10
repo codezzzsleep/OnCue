@@ -1,47 +1,44 @@
-# `hub scan` 七问回答 — oncue-screening-room 0.4.8（v0.4.8）
+# 应用自查七问 — OnCue 0.5.2 未签名审阅版
 
-依据当前入口源码、manifest、listing 与 scan packet 核对。对应标签 `v0.4.8`。
+以下是源码及实际证据自查，不是App Hub官方审核结论。实际运行范围集中在[验证记录](../oncue/VERIFICATION.md)。
 
-## 1. Does the app do what its name, subtitle and description claim?
+## 1. 名称与描述是否符合实际用途？
 
-**是。** 名称「OnCue · 群聊试映室」与副标题「先试着说，再决定要不要发。」在页面直接显示。三路线由 `cue_rehearse → cue_start_turn → cue_accept_reply` 生成解析；按钮「A 顺着说 / B 换问法 / C 换玩法」切换预览。草稿「保留这句 / 取回草稿 / 存 A / 存 B / 取 A / 取 B」写入后读回来比对。「相关原文」由 `cue_source_excerpt` 按助手选的编号取出。应用没有申请也没有调用任何 Matrix 发送服务。
+用途是私人群聊排练：明确表达目标，三建议速览，手工编辑或提出修订要求，候选对照后应用，按房间保存主稿/A/B。假设对白可另行播放。草稿确认后**可以发到群里**：发送是两步确认（「发到群里」核对完整正文后点「确认发送」，60秒内有效），发送后回读最近30条核验本人同文消息。样例舞台为本地固定内容，不冒充真实模型，且不能发送。
 
-## 2. Do the listing's platforms and category fit?
+## 2. 平台与分类是否合适？
 
-**是。** 只在 Linux aarch64 上运行过，所以只声明 `linux`。`category: "productivity"`、`age_rating: "all"` 符合用途。
+仅声明Linux；当前本地验证环境为Linux x86_64。分类productivity、年龄等级all。其他平台及商店流程是否完成，以验证记录为准。
 
-## 3. Do the granted capabilities match what the app visibly does?
+## 3. 能力是否有对应功能？
 
-**是。六项能力都有对应的界面功能。**
+| 能力 | 功能 |
+|---|---|
+| `storage` | 房间草稿、A/B、回读、迁移和删除 |
+| `matrix.room_info` | 房间名称及稳定身份 |
+| `matrix.read_messages` | 授权房间最近最多12条文本；发送前最终核对与发送后回读 |
+| `matrix.account_info` | 发送确认前核验当前账号身份 |
+| `matrix.send_message` | 两步确认后发送草稿正文，错误按宿主原话归因 |
+| `octos.session.open` | 打开宿主模型上下文 |
+| `octos.turn.start` | G2三路线生成或R1单稿修订 |
+| `octos.turn.interrupt` | 停止及90秒期限中断请求 |
 
-| 能力 | 用途 |
-| --- | --- |
-| `storage` | 草稿写后读回来比对；A/B 两版 |
-| `matrix.room_info` | 载入群聊后标题显示房间名 |
-| `matrix.read_messages` | 请求最近的消息并编号展示，最多 12 条 |
-| `octos.session.open` | 试映前打开本应用的助手会话 |
-| `octos.turn.start` | 提交 prompt 生成编号选择和三路线 |
-| `octos.turn.interrupt` | 停止与 90 秒期限时中断回合 |
+没有直接网络主机。模型请求包含选定消息编号/正文、台词、目标和补充条件；R1另含原稿与修订要求。模型许可与房间读取分开，范围改变后须重新允许。发送不自动重试；回读不能确认时提示"是否已发送尚不能确认"，并警告重复发送风险。
 
-直接网络主机：无（`network.hosts` 为空，未申请 `net`）。试映时会把全部载入消息的 sender/body 与台词发给宿主配置的助手，应用本身不联网。
+## 4. 是否有误导性界面？
 
-## 4. Is any part of the interface deceptive?
+不收集密码、令牌或验证码，不提供支付。生成候选、应用到编辑框、保存、发送确认分开；人工编辑不继承候选检查状态。保存需实际写入和逐字回读；损坏或不确定时停写。发送确认页展示完整正文与字数（上限4096码点），草稿或上下文变化会使确认失效。没有把"原文存在"标成"事实正确"。
 
-**未见。** 无登录/密码/PIN/验证码输入框，无支付或订阅界面，不冒用其他品牌。Review/Run 是宿主界面。界面底部标注了三种说法是助手的假设。
+## 5. 是否含助手指令？
 
-## 5. Does any text read as an instruction to an assistant?
+有。G2与R1提示词规定结构、来源和假设边界。用户消息以数据形式放入请求；这不是完整提示注入防护。宿主控制模型历史和工具，应用不承诺session.open清空历史或工具绝对不可用。
 
-**有，属于正常助手任务。** `cue_prompt` 包含角色与任务指令（七段格式、编号选原文、假设边界、不调用工具不发送），通过 `octos.turn.start` 的 `text` 字段发送。群聊消息在请求里标注为待分析的数据，但这只是文字上的区分，不能完全防止消息内容影响助手。应用没有声明自己的 agent（`agent: null`），用的是宿主的助手。
+## 6. 是否冒犯或针对私人个体？
 
-## 6. Is any wording abusive or aimed at a private individual?
+内置场景及回应虚构；不预测真人心理，不冒充群友。发送者标签不进入模型请求，但正文仍可能识别人，使用者须有权用于该模型。
 
-**未见。** 样例与参与者均为虚构，prompt 要求匿名虚构回应、不模仿真人。授权房间消息可能含个人信息，由使用者决定是否载入与试映；应用不发送。
+## 7. 建议审核路线？
 
-## 7. Route: pass, human-review, or reject?
+**human-review。** 当前为未签名PR审阅包，不是最终发布。重点核对目标/修订的实际效果、发送两步确认与回读核验的实际表现、宿主数据范围、重新打开与删除、失败时草稿是否保留。队外用户试用和真实模型质量不能用受控VM测试代替。
 
-**Route: human-review。**
-
-1. 依赖 Rinx 宿主服务（`matrix.*` 仅 Rinx 提供；`octos.*` 由宿主或托管内核提供），card-host 两者皆无，须在 Rinx 复核。
-2. 已测试：没有选择房间时读取被拒绝；另一个账号打开时没有继承房间授权。未测试：用户点拒绝、授权到期。
-3. 数据范围：全部载入消息 sender/body 和你的台词进入宿主配置模型；草稿按账号+应用存储、不按房间；没有删除草稿的入口。
-4. 证据：149 项逻辑测试的结果在 [evidence/logic-tests](<../evidence/logic-tests/README.md>)，实机检查记录在[验证记录](<../oncue/VERIFICATION.md>)。发布包已签名，包检查通过。实机四模式在 990×613 下全部通过，412×892 下 playback 未判定，详见验证记录。
+新草稿按账号/房间隔离，最多10个记录、每稿8000字节、文件512 KiB；旧版主稿/A/B手动复制与独立删除。没有自动备份、跨进程锁或崩溃原子性保证。第三方模型历史不属于本地删除范围。完整说明见[数据说明](../oncue/PRIVACY.md)。

@@ -1,0 +1,25 @@
+{
+  "name": "S11 载入群聊时 matrix.room_info 报「Mini-app authorization expired」：显示中文，不显示原文",
+  "use": "_room.json",
+  "host": {
+    "matrix.room_info": {
+      "error": "Mini-app authorization expired"
+    }
+  },
+  "steps": [
+    {
+      "click": "载入群聊"
+    },
+    {
+      "wait": {
+        "text": [
+          "授权已过期。Rinx 打开小程序一小时后"
+        ],
+        "absent": [
+          "Mini-app authorization expired"
+        ]
+      },
+      "timeout": 5
+    }
+  ]
+}

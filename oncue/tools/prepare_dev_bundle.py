@@ -14,7 +14,7 @@ import shutil
 import stat
 import subprocess
 
-DEFAULT_BUNDLE = Path(__file__).absolute().parents[1] / 'bundle'
+DEFAULT_BUNDLE = Path(__file__).absolute().parents[2] / 'bundle'
 
 
 def _checked_path(value, label):

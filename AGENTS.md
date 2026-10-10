@@ -4,26 +4,35 @@
 
 ## 这是什么
 
-OnCue 是参加 GOSIM Agentic App 2026 的 OctoScript 小程序，运行在 Rinx 里。提交的应用包是 `oncue/bundle/`，其余是说明、测试和证据。产品说明见 `oncue/BRIEF.md`，运行方法见 `oncue/docs/RUNNING.md`。
+OnCue 是参加 GOSIM Agentic App 2026 的 OctoScript 小程序，运行在 Rinx 里。提交的应用包是 `bundle/`，其余是说明、测试和证据。产品说明见 `oncue/BRIEF.md`，运行方法见 `oncue/docs/RUNNING.md`。
 
 ## 不能做的事
 
-1. 不向任何 Matrix 房间发送消息。应用没有发送能力，测试时也不要用别的工具发。
-2. 不把密钥、令牌、密码写进仓库，也不打印到输出里。签名私钥放在仓库外。
-3. 不签名，不打标签，不推送，不在外部仓库开 issue 或评论。这些由作者做。
+1. 真实发送必须有作者明确许可，只向指定测试房间发送。每批测试要发几条就报批几条，没有许可时只做注入测试，不用其他工具绕过应用确认。
+2. 不把密钥、令牌、密码写进仓库，也不打印到输出里。
+3. 不签名，不打标签，不推 main，不在外部仓库开 issue 或评论。这些由作者做。功能或发布分支仅在作者明确要求时推送。
 4. 不伪造测试结果、截图和审核结论。没跑过的就写“未验证”。
 5. 不改写已经推送的历史。
 
+## 参赛作品的公开内容边界
+
+1. **始终按公开材料处理。** 仓库文件、分支、提交记录、PR 标题与正文、评论、截图和附件都可能被评委及其他参赛者看到。独立分支不是私密空间，关闭 PR 或后续删除文件也不会抹去历史。
+2. **内部研究与对外交付严格分开。** 查看其他作品是为了内部学习和改进，不代表获准公开研究过程。竞品名单、优劣评价、横向对比、借鉴对应表、参赛策略和内部讨论，不得写入公开仓库、提交说明、PR 或评论。允许开发或提 PR，不等于允许公开内部分析；例外须由作者明确确认具体内容。
+3. **公开说明以 OnCue 本身为中心。** 只说明用户需求、实际功能变化、必要的技术设计、使用方法、真实验证结果和已知限制。不点名比较其他队伍，不把内部分析包装成作品交付材料，也不在公开文档中记录内部沟通过程。
+4. **内部笔记只留本地。** 放在仓库外或已确认被 Git 忽略的 `.private/` 中，写入前检查忽略规则；不得暂存、提交、推送，也不得被构建脚本、测试包、日志、截图或附件间接带入公开交付。
+5. **发布前检查完整公开范围。** 推送、创建或更新 PR 前，检查相对目标分支的全部提交及文件，而不只是最后一次差异；同时检查提交说明、PR 正文、评论、生成证据和附件。发现内部研究内容先停止发布并处理，不能先推送再删。
+6. **真实与合规不打折。** 公开边界不用于隐瞒缺陷、伪造验证或夸大能力；必要限制仍须准确披露。实际复用第三方代码时必须遵守许可证并保留必要归属，不得借此规则删除依法或依约需要的署名。
+
 ## 改了应用包之后
 
-`oncue/bundle/` 下任何文件有改动，都要做完下面几步再交给作者：
+`bundle/` 下任何文件有改动，都要做完下面几步再交给作者：
 
 1. 把 `manifest.json` 里的版本号加一。同一个版本号只能对应一份内容。
 2. 跑工具单元测试：`python3 -m unittest discover -s oncue/tests -p 'selftest_*.py'`。
 3. 如果改了 `main.splash`：按 `oncue/tests/README.md` 重跑 8 套逻辑测试，用新结果替换 `evidence/logic-tests/`，更新 `oncue/VERIFICATION.md` 里的 SHA-256。
 4. 如果改了界面文案：先搜 `oncue/tools/` 和 `oncue/tests/`，验收脚本和测试数据引用了一部分文案，要一起改。
 5. 在 `CHANGELOG.md` 里加一条。
-6. 列出需要作者做的事：盖章和签名、打标签、在 Rinx 里验证、重截图、重录屏。
+6. 冻结后列出需要作者做的事：合并分支、推版本标签、核对 GitHub 发布工作流和提交材料。使用 GitHub 发布流程，不添加私钥签名。
 
 ## 常用命令
 
@@ -32,7 +41,7 @@ OnCue 是参加 GOSIM Agentic App 2026 的 OctoScript 小程序，运行在 Rinx
 python3 -m unittest discover -s oncue/tests -p 'selftest_*.py' -v
 
 # 检查已签名的包（OCTO_HUB 指向本地构建的 hub）
-"$OCTO_HUB" check oncue/bundle --publisher-key oncue.dev=50578fd7e0d8ac51a1e9e590835427ce8e71f46dba491860c75ae4e7c8c78042
+"$OCTO_HUB" check bundle --publisher-key oncue.dev=50578fd7e0d8ac51a1e9e590835427ce8e71f46dba491860c75ae4e7c8c78042
 
 # 生成未签名副本，用于 card-host 和 Rinx 本地导入
 python3 oncue/tools/prepare_dev_bundle.py "$(mktemp -d)/bundle" --hub "$OCTO_HUB"
@@ -62,7 +71,7 @@ python3 oncue/tools/prepare_dev_bundle.py "$(mktemp -d)/bundle" --hub "$OCTO_HUB
 - 没做的事统一写在“未验证”里，每件事写一次。不要在别处反复写“不代表”“不等于”“不证明”。
 - 不写本机路径、完整的账号和房间号、进程号。这些放在 `.private/ENV.md`，不入库。
 - 不引用仓库里不存在的文件。
-- 不把 TODO 和给作者的留言写进 `oncue/bundle/` 和 `oncue/PRIVACY.md`，这两处的内容会公开发布。
+- 不把 TODO 和给作者的留言写进 `bundle/` 和 `oncue/PRIVACY.md`，这两处的内容会公开发布。
 - 不新增文档，除非作者要求。状态变化写进 `CHANGELOG.md`。
 
 ## 提交规则

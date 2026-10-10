@@ -1,0 +1,36 @@
+{
+  "name": "S11 OctoSense 没给助手权限：说助手不可用，不说「没有读到群聊」，不显示英文原文",
+  "use": "_room.json",
+  "host": {
+    "octos.session.open": {
+      "error": "OctoSense has not given Rinx assistant access. Check Settings → Accounts → AI providers."
+    }
+  },
+  "steps": [
+    {
+      "run": "_load.json"
+    },
+    {
+      "run": "_allow.json"
+    },
+    {
+      "scroll_to": "试映下一幕"
+    },
+    {
+      "click": "试映下一幕"
+    },
+    {
+      "wait": {
+        "text": [
+          "助手"
+        ],
+        "absent": [
+          "正在准备",
+          "OctoSense has not given Rinx assistant access",
+          "没有读到群聊"
+        ]
+      },
+      "timeout": 5
+    }
+  ]
+}

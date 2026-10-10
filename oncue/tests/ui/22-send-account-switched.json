@@ -1,0 +1,63 @@
+{
+  "name": "S11 两次准备之间账号换了：说账号已切换，不发送",
+  "use": "_room.json",
+  "host": {
+    "matrix.account_info": [
+      {
+        "data": {
+          "user_id": "@me:example.org"
+        }
+      },
+      {
+        "data": {
+          "user_id": "@other:example.org"
+        }
+      }
+    ]
+  },
+  "steps": [
+    {
+      "run": "_load.json"
+    },
+    {
+      "run": "_confirm.json"
+    },
+    {
+      "scroll_to": "返回修改"
+    },
+    {
+      "click": "返回修改"
+    },
+    {
+      "wait": {
+        "text": [
+          "已取消本次确认"
+        ]
+      }
+    },
+    {
+      "scroll_to": "发到群里"
+    },
+    {
+      "click": "发到群里"
+    },
+    {
+      "wait": {
+        "text": [
+          "账号已经切换。请用当前账号重新打开 OnCue。"
+        ]
+      },
+      "timeout": 5
+    },
+    {
+      "expect": {
+        "calls": [
+          {
+            "service": "matrix.send_message",
+            "count": 0
+          }
+        ]
+      }
+    }
+  ]
+}
