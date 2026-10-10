@@ -63,7 +63,7 @@
         "calls": [
           {
             "service": "matrix.read_messages",
-            "count": 2
+            "count": 3
           }
         ]
       }

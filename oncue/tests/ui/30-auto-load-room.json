@@ -1,0 +1,32 @@
+{
+  "name": "N1 绑定房间打开：不点载入就读到消息，阶段条读群打勾",
+  "use": "_room.json",
+  "steps": [
+    {
+      "wait": {
+        "text": [
+          "原消息已载入，共 3 条。",
+          "读群 ✓"
+        ]
+      },
+      "timeout": 5
+    },
+    {
+      "expect": {
+        "absent": [
+          "现在是样例群聊"
+        ],
+        "calls": [
+          {
+            "service": "matrix.room_info",
+            "count": 1
+          },
+          {
+            "service": "matrix.read_messages",
+            "count": 1
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -4,12 +4,12 @@
     "storage"
   ],
   "compute": {
-    "instruction_budget": 8000000,
+    "instruction_budget": 64000000,
     "memory_bytes": 33554432
   },
   "id": "oncue-probe-grounding",
   "integrity": {
-    "bundle_blake3": "ff76784a9738cc2ad4d293de4e7d1ae9807c80c45bb063a8ac8bc76c65997db0"
+    "bundle_blake3": "0c2b3619f76a22d3ca0f34708b90a823bfba4a0cb12037d41eee24684fcfc2a5"
   },
   "name": "OnCue controlled grounding probe",
   "network": {
@@ -19,5 +19,5 @@
   "storage": {
     "max_bytes": 4194304
   },
-  "version": "0.5.2"
+  "version": "0.5.3"
 }

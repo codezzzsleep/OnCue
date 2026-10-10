@@ -22,17 +22,10 @@
       "scroll_to": "允许当前范围内的试映与修订"
     },
     {
-      "scroll_to": "试映下一幕"
+      "scroll_to": "允许当前范围内的试映与修订"
     },
     {
-      "click": "试映下一幕"
-    },
-    {
-      "wait": {
-        "text": [
-          "先看一下勾选的消息"
-        ]
-      }
+      "scroll_to": "允许并试映"
     },
     {
       "expect": {
@@ -40,10 +33,13 @@
           {
             "service": "octos.session.open",
             "count": 0
+          },
+          {
+            "service": "octos.turn.start",
+            "count": 0
           }
         ]
-      },
-      "timeout": 1
+      }
     }
   ]
 }

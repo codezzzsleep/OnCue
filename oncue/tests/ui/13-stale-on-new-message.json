@@ -94,7 +94,21 @@
       "run": "_load.json"
     },
     {
-      "run": "_rehearse.json"
+      "run": "_allow.json"
+    },
+    {
+      "scroll_to": "试映下一幕"
+    },
+    {
+      "click": "试映下一幕"
+    },
+    {
+      "wait": {
+        "text": [
+          "已过期：群里新增 1 条消息"
+        ]
+      },
+      "timeout": 5
     },
     {
       "scroll_to": {

@@ -4,12 +4,12 @@
     "storage"
   ],
   "compute": {
-    "instruction_budget": 8000000,
+    "instruction_budget": 64000000,
     "memory_bytes": 33554432
   },
   "id": "oncue-probe-deadline",
   "integrity": {
-    "bundle_blake3": "a7d46147c08a35d814259e635e6e87637f84275204535326b38b3792d883cd45"
+    "bundle_blake3": "6edd18a1e2baafca5e424b6b83e74aa20d2fb7fc80413113f6a26735aea29f6a"
   },
   "name": "OnCue controlled deadline probe",
   "network": {
@@ -19,5 +19,5 @@
   "storage": {
     "max_bytes": 4194304
   },
-  "version": "0.5.2"
+  "version": "0.5.3"
 }

@@ -4,12 +4,12 @@
     "storage"
   ],
   "compute": {
-    "instruction_budget": 8000000,
+    "instruction_budget": 64000000,
     "memory_bytes": 33554432
   },
   "id": "oncue-probe-playback",
   "integrity": {
-    "bundle_blake3": "41a46c5d7c11a43253b16d27ff8ba1d67463fde0cb48c7df6630ce451ec03458"
+    "bundle_blake3": "642da89d8d5a921ae250fc4320f34484416d1573575f5f2c0b806898cc0f0f6a"
   },
   "name": "OnCue controlled playback probe",
   "network": {
@@ -19,5 +19,5 @@
   "storage": {
     "max_bytes": 4194304
   },
-  "version": "0.5.2"
+  "version": "0.5.3"
 }

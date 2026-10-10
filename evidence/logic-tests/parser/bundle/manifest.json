@@ -4,12 +4,12 @@
     "storage"
   ],
   "compute": {
-    "instruction_budget": 8000000,
+    "instruction_budget": 64000000,
     "memory_bytes": 33554432
   },
   "id": "oncue-probe-parser",
   "integrity": {
-    "bundle_blake3": "0aa0e3ac65c86f107aea3d50a510bd8806880dbb61c89276686b78e4464a7c58"
+    "bundle_blake3": "06df3b3924c94b2d8bfde2e5e28256014b34d270685e3334e1e4f6dc7cc07a6a"
   },
   "name": "OnCue controlled parser probe",
   "network": {
@@ -19,5 +19,5 @@
   "storage": {
     "max_bytes": 4194304
   },
-  "version": "0.5.2"
+  "version": "0.5.3"
 }

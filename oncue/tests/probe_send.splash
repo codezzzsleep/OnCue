@@ -280,6 +280,10 @@ fn probe_send_adversarial(){
 fn probe_send_freshness(){
     probe_begin("send.fresh_route")
     probe_deliver(1, probe_good_reply())
+    // 0.5.3: a valid reply auto-checks freshness and places the default route;
+    // service that read, then clear the draft so the manual choose gate below is exercised as before.
+    probe_complete_freshness()
+    probe_manual("")
     let snapshot = cue_route_window.to_json()
     let start = probe_requests.len()
     cue_choose_route(0)
@@ -292,10 +296,14 @@ fn probe_send_freshness(){
     probe_assert("send.duplicate_freshness_callback_applies_once", cue_editor_revision == applied, {})
     cue_source_window.rows[0].body = "修改可变源窗口"
     probe_assert("send.generation_snapshot_is_value_clone", cue_route_window.to_json() == snapshot, {})
+    start_timeout(0.01, fn(){ probe_send_freshness_unselected() })
+}
+fn probe_send_freshness_unselected(){
     probe_begin("send.new_unselected_blocks_use")
     probe_deliver(1, probe_good_reply())
+    probe_complete_freshness()
     probe_manual("手工稿保留")
-    start = probe_requests.len()
+    let start = probe_requests.len()
     cue_choose_route(0)
     let rows = cue_source_window.rows.to_json().parse_json()
     rows.push(probe_row("$unselected-new", "@other:example.invalid", "未被模型引用的新消息"))
@@ -321,6 +329,8 @@ fn probe_send_freshness_more(){
     probe_assert("send.edited_same_event_blocks_refinement", ui.cue_draft.text() == original && cue_fresh_state == "stale", {})
     probe_begin("send.missing_anchor")
     probe_deliver(1, probe_good_reply())
+    probe_complete_freshness()
+    probe_manual("")
     start = probe_requests.len()
     cue_choose_route(0)
     probe_window_reply(start, [], false)

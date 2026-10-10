@@ -42,7 +42,7 @@ LEGACY_FILES = ("draft.txt", "take-a.txt", "take-b.txt")
 STORAGE_FIXTURES = ("draft", "take_a", "take_b")
 INITIALIZER = re.compile(
     r"(?m)^start_timeout\(0\.05,\s*fn\(\)\{\s*"
-    r"cue_show_demo\(\)\s+cue_(?:refresh_takes|boot_state)\(\)\s*\}\)\s*$"
+    r"cue_show_demo\(\)\s+cue_(?:refresh_takes|boot_state)\(\)(?:\s+cue_boot_autoload\(\))?\s*\}\)\s*$"
 )
 
 
@@ -253,6 +253,11 @@ def generate(source_path: Path, workdir: Path, suite: str) -> Path:
     manifest["capabilities"] = ["storage"]
     manifest["network"] = {"hosts": []}
     manifest["integrity"] = {"bundle_blake3": "0" * 64}
+    # The harness services several host callbacks inside one VM step, so a probe
+    # step spans work the real host splits across separate event-loop turns; the
+    # production budget (8M per single turn) stays unchanged and is covered by
+    # the UI scenarios, which run one user action per step under the same budget.
+    manifest["compute"] = {"instruction_budget": 64000000, "memory_bytes": 33554432}
     listing_path = source_path.parent / "listing.json"
     listing_bytes = listing_path.read_bytes()
     listing = json.loads(listing_bytes)

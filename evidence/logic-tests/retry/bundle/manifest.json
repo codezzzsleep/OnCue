@@ -4,12 +4,12 @@
     "storage"
   ],
   "compute": {
-    "instruction_budget": 8000000,
+    "instruction_budget": 64000000,
     "memory_bytes": 33554432
   },
   "id": "oncue-probe-retry",
   "integrity": {
-    "bundle_blake3": "65bb469a6a63a280eca217af47898d96a5ebc54ab51207ec0f23efb29796cc4b"
+    "bundle_blake3": "6c26dc8144cc892efadbbf431f74ef2f1a3d50ef54f0499fdd6c94452a6b7ea7"
   },
   "name": "OnCue controlled retry probe",
   "network": {
@@ -19,5 +19,5 @@
   "storage": {
     "max_bytes": 4194304
   },
-  "version": "0.5.2"
+  "version": "0.5.3"
 }

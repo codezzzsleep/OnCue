@@ -204,6 +204,18 @@ class Bridge:
         rows = self.snap()
         if len(self._targets(rows, text=text, id=id, ty=ty)) > 1:
             raise ValueError('Expected unique visible widget, found duplicate targets')
+        # Fixed-position widgets (the 0.5.3 stage bar lives above app_scroll) can
+        # never be scrolled into the scroll viewport; accept one that is already
+        # fully inside the window and uncovered, with the same uniqueness guard.
+        matches = self._targets(rows, text=text, id=id, ty=ty)
+        win = next((r for r in rows if r.get('ty') == 'Window'), None)
+        if len(matches) == 1 and win is not None:
+            row = matches[0]
+            x, y, w, h = row['r']
+            wx, wy, ww, wh = win['r']
+            if wx <= x and x + w <= wx + ww and wy <= y and y + h <= wy + wh:
+                self._uncovered(rows, row)
+                return row
         self._scroll_viewport(self._viewport(rows), -5000)
         for step in range(41):
             rows = self.snap()

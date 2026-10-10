@@ -27,7 +27,8 @@ from rinx_session import module, resize
 
 APP_ID = "oncue-screening-room"
 DEFAULT_RELEASE = Path(__file__).resolve().parents[2] / "bundle"
-SUCCESS = "三种说法好了。每条下面是它依据的原文，选之前对一下。"
+SUCCESS = "三种说法好了"  # 0.5.3 成功文案：前缀 + 推荐说明（可变）+ 两种固定后缀之一
+SUCCESS_SUFFIXES = ("；已放进草稿框。", "；草稿框已有内容，未覆盖；点「选用这句」采用。")
 CONSENT = "允许当前范围内的试映与修订"
 CONSENT_GRANTED = "已允许。点试映或修订时，会把台词、目标和勾选的消息发给助手。"
 SAVE_SUCCESS = "草稿已保存在本机；本次保存不会发送消息。"
@@ -138,7 +139,7 @@ def turn_state(status):
     # The native bridge exposes widget text, not cue_busy/revision. Match the
     # current production contract explicitly and fail on unknown/changed text.
     # An automatic retry is PENDING even though its text contains “未通过”.
-    if status == SUCCESS:
+    if status.startswith(SUCCESS + "。") and status.endswith(SUCCESS_SUFFIXES):
         return "success"
     if "正在自动重试一次" in status or status.startswith(("助手正在准备三种说法", "这一幕正在展开")):
         return "pending"

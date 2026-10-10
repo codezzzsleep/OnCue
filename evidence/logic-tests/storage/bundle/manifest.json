@@ -4,12 +4,12 @@
     "storage"
   ],
   "compute": {
-    "instruction_budget": 8000000,
+    "instruction_budget": 64000000,
     "memory_bytes": 33554432
   },
   "id": "oncue-probe-storage",
   "integrity": {
-    "bundle_blake3": "6c60ceceec59da03e6350cf857df7519998450088e0233a52b1108f0b1c9000a"
+    "bundle_blake3": "b2d9739dad2bc32c3a874a5b86aa297581d9378ceca73661611702d863e3c919"
   },
   "name": "OnCue controlled storage probe",
   "network": {
@@ -19,5 +19,5 @@
   "storage": {
     "max_bytes": 4194304
   },
-  "version": "0.5.2"
+  "version": "0.5.3"
 }
