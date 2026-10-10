@@ -91,7 +91,7 @@ python3 oncue/tools/prepare_dev_bundle.py "${DEV_ROOT}/bundle" --hub "$OCTO_HUB"
 
 ## 尚未验证
 
-- 61 分钟授权过期实测（计时中，结果将记入验证记录）
+- ~~61 分钟授权过期实测~~ 已实测：Rinx 在授权到期后结束小程序会话（界面显示 Session ended）；应用内"授权已过期"提示由界面场景 04a 和 envelope 注入测试覆盖（[实测记录](evidence/native-052/expiry-record.json)）
 - 跨账号"群里有新消息"实机演示（已由界面场景注入覆盖）
 - macOS、Windows、移动端；商店安装；并发写入与断电一致性
 
