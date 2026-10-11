@@ -1083,7 +1083,10 @@ fn cue_parse_reaction(text){
     if compare.to_chars().len() > 200 { return fail }
     cue_reject_reason = "格式：下一句须为一行150字以内，不带#编号"
     if next.search("\n") >= 0 || next.to_chars().len() > 150 || next.search("#") >= 0 { return fail }
-    let allowed = cue_send_history[cue_reaction_attempt].body + "\n" + ui.cue_trial.text() + "\n" + ui.cue_goal_note.text()
+    let sent_body = ""
+    if cue_reaction_attempt >= 0 { sent_body = cue_send_history[cue_reaction_attempt].body }
+    else if cue_reaction_synthetic != nil { sent_body = cue_reaction_synthetic.body }
+    let allowed = sent_body + "\n" + ui.cue_trial.text() + "\n" + ui.cue_goal_note.text()
     for row in cue_reaction_rows { allowed += "\n" + row.body }
     if !cue_commitments_grounded(compare + "\n" + next, allowed + "\n" + cue_grounding_allowed()) { return fail }
     cue_reject_reason = "数字：数值或单位不在已发出的话、真实回复或本人提议中"

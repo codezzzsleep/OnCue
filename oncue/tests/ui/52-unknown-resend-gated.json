@@ -1,5 +1,5 @@
 {
-  "name": "N23 恢复出 unknown 发送记录：连续零命中保持拦截、发送零调用，唯一命中后才视为已发到",
+  "name": "N23 恢复出 unknown 发送记录：零命中保持拦截、唯一命中后视为已发到，重启后看反响可对照",
   "use": "_room.json",
   "storage": {
     "rehearsals-v1.json": "[1,1,[[\"!trip:example.org\",[\"昨晚写好的一句：车票我自己买。\",2,\"manual\",\"\",\"\",\"\",\"\",\"\",1759800000000,[\"OC_SEND_1\",\"unknown\",1759800000100,\"\",\"昨晚写好的一句：车票我自己买。\"]],null,null]]]"
@@ -162,6 +162,71 @@
             }
           ],
           "has_more": false
+        }
+      },
+      {
+        "data": {
+          "messages": [
+            {
+              "sender": "xiaolin",
+              "sender_id": "@xiaolin:example.org",
+              "event_id": "$e1",
+              "body": "国庆找一天去杭州？",
+              "ts": 1759800000000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "ayou",
+              "sender_id": "@ayou:example.org",
+              "event_id": "$e2",
+              "body": "我中午 12 点以后才能走。",
+              "ts": 1759800060000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "qixi",
+              "sender_id": "@qixi:example.org",
+              "event_id": "$e3",
+              "body": "我想当天回来，预算 300 左右。",
+              "ts": 1759800120000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "我",
+              "sender_id": "@me:example.org",
+              "event_id": "$sentLate",
+              "body": "昨晚写好的一句：车票我自己买。",
+              "ts": 1759800000200,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "qixi",
+              "sender_id": "@qixi:example.org",
+              "event_id": "$e4",
+              "body": "座位靠窗就行。",
+              "ts": 1759800181000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            }
+          ],
+          "has_more": false
+        }
+      }
+    ],
+    "octos.turn.start": [
+      {
+        "data": {
+          "turn_id": "t-restart",
+          "text": "【对照】\n回复与预想一致，没有人反对。\n【下一句】\n车票我来买，时间你们定。"
         }
       }
     ]
@@ -444,6 +509,71 @@
           {
             "text": "看反响",
             "type": "Button"
+          }
+        ]
+      }
+    },
+    {
+      "click": "看反响"
+    },
+    {
+      "wait": {
+        "text": [
+          "发出那条之后的回复"
+        ],
+        "calls": [
+          {
+            "service": "matrix.room_info",
+            "count": 5
+          },
+          {
+            "service": "matrix.read_messages",
+            "count": 5
+          },
+          {
+            "service": "matrix.account_info",
+            "count": 4
+          },
+          {
+            "service": "matrix.send_message",
+            "count": 0
+          }
+        ]
+      },
+      "timeout": 5
+    },
+    {
+      "scroll_to": "qixi：座位靠窗就行。"
+    },
+    {
+      "scroll_to": "允许并对照"
+    },
+    {
+      "click": "允许并对照"
+    },
+    {
+      "wait": {
+        "text": [
+          "对照好了",
+          "车票我来买，时间你们定。"
+        ]
+      },
+      "timeout": 5
+    },
+    {
+      "expect": {
+        "calls": [
+          {
+            "service": "octos.session.open",
+            "count": 1
+          },
+          {
+            "service": "octos.turn.start",
+            "count": 1
+          },
+          {
+            "service": "matrix.send_message",
+            "count": 0
           }
         ]
       }
