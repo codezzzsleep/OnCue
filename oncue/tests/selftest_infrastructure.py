@@ -113,9 +113,9 @@ class InfrastructureTests(unittest.TestCase):
         literal = [name for name in literal if name not in ("storage.legacy_explicit_copy_", "envelope.auth_room_", "envelope.auth_model_")]
         self.assertEqual(len(literal), len(set(literal)))
         dynamic = {
-            "parser": {"parser." + case["id"] for case in self.fixtures["parser"] + self.fixtures["refinement"]},
+            "parser": {"parser." + case["id"] for case in self.fixtures["parser"] + self.fixtures["refinement"] + self.fixtures["recommendations"]},
             "pagination": {"pagination." + case["id"] for case in self.fixtures["pagination"]},
-            "grounding": {"grounding." + case["id"] for group in ("excerpts", "tokens", "numbers", "references")
+            "grounding": {"grounding." + case["id"] for group in ("excerpts", "tokens", "numbers", "references", "commitments")
                           for case in self.fixtures["grounding"][group]},
             "envelope": {"envelope.auth_" + mode + "_" + str(i) for mode in ("room", "model") for i in range(6)},
             "storage": {"storage." + case["id"] for case in self.fixtures["storage"]["invalid_cases"]}
@@ -234,8 +234,9 @@ class InfrastructureTests(unittest.TestCase):
         self.assertEqual(generate_probe.CORE_SUITES,
                          ("parser", "pagination", "retry", "deadline", "playback", "storage", "grounding", "envelope"))
         self.assertEqual(generate_probe.SUITES, (*generate_probe.CORE_SUITES, "send", "send2", "send3", "send4"))
+        # 0.5.3 复审新增：承诺句式 12 项（grounding.commitments）+ 同行推荐 4 项（recommendations）。
         self.assertEqual(sum(len(self.fixtures["assertion_ids"][suite])
-                             for suite in generate_probe.CORE_SUITES), 293)
+                             for suite in generate_probe.CORE_SUITES), 309)
         self.assertEqual(len(self.fixtures["assertion_ids"]["send"]), 44)
         self.assertEqual(len(self.fixtures["assertion_ids"]["send2"]), 21)
         self.assertEqual(len(self.fixtures["assertion_ids"]["send3"]), 7)

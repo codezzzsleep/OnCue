@@ -24,6 +24,59 @@ card-host 可以打开应用并看内置样例，但它不提供 Matrix 和助�
 
 0.4.8主流程也有 OctoSense `a3098486` + octos `056173e8` 的历史运行记录。
 
+## Rinx 房间绑定补丁（本地 vendored，未上游）
+
+0.5.x 的验证宿主是 **Rinx v1.1.0（`4b89097d8791a7190d01de1c576979c93df0013d`）加一处本地补丁**。OctoSense 的 `Cargo.toml` 用 `[patch."https://github.com/hagency-org/Rinx.git"] rinx = { path = "../rinx" }` 指向本地检出的 Rinx，补丁就在这份检出里（`src/miniapps/ui.rs`，未提交、未上游）。
+
+**症状**：不补丁时，导入面板里填写的房间号在 Review/Run 路径上读到的是隐藏库组件里的同名输入框（`ids!(room)` 的深度优先匹配先命中库里的 DropDown，而不是导入表单里的 `import_form.room`），应用最终以无房间状态启动。
+
+**补丁全文**（4 处，同一改动）：
+
+```diff
+--- a/src/miniapps/ui.rs
++++ b/src/miniapps/ui.rs
+@@ -218,7 +218,7 @@ impl MiniAppsPanel {
+             self.package = None;
+             let package = Package::load_builtin(&app.manifest.id, &crate::app_data_dir().join("miniapps/imports"))?;
+             self.show_import(cx);
+-            self.view.text_input(cx, ids!(room)).set_text(cx, "");
++            self.view.text_input(cx, ids!(import_form.room)).set_text(cx, "");
+             self.review_package(cx, package)?;
+         }
+         Ok(())
+@@ -326,7 +326,7 @@ impl MiniAppsPanel {
+         self.review_package(cx, package)
+     }
+     fn review_package(&mut self, cx: &mut Cx, package: Package) -> Result<(), String> {
+-        let room = self.view.text_input(cx, ids!(room)).text();
++        let room = self.view.text_input(cx, ids!(import_form.room)).text();
+         if !room.trim().is_empty() {
+             ruma::RoomId::parse(room.trim()).map_err(|_| "Invalid Matrix room ID")?;
+         }
+@@ -349,7 +349,7 @@ impl MiniAppsPanel {
+         let account = crate::sliding_sync::current_user_id()
+             .ok_or("Log in to Matrix before running a mini app")?
+             .to_string();
+-        let room = self.view.text_input(cx, ids!(room)).text();
++        let room = self.view.text_input(cx, ids!(import_form.room)).text();
+         if room.trim() != self.reviewed_room {
+             return Err("Room access changed. Review the bundle again".into());
+         }
+@@ -732,7 +732,7 @@ impl Widget for MiniAppsPanel {
+                             if crate::sliding_sync::current_user_id().is_none_or(|user| user.as_str() != account) { continue; }
+                             self.return_to_hub = true;
+                             self.reviewed_room = room.clone().unwrap_or_default();
+-                            self.view.text_input(cx, ids!(room)).set_text(cx, &self.reviewed_room);
++                            self.view.text_input(cx, ids!(import_form.room)).set_text(cx, &self.reviewed_room);
+                             let result = Package::load_verified(bundle.clone(), &crate::app_data_dir().join("miniapps/imports"))
+                                 .and_then(|package| { self.package = Some(package); self.run(cx) });
+                             if let Err(error) = result {
+```
+
+**未补丁对照运行记录**（2026-10-11，本机，未补丁二进制直接由上游 v1.1.0 构建）：导入表单填入包路径与房间 `!2TfOHq2ZGCYO5WJmDC:matrix.rinx.chat`，Review 正常列出服务；点 Run 后 Rinx 提示 "this mini-app is not attached to a room"，OnCue 状态行显示「这次打开没有选房间。请关闭应用，导入时填上房间再打开。」主流程（读群、试映、发送）全部无法进行。截图证据：`evidence/rinx-patch/unpatched-no-room.png`。同机同包在打过补丁的二进制上走完整主流程，见 `evidence/native-053/`。
+
+**上游 PR 素材**已备好在 `build/RINX-PR-room-binding.md`（问题、复现、修法、回归建议），是否提交由作者决定；上游 v1.2.0 已含同义修复，届时可移除本地补丁。
+
 ## 本地导入
 
 1. 生成未签名副本。Rinx 的本地导入不接受已签名的包。

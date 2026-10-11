@@ -40,7 +40,7 @@ python3 <splash-app-verify>/scripts/uitest.py run bundle oncue/tests/ui --keep-g
 
 ## 12 套逻辑测试
 
-真实 card-host 虚拟机，生产 168 个函数逐字节复制进测试包；宿主回包受控注入，UI、文件系统、时钟与计时器真实执行。同一源码 **12 套 368 项断言全部通过**，结果已归档 `evidence/logic-tests/` 可离线复核：
+真实 card-host 虚拟机，生产 178 个函数逐字节复制进测试包；宿主回包受控注入，UI、文件系统、时钟与计时器真实执行。同一源码 **12 套 384 项断言全部通过**，结果已归档 `evidence/logic-tests/` 可离线复核：
 
 ```sh
 for s in parser pagination retry deadline playback storage grounding envelope send send2 send3 send4; do
@@ -91,6 +91,17 @@ done
 ## 授权到期实测（61 分钟）
 
 真实 Rinx、0.5.2 最终源码（`5d6db93e…`）实测：04:04:54+08 打开应用并载入房间，05:08+08（约 65 分钟）观察——Rinx 在租赁过期后由 `pump()` 检查（`src/miniapps/ui.rs:569-584`）停止了小程序会话，界面显示 "Session ended. Review and run again." 并回到导入表单；截图在 `evidence/native-052/session-ended.png`。即**真实宿主到期表现为会话被结束**，应用内的"授权已过期"中文文案（含撤销允许、保留草稿）由界面场景 `04a` 与 envelope 注入测试确定性覆盖。
+
+## 回应评审：拒绝授权与授权到期（0.5.3 界面重拍）
+
+0.5.3 源码（`bundle/main.splash` SHA-256 `89a23d4c2e6c850b4aa6d4fc1f134d58cb11c4f21d39207ab9ab98e7daa766f0`）在真实 Rinx（v1.1.0+房间绑定补丁）上重拍四种授权状态；应用内行为另有界面场景与逻辑断言兜底。
+
+| 情形 | 怎么触发 | 用户看到的原文 | 草稿和存储怎样 | 证据 | 源码 SHA-256 |
+| --- | --- | --- | --- | --- | --- |
+| 未选房间 | 导入时不填房间直接 Run | 「这次打开没有选房间。请关闭应用，导入时填上房间再打开。」（宿主另提示 "this mini-app is not attached to a room"） | 不载入、不写任何房间记录；样例舞台可编辑，但不保存到房间 | `evidence/auth-053/no-room-053.png`（未补丁对照机同路径实测见 `evidence/rinx-patch/unpatched-no-room.png`） | `89a23d4c…` |
+| 未允许 | 载入群聊后不点允许 | 「允许后，试映、修订和看反响时，会把你的台词、目标、勾选的消息，以及你发出后群里新回复的正文（不含名字）发给助手。改了勾选、撤回或关闭应用后，要重新允许。」；阶段条「允许并试映」下注明本次发送内容 | 草稿本地保存不受影响；对助手零调用（场景 05a 断言 session.open/turn.start 均为 0） | `evidence/auth-053/model-not-allowed-053.png`、`oncue/tests/ui/05a-rehearse-needs-consent.json` | `89a23d4c…` |
+| 撤回 | 已允许后点「已允许 · 点这里撤回」 | 「已撤回，之后不会再发给助手。」；点「看反响」只按原话列出新回复，不给对照（场景 N13/42） | 草稿与已列出的回复原话保留；撤回后不再调用助手（场景断言 turn.start 计数不变） | `evidence/auth-053/model-revoked-053.png`、`oncue/tests/ui/42-reaction-revoked.json` | `89a23d4c…` |
+| 到期（Session ended） | 应用保持打开约 65 分钟，宿主租约到期 | Rinx 结束小程序会话：导入表单显示 "Session ended. Review and run again."；应用内「授权已过期」文案由场景 04a/envelope 注入覆盖 | **未保存编辑会丢**（会话被宿主结束，内存状态随之消失）；已保存草稿在应用私有存储里，重新打开后可载入 | `evidence/auth-053/session-ended-053.png`、`evidence/auth-053/expiry-record-053.json`（13:37 打开、14:44 观察到，约 67 分钟） | `89a23d4c…` |
 
 ## 未验证
 

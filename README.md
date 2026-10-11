@@ -39,7 +39,7 @@ Rinx `c515e5fc9b6dc22e67f7d551b09fdd793ec685a1`（v1.1.0-3，2026-10-09）。Rin
 ## 验证（详见[验证记录](oncue/VERIFICATION.md)）
 
 - 界面场景 43 次全部通过（38 场景，412×892 与 954×448 双尺寸，宿主回复注入）
-- 逻辑测试 12 套 368 项全部通过（真实 card-host 虚拟机，生产函数逐字节复核）
+- 逻辑测试 12 套 384 项全部通过（真实 card-host 虚拟机，生产函数逐字节复核）
 - 工具单元测试 109 项全部通过
 - `hub check` 通过（仅未签名警告）
 - 真实 Rinx：6 次真实模型试映、授权状态 4 项实拍、完整流程含真实发送 1 条并读回确认
@@ -82,6 +82,15 @@ python3 oncue/tools/prepare_dev_bundle.py "${DEV_ROOT}/bundle" --hub "$OCTO_HUB"
 ## 复赛版本改了什么
 
 评审四条建议的对应：授权到期/拒绝授权行为已实测并记录在案（`evidence/native-052/auth-ui-results.json`）；数字检查扩展到中文数字与复合单位；应用包移到仓库根目录 `bundle/`；改用 GitHub 发布流程（tag 触发，`publish-app.yml` 已就位）。另加确认发送与新消息复核两项能力及界面场景测试。
+
+## 回应评审的四条建议（0.5.3 复审）
+
+| 建议 | 做了什么 | 证据链接 | 仍未做到 |
+| --- | --- | --- | --- |
+| 「【推荐】B」同行写法也算推荐 | 解析器同时接受独占行与同行两种写法；逻辑测试各覆盖 | `bundle/main.splash:856`、`oncue/tests/fixtures.json`（`recommendations` 四条用例） | 无 |
+| 反响协议改名，避免与修订协议 R1 混淆 | 反响对照协议改名 F1（提示词、文档、问答记录同步）；修订协议仍叫 R1 | `bundle/main.splash:958`、`build/REVIEW-ANSWERS.md:23` | 无 |
+| 「允许并试映」旁说明这次发什么 | 按钮正下方加一行：这次发给助手的内容（台词、目标、勾选正文，不含名字） | `bundle/main.splash:2670`、界面场景 `oncue/tests/ui/05a-rehearse-needs-consent.json` | 无 |
+| 发布与证据随版本归档 | 打 v0.5.3 后由发布工作流生成，以发布记录为准 | — | 待作者打 tag 后自动完成 |
 
 ## 对 OctoSense 的贡献
 

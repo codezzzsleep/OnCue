@@ -741,6 +741,69 @@
       "中午以后再讨论。",
       "虚构回应甲：仍待核实。\n虚构回应乙：暂不替别人决定。\n依据：#3\n待确认：是否方便继续讨论？",
       "先提议，不承诺执行。"
+    ],
+    "commitments": [
+      {
+        "id": "commitment_consensus_rejected",
+        "text": "大家都同意了，中午出发。",
+        "expected": false
+      },
+      {
+        "id": "commitment_booked_rejected",
+        "text": "票已经订好了，放心。",
+        "expected": false
+      },
+      {
+        "id": "commitment_thats_settled_rejected",
+        "text": "行，就这么定了。",
+        "expected": false
+      },
+      {
+        "id": "commitment_booked_count_rejected",
+        "text": "已订三张票。",
+        "expected": false
+      },
+      {
+        "id": "commitment_old_wordlist_rejected",
+        "text": "大家已同意。",
+        "expected": false
+      },
+      {
+        "id": "commitment_no_objection_rejected",
+        "text": "都没意见了，就这么办。",
+        "expected": false
+      },
+      {
+        "id": "commitment_negation_allowed",
+        "text": "还没定，大家看行吗？",
+        "expected": true
+      },
+      {
+        "id": "commitment_pending_question_allowed",
+        "text": "待确认：是否都同意？",
+        "expected": true
+      },
+      {
+        "id": "commitment_negated_degree_allowed",
+        "text": "大家都没同意，我再问问。",
+        "expected": true
+      },
+      {
+        "id": "commitment_dont_settle_allowed",
+        "text": "先别就这么定，再想想。",
+        "expected": true
+      },
+      {
+        "id": "commitment_repeated_from_source_allowed",
+        "text": "你已经订好票了，那我们只看行程。",
+        "allowed_extra": "你已经订好票了。",
+        "expected": true
+      },
+      {
+        "id": "commitment_reworded_rejected",
+        "text": "你已经订好票了，那我们只看行程。",
+        "expected": false
+      }
     ]
   },
   "assertion_ids": {
@@ -783,7 +846,11 @@
       "parser.marked7_reordered_marker_rejected",
       "parser.marked7_wrapped_separator_combo_rejected",
       "parser.output_order_and_markers",
-      "parser.route_suggestion_length_and_line_bounds"
+      "parser.route_suggestion_length_and_line_bounds",
+      "parser.recommend_marker_line",
+      "parser.recommend_same_line",
+      "parser.recommend_same_line_no_reason",
+      "parser.recommend_unknown_choice"
     ],
     "pagination": [
       "pagination.empty",
@@ -1024,7 +1091,19 @@
       "grounding.052.vague_ignored",
       "grounding.052.minutes_kept",
       "grounding.empty_source_bounds",
-      "grounding.no_host_calls"
+      "grounding.no_host_calls",
+      "grounding.commitment_consensus_rejected",
+      "grounding.commitment_booked_rejected",
+      "grounding.commitment_thats_settled_rejected",
+      "grounding.commitment_booked_count_rejected",
+      "grounding.commitment_old_wordlist_rejected",
+      "grounding.commitment_no_objection_rejected",
+      "grounding.commitment_negation_allowed",
+      "grounding.commitment_pending_question_allowed",
+      "grounding.commitment_negated_degree_allowed",
+      "grounding.commitment_dont_settle_allowed",
+      "grounding.commitment_repeated_from_source_allowed",
+      "grounding.commitment_reworded_rejected"
     ],
     "envelope": [
       "envelope.normal_open_started_turn",
@@ -1177,6 +1256,32 @@
       "id": "refine_parse_empty_note",
       "text": "【R1依据】\n#2\n【R1建议】\n建议\n【R1说明】\n",
       "valid": false
+    }
+  ],
+  "recommendations": [
+    {
+      "id": "recommend_marker_line",
+      "tail": "收尾语\n【推荐】\nB\n理由：预算最稳。",
+      "expected_index": 1,
+      "expected_reason": "预算最稳。"
+    },
+    {
+      "id": "recommend_same_line",
+      "tail": "【推荐】B\n理由：预算最稳。",
+      "expected_index": 1,
+      "expected_reason": "预算最稳。"
+    },
+    {
+      "id": "recommend_same_line_no_reason",
+      "tail": "【推荐】A",
+      "expected_index": 0,
+      "expected_reason": ""
+    },
+    {
+      "id": "recommend_unknown_choice",
+      "tail": "【推荐】D",
+      "expected_index": -1,
+      "expected_reason": ""
     }
   ]
 }

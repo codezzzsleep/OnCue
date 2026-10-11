@@ -301,10 +301,10 @@ class Recorder:
         require(len(rows) == 1, "Expected exactly one OnCue status label")
         return rows[0].get("t", "")
 
-    def click(self, text=None, *, id=None, shell=False):
+    def click(self, text=None, *, id=None, after=None, shell=False):
         self.check_context()
-        result = self.b.click(text=text, id=id) if shell else self.b.click_app(text=text, id=id)
-        self.record("click", text=text, id=id, shell=shell, target=result["target"]["r"])
+        result = self.b.click(text=text, id=id) if shell else self.b.click_app(text=text, id=id, after=after)
+        self.record("click", text=text, id=id, after=after, shell=shell, target=result["target"]["r"])
         return result
 
     def click_visible(self, text):

@@ -208,6 +208,16 @@ fn probe_parser(){
     probe_assert("parser.excerpt_rejects_rewording", cue_source_excerpt("#2 杭州") == "" && cue_source_excerpt("#99") == "" && cue_source_excerpt("#2\n#2") == "", {})
     probe_assert("parser.rejects_invented_price", !cue_numbers_grounded("青旅人均80元") && cue_numbers_grounded("预算500，依据#1"), {})
     probe_assert("parser.rejects_invalid_citation", !cue_references_valid("依据#99") && cue_references_valid("依据#2、#3"), {})
+    start_timeout(0.01, fn(){ probe_parser_recommendations() })
+}
+fn probe_parser_recommendations(){
+    let fixtures = probe_fixtures.recommendations
+    for i in fixtures.len() {
+        let fixture = fixtures[i]
+        let blocks = ["【摘要】\n#1", "【A对白】\n甲", "【A建议】\n建议甲", "【B对白】\n乙", "【B建议】\n建议乙", "【C对白】\n丙", fixture.tail]
+        let rec = cue_extract_recommendation(blocks)
+        probe_assert("parser." + fixture.id, rec.index == fixture.expected_index && rec.reason == fixture.expected_reason, {actual_index: rec.index, actual_reason: rec.reason})
+    }
     start_timeout(0.01, fn(){ probe_parser_markers() })
 }
 fn probe_parser_markers(){
@@ -1004,7 +1014,7 @@ fn probe_grounding(){
     start_timeout(0.01, fn(){ probe_grounding_fixture(0, 0) })
 }
 fn probe_grounding_fixture(group, index){
-    let groups = [probe_fixtures.grounding.excerpts, probe_fixtures.grounding.tokens, probe_fixtures.grounding.numbers, probe_fixtures.grounding.references]
+    let groups = [probe_fixtures.grounding.excerpts, probe_fixtures.grounding.tokens, probe_fixtures.grounding.numbers, probe_fixtures.grounding.references, probe_fixtures.grounding.commitments]
     if group >= groups.len() { probe_grounding_protocol() return }
     let fixtures = groups[group]
     if index >= fixtures.len() { start_timeout(0.01, fn(){ probe_grounding_fixture(group + 1, 0) }) return }
@@ -1015,6 +1025,14 @@ fn probe_grounding_fixture(group, index){
     if group == 1 { actual = cue_numeric_tokens(fixture.text) passed = probe_equal_strings(actual, fixture.expected) }
     if group == 2 { actual = cue_numbers_grounded(fixture.text) passed = actual == fixture.expected }
     if group == 3 { actual = cue_references_valid(fixture.text) passed = actual == fixture.expected }
+    if group == 4 {
+        let allowed = ui.cue_trial.text() + "\n" + ui.cue_goal_note.text()
+        for i in cue_sources.len() { if cue_source_enabled(i) { allowed += "\n" + cue_sources[i].body } }
+        let extra = try { fixture.allowed_extra } catch { nil }
+        if extra != nil { allowed += "\n" + extra }
+        actual = cue_commitments_grounded(fixture.text, allowed)
+        passed = actual == fixture.expected
+    }
     probe_assert("grounding." + fixture.id, passed, {actual: actual, expected: fixture.expected, semantic_verification: false})
     start_timeout(0.01, fn(){ probe_grounding_fixture(group, index + 1) })
 }
