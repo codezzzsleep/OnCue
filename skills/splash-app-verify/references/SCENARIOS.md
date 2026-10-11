@@ -53,8 +53,10 @@ value of the wrong kind (`"text": "Kept."` instead of a list, `"false"` in quote
 where `false` is meant, `true` where a count is meant, a size that is not
 `WxH`) stops the run with exit status 2 before any app starts: a check the
 runner skipped, or a switch it read the wrong way, would otherwise pass
-without testing anything. A bundle that contains a symbolic link is refused
-too: the runner never writes through a link.
+without testing anything. `count`, `calls` and `files` must be lists of objects;
+`null` or an object in their place is refused, and `[]` is an empty list.
+A bundle that contains a symbolic link is refused too: the runner never writes
+through a link.
 
 Size the app the way its hosts do. A shell that gives the app part of its
 window gives it a smaller rectangle than the window: measure that rectangle

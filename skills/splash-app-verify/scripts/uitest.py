@@ -1013,6 +1013,9 @@ def run_one(card_host, bundle, scenario_path, scenario, size, out_dir, display, 
                 except Exception as e:  # the host must not take the cleanup and the result with it
                     result["evidence"]["close_error"] = f"{type(e).__name__}: {e}"
                     result["environment_error"] = True
+                    if result["passed"]:
+                        result.update(passed=False, expected="the card-host closes cleanly",
+                                      actual=result["evidence"]["close_error"], detail={})
             result["evidence"]["log"] = str(run_dir / "card-host.log")
             if nonce:
                 try:
@@ -1126,6 +1129,8 @@ def validate_expect(exp, where, fake_host=True):
     if not isinstance(exp, dict) or not exp:
         raise ScenarioError(f"{where}: an expectation is a non-empty object")
     _unknown(exp, EXPECT_KEYS, where, "expectation")
+    for key in ("count", "calls", "files"):
+        _need(key not in exp or isinstance(exp[key], list), where, f'"{key}" is a list of objects')
     if "text" in exp:
         _list_of(exp["text"], str, where, "text")
     if "absent" in exp:

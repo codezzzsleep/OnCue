@@ -1,9 +1,12 @@
 """uitest regressions that need no card-host: fixtures, the fake host source, selectors, checks, feedback."""
+import io
 import json
 import sys
 import tempfile
 import unittest
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import uitest  # noqa: E402
@@ -378,6 +381,20 @@ class Safety(unittest.TestCase):
                 with self.assertRaises(uitest.ScenarioError, msg=json.dumps(body)):
                     uitest.load_scenarios(t)
 
+    def test_expectation_collections_must_be_lists(self):
+        with tempfile.TemporaryDirectory() as t:
+            scenario = Path(t) / "case.json"
+            for action in ("expect", "wait"):
+                for key in ("count", "calls", "files"):
+                    for value in (None, {}, "", "wrong", False, 0, {"wrong": 1}):
+                        with self.subTest(action=action, key=key, value=value):
+                            scenario.write_text(json.dumps({"steps": [{action: {key: value}}]}))
+                            with self.assertRaises(uitest.ScenarioError) as error:
+                                uitest.load_scenarios(scenario)
+                            self.assertIn(f'"{key}" is a list of objects', str(error.exception))
+                    scenario.write_text(json.dumps({"steps": [{action: {key: []}}]}))
+                    self.assertEqual(len(uitest.load_scenarios(scenario)), 1)
+
     def test_unknown_keys_are_refused_not_ignored(self):
         bad_steps = [
             {"expect": {"texts": ["Kept."]}},                       # a typo would have passed silently
@@ -573,7 +590,7 @@ class Housekeeping(unittest.TestCase):
             self.assertIn("dta", second["error"])
             self.assertEqual(len(first["bundle_sha256"]), 64)
 
-    def test_a_host_that_fails_to_close_still_leaves_a_result(self):
+    def test_a_host_that_fails_to_close_is_not_counted_as_passed(self):
         class Host:
             def __init__(self, *a, **k):
                 Path(a[4]).write_text("")
@@ -587,22 +604,65 @@ class Housekeeping(unittest.TestCase):
             def close(self):
                 raise OSError("the process vanished while it was being stopped")
 
+        class NoDisplay:
+            env = {}
+            def __enter__(self): return self
+            def __exit__(self, *a): pass
+
         with tempfile.TemporaryDirectory() as t:
             bundle = Path(t) / "bundle"
             bundle.mkdir()
             (bundle / "main.splash").write_text("let x = 1\n")
             (bundle / "manifest.json").write_text(json.dumps({"id": "a", "capabilities": []}))
-            real, uitest.App = uitest.App, Host
+            scenario = Path(t) / "01.json"
+            scenario.write_text('{"steps": [{"sleep": 0}]}')
+            out = Path(t) / "out"
             before = set(Path(tempfile.gettempdir()).glob("uitest-*"))
-            try:
-                r = uitest.run_one("/bin/true", bundle, Path(t) / "01.json", {"steps": []}, "412x892",
-                                   Path(t) / "out", type("D", (), {"env": {}})())
-            finally:
-                uitest.App = real
+            stdout = io.StringIO()
+            with patch.object(uitest, "App", Host), patch.object(uitest, "Display", NoDisplay), \
+                    patch.object(uitest, "find_card_host", return_value="/bin/true"), redirect_stdout(stdout):
+                code = uitest.main(["run", str(bundle), str(scenario), "--out", str(out)])
+            summary = json.loads((out / "summary.json").read_text())
+            r = summary["results"][0]
+            self.assertEqual(code, 2)
+            self.assertEqual((summary["status"], summary["passed"], summary["failed"]),
+                             ("environment_error", 0, 1))
+            self.assertIn("finished", summary)
+            self.assertFalse(r["passed"])
             self.assertTrue(r["environment_error"])
             self.assertIn("vanished", r["evidence"]["close_error"])
-            self.assertTrue((Path(t) / "out" / "01@412x892" / "result.json").is_file())
+            self.assertIn("vanished", r["actual"])
+            self.assertTrue((out / "01@412x892" / "result.json").is_file())
+            self.assertTrue(Path(r["feedback"]).is_file())
+            self.assertIn("ENV  ", stdout.getvalue())
+            self.assertNotIn("PASS ", stdout.getvalue())
             self.assertEqual(set(Path(tempfile.gettempdir()).glob("uitest-*")) - before, set())
+
+    def test_invalid_expectation_collections_finish_without_starting_a_host(self):
+        with tempfile.TemporaryDirectory() as t:
+            bundle = Path(t) / "bundle"
+            bundle.mkdir()
+            (bundle / "main.splash").write_text("let x = 1\n")
+            (bundle / "manifest.json").write_text(json.dumps({"id": "a", "capabilities": []}))
+            scenario = Path(t) / "case.json"
+            out = Path(t) / "out"
+            for action in ("expect", "wait"):
+                for key in ("count", "calls", "files"):
+                    for value in (None, {}):
+                        with self.subTest(action=action, key=key, value=value):
+                            scenario.write_text(json.dumps({"steps": [{action: {key: value}}]}))
+                            with patch.object(uitest, "find_card_host", return_value="/bin/true"), \
+                                    patch.object(uitest, "App") as host, patch.object(uitest, "Display") as display, \
+                                    redirect_stderr(io.StringIO()):
+                                code = uitest.main(["run", str(bundle), str(scenario), "--out", str(out)])
+                            host.assert_not_called()
+                            display.assert_not_called()
+                            summary = json.loads((out / "summary.json").read_text())
+                            self.assertEqual(code, 2)
+                            self.assertEqual(summary["status"], "aborted")
+                            self.assertIn("finished", summary)
+                            self.assertEqual((summary["passed"], summary["failed"], summary["results"]), (0, 0, []))
+                            self.assertIn(f'"{key}" is a list of objects', summary["error"])
 
     def test_no_display_ends_the_summary_as_an_environment_error(self):
         with tempfile.TemporaryDirectory() as t:
