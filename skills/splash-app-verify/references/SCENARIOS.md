@@ -49,9 +49,12 @@ whose names start with `_` are shared parts, not scenarios.
 
 Every key in a scenario, a step, a check and a selector is checked when the
 scenarios load. An unknown key (`texts` for `text`, `servce` for `service`) or a
-value of the wrong kind (`"text": "Kept."` instead of a list) stops the run
-with exit status 2 before any app starts: a check the runner skipped would
-otherwise pass without testing anything.
+value of the wrong kind (`"text": "Kept."` instead of a list, `"false"` in quotes
+where `false` is meant, `true` where a count is meant, a size that is not
+`WxH`) stops the run with exit status 2 before any app starts: a check the
+runner skipped, or a switch it read the wrong way, would otherwise pass
+without testing anything. A bundle that contains a symbolic link is refused
+too: the runner never writes through a link.
 
 Size the app the way its hosts do. A shell that gives the app part of its
 window gives it a smaller rectangle than the window: measure that rectangle
@@ -104,9 +107,11 @@ Every call is printed to card-host's log as one line, with whether it was
 declared; the `calls` check reads those lines. Each line carries a code that is
 new for every run, so the app cannot print a line the runner would take for a
 call, and the fake host prints a ready line before the app's first line runs.
-A missing ready line or a call line that does not parse is broken evidence
-(exit status 2), never "no calls": a `"count": 0` or an `excludes` check cannot
-pass on evidence the runner could not read.
+A missing ready line, a call line that does not parse, a gap in the call
+numbers or a record cut off at the end of the log is broken evidence (exit
+status 2), never "no calls": a `"count": 0` or an `excludes` check cannot pass
+on evidence the runner could not read. While the app runs, a record still being
+written makes a check wait for it.
 
 ## Steps
 
@@ -179,9 +184,10 @@ After every run the runner copies the app's jail to `<out>/<scenario>@<size>/jai
 evidence of what the app wrote, and the seed for a restart scenario's `storage`.
 
 `<out>/summary.json` belongs to one invocation. It is rewritten when a run
-starts (`"status": "running"`) and after every scenario, and ends as `passed`,
-`failed`, `environment_error` or `aborted` (a scenario file or the card-host
-could not be used). It carries a `run_id`, the runner version, digests of the
+starts (`"status": "running"`) and after every scenario, and always ends as
+`passed`, `failed`, `environment_error` (no display, a host that would not
+close, unreadable evidence) or `aborted` (a scenario file or the card-host
+could not be used, or the run was interrupted), with a `finished` time. It carries a `run_id`, the runner version, digests of the
 bundle and of the card-host binary, and each result carries the digest of the
 scenario as it ran. A summary left by an earlier run is never mistaken for this
 one.

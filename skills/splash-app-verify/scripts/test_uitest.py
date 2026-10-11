@@ -336,6 +336,48 @@ class Safety(unittest.TestCase):
             with self.assertRaises(uitest.ScenarioError):
                 uitest.load_scenarios(d)
 
+    def test_a_link_in_the_bundle_is_refused_before_anything_is_written(self):
+        with tempfile.TemporaryDirectory() as t:
+            outside = Path(t) / "outside-source.splash"
+            outside.write_text("let x = 1\n")
+            bundle = Path(t) / "bundle"
+            bundle.mkdir()
+            (bundle / "main.splash").symlink_to(outside)
+            (bundle / "manifest.json").write_text(json.dumps({"id": "a", "capabilities": []}))
+            with self.assertRaises(uitest.ScenarioError):
+                uitest.prepare_copy(bundle, Path(t) / "work", {"host": {}}, "n0nce")
+            self.assertEqual(outside.read_text(), "let x = 1\n")        # untouched
+            (bundle / "main.splash").unlink()
+            (bundle / "main.splash").write_text("let x = 1\n")
+            (bundle / "assets").mkdir()
+            (bundle / "assets" / "up").symlink_to(Path(t))               # a directory link counts too
+            with self.assertRaises(uitest.ScenarioError):
+                uitest.prepare_copy(bundle, Path(t) / "work2", {"host": {}}, "n0nce")
+
+    def test_values_of_the_wrong_type_are_refused(self):
+        bad = [
+            {"allow_runtime_errors": "false", "steps": [{"sleep": 0}]},
+            {"fake_host": "false", "steps": [{"sleep": 0}]},
+            {"sizes": ["412*892"], "steps": [{"sleep": 0}]},
+            {"viewport": [0, 0, 412], "steps": [{"sleep": 0}]},
+            {"startup_timeout": True, "steps": [{"sleep": 0}]},
+            {"steps": [{"click": "Keep", "allow_runtime_errors": "false"}]},
+            {"steps": [{"wait": {"files": [{"name": "a.json", "missing": "false", "contains": ["x"]}]}}]},
+            {"steps": [{"wait": {"files": [{"name": "a.json", "missing": True, "contains": ["x"]}]}}]},
+            {"steps": [{"wait": {"count": [{"of": "Keep", "n": True}]}}]},
+            {"steps": [{"wait": {"calls": [{"service": "a.b", "count": False}]}}]},
+            {"steps": [{"click": {"text": "Use", "nth": True}}]},
+            {"steps": [{"click": {"id": 3}}]},
+            {"steps": [{"type": {"into": "entry", "text": "x", "clear": "yes"}}]},
+            {"steps": [{"sleep": float("inf")}]},
+            {"steps": [{"wait": {"text": ["x"]}, "timeout": "5"}]},
+        ]
+        for body in bad:
+            with tempfile.TemporaryDirectory() as t:
+                (Path(t) / "x.json").write_text(json.dumps(body))
+                with self.assertRaises(uitest.ScenarioError, msg=json.dumps(body)):
+                    uitest.load_scenarios(t)
+
     def test_unknown_keys_are_refused_not_ignored(self):
         bad_steps = [
             {"expect": {"texts": ["Kept."]}},                       # a typo would have passed silently
@@ -384,9 +426,21 @@ class Safety(unittest.TestCase):
         self.assertEqual(calls(), [])                      # ready and no calls: really no calls
         log["text"] += 'UITEST_CALL_n0nce {"seq":1,"service":"a.b","args":{},"declared":true}\n'
         log["text"] += 'UITEST_CALL_guess {"seq":9,"service":"forged"}\n'      # the app cannot guess the nonce
-        log["text"] += 'UITEST_CALL_n0nce {"seq":2,"serv'                       # a line still being written
         self.assertEqual([c["service"] for c in calls()], ["a.b"])
-        log["text"] += 'ice":"x"\nUITEST_CALL_n0nce {broken\n'
+        log["text"] += 'UITEST_CALL_n0nce {"seq":2,"service":"octos.turn.start","args":{"text":"sec'   # being written
+        with self.assertRaises(uitest.PendingEvidence):    # while the host runs: wait, do not count
+            calls()
+        with self.assertRaises(uitest.EvidenceError):      # after it closed: incomplete evidence
+            uitest.App.calls(Logged(), final=True)
+        # A "count 0" or "excludes" check cannot pass on a record that is still being written.
+        app = FakeApp(WIDGETS)
+        app.calls = lambda: uitest.App.calls(Logged())
+        with self.assertRaises(uitest.StepFailed):
+            uitest.check_expectation(app, {"calls": [{"service": "octos.turn.start", "excludes": "secret"}]}, [0, 0, 412, 892])
+        log["text"] += 'ret"}}\nUITEST_CALL_n0nce {"seq":4,"service":"x"}\n'
+        with self.assertRaises(uitest.EvidenceError):      # seq 3 is missing
+            calls()
+        log["text"] = 'UITEST_READY_n0nce\nUITEST_CALL_n0nce {broken\n'
         with self.assertRaises(uitest.EvidenceError):
             calls()
 
@@ -445,7 +499,7 @@ class Housekeeping(unittest.TestCase):
             def new_runtime_errors(self):
                 return []
 
-            def calls(self):
+            def calls(self, final=False):
                 raise uitest.EvidenceError("the call log is unreadable")
 
             def peak_rss_mb(self):
@@ -467,7 +521,8 @@ class Housekeeping(unittest.TestCase):
             finally:
                 uitest.App = real
             self.assertEqual(closed, [True])
-            self.assertTrue(r["passed"])
+            self.assertFalse(r["passed"])                       # unreadable evidence is not a pass
+            self.assertTrue(r["environment_error"])
             self.assertIn("unreadable", r["evidence"]["calls_error"])
             self.assertTrue((Path(t) / "out" / "01@412x892" / "result.json").is_file())
             self.assertEqual(set(Path(tempfile.gettempdir()).glob("uitest-*")) - before, set())
@@ -491,7 +546,7 @@ class Housekeeping(unittest.TestCase):
 
                 def wait_ready(self, timeout): pass
                 def new_runtime_errors(self): return []
-                def calls(self): return []
+                def calls(self, final=False): return []
                 def peak_rss_mb(self): return None
                 def close(self): pass
 
@@ -517,6 +572,61 @@ class Housekeeping(unittest.TestCase):
             self.assertEqual(second["passed"], 0)
             self.assertIn("dta", second["error"])
             self.assertEqual(len(first["bundle_sha256"]), 64)
+
+    def test_a_host_that_fails_to_close_still_leaves_a_result(self):
+        class Host:
+            def __init__(self, *a, **k):
+                Path(a[4]).write_text("")
+                self.line_offset = 0
+
+            def wait_ready(self, timeout): pass
+            def new_runtime_errors(self): return []
+            def calls(self, final=False): return []
+            def peak_rss_mb(self): return None
+
+            def close(self):
+                raise OSError("the process vanished while it was being stopped")
+
+        with tempfile.TemporaryDirectory() as t:
+            bundle = Path(t) / "bundle"
+            bundle.mkdir()
+            (bundle / "main.splash").write_text("let x = 1\n")
+            (bundle / "manifest.json").write_text(json.dumps({"id": "a", "capabilities": []}))
+            real, uitest.App = uitest.App, Host
+            before = set(Path(tempfile.gettempdir()).glob("uitest-*"))
+            try:
+                r = uitest.run_one("/bin/true", bundle, Path(t) / "01.json", {"steps": []}, "412x892",
+                                   Path(t) / "out", type("D", (), {"env": {}})())
+            finally:
+                uitest.App = real
+            self.assertTrue(r["environment_error"])
+            self.assertIn("vanished", r["evidence"]["close_error"])
+            self.assertTrue((Path(t) / "out" / "01@412x892" / "result.json").is_file())
+            self.assertEqual(set(Path(tempfile.gettempdir()).glob("uitest-*")) - before, set())
+
+    def test_no_display_ends_the_summary_as_an_environment_error(self):
+        with tempfile.TemporaryDirectory() as t:
+            bundle = Path(t) / "bundle"
+            bundle.mkdir()
+            (bundle / "main.splash").write_text("let x = 1\n")
+            (bundle / "manifest.json").write_text(json.dumps({"id": "a", "capabilities": []}))
+            (Path(t) / "case.json").write_text('{"steps": [{"sleep": 0}]}')
+
+            class NoDisplay:
+                def __enter__(self):
+                    raise RuntimeError("no display and no Xvfb")
+                def __exit__(self, *a): pass
+
+            real = (uitest.Display, uitest.find_card_host)
+            uitest.Display, uitest.find_card_host = NoDisplay, lambda *a, **k: "/bin/true"
+            try:
+                code = uitest.main(["run", str(bundle), str(Path(t) / "case.json"), "--out", str(Path(t) / "out")])
+            finally:
+                uitest.Display, uitest.find_card_host = real
+            summary = json.loads((Path(t) / "out" / "summary.json").read_text())
+            self.assertEqual(code, 2)
+            self.assertEqual(summary["status"], "environment_error")
+            self.assertIn("finished", summary)
 
     def test_setup_records_card_host_for_later_shells(self):
         with tempfile.TemporaryDirectory() as t:

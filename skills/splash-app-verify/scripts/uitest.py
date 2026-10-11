@@ -29,6 +29,7 @@ Python 3.9+, standard library only.
 import argparse
 import hashlib
 import json
+import math
 import os
 import re
 import shutil
@@ -102,6 +103,10 @@ class StepFailed(Exception):
         self.expected = expected
         self.actual = actual
         self.detail = detail or {}
+
+
+class PendingEvidence(StepFailed):
+    """Evidence still being written: a wait retries, a final read must not accept it."""
 
 
 # --------------------------------------------------------------- fake host
@@ -230,11 +235,17 @@ def prepare_copy(bundle, workdir, scenario, nonce="0"):
     Only main.splash changes (and the copy's signature goes, as its bytes
     differ); capabilities, storage and everything else stay as written.
     """
+    links = bundle_links(bundle)
+    if links:
+        raise ScenarioError(f"{bundle} contains symbolic links ({', '.join(links[:3])}); a bundle holds regular "
+                            "files only, and the runner never writes through a link to the original")
     copy = workdir / "bundle"
-    shutil.copytree(bundle, copy, symlinks=True)
+    shutil.copytree(bundle, copy, symlinks=False)
     main = copy / "main.splash"
-    if not main.is_file():
+    if not main.is_file() or main.is_symlink():
         raise ScenarioError(f"{bundle} has no main.splash; uitest runs script apps")
+    if (copy / "manifest.json").is_symlink():
+        raise ScenarioError(f"{bundle}/manifest.json is a link")
     manifest_path = copy / "manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     check_app_id(manifest.get("id"))
@@ -248,6 +259,17 @@ def prepare_copy(bundle, workdir, scenario, nonce="0"):
         if integrity.pop("signature", None) is not None or integrity.pop("github", None) is not None:
             manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return copy, shim_lines
+
+
+def bundle_links(bundle):
+    """Every symbolic link under the bundle, as paths relative to it."""
+    out = []
+    for root, dirs, files in os.walk(bundle, followlinks=False):
+        for name in dirs + files:
+            p = Path(root) / name
+            if p.is_symlink():
+                out.append(str(p.relative_to(bundle)))
+    return out
 
 
 def jail_path(jail, name, where="storage"):
@@ -443,16 +465,26 @@ class App:
                 return None
         return path if path.is_file() else None
 
-    def calls(self):
+    def calls(self, final=False):
         """Every host.request the app made, from the fake host's lines in card-host's log.
 
         The ready line comes first; without it the evidence is missing, which
-        is an error, never "no calls". A line that does not parse is an error too.
+        is an error, never "no calls". A line that does not parse, a gap in the
+        sequence numbers, or a record cut off at the end of a finished log is an
+        error too. While the host runs, a record still being written makes the
+        check wait (PendingEvidence) rather than count what is there so far.
         """
         if not self.nonce:
             raise EvidenceError("this run has no fake host, so there is no call evidence")
         text = self.log_text()
-        complete = text if text.endswith("\n") else text[: text.rfind("\n") + 1]
+        cut = text.rfind("\n") + 1
+        complete, tail = text[:cut], text[cut:]
+        if f"{CALL_MARK}{self.nonce}" in tail:
+            if final:
+                raise EvidenceError("the card-host log ends inside a call record; "
+                                    "the call evidence is incomplete")
+            raise PendingEvidence("the call log has no record still being written",
+                                  "the last call record is still being written", {"tail": tail[:200]})
         lines = complete.splitlines()
         if f"{READY_MARK}{self.nonce}" not in (l.strip() for l in lines):
             raise EvidenceError("the fake host never reported itself ready in the card-host log, "
@@ -467,6 +499,9 @@ class App:
                     raise EvidenceError(f"a call line in the card-host log does not parse ({e}): {l[:200]}")
                 if not isinstance(call, dict) or not isinstance(call.get("service"), str):
                     raise EvidenceError(f"a call line in the card-host log is not a call: {l[:200]}")
+                if call.get("seq") != len(out) + 1:
+                    raise EvidenceError(f"call record {len(out) + 1} is missing from the card-host log "
+                                        f"(the next one says seq {call.get('seq')!r})")
                 out.append(call)
         return out
 
@@ -490,11 +525,16 @@ class App:
                 try:
                     self.proc.wait(5)
                 except subprocess.TimeoutExpired:
-                    os.killpg(self.proc.pid, signal.SIGTERM)
-                    try:
-                        self.proc.wait(5)
-                    except subprocess.TimeoutExpired:
-                        os.killpg(self.proc.pid, signal.SIGKILL)
+                    for sig in (signal.SIGTERM, signal.SIGKILL):
+                        try:
+                            os.killpg(self.proc.pid, sig)
+                        except ProcessLookupError:
+                            break  # it exited meanwhile
+                        try:
+                            self.proc.wait(5)
+                            break
+                        except subprocess.TimeoutExpired:
+                            continue
         finally:
             self.log_file.close()
 
@@ -968,11 +1008,15 @@ def run_one(card_host, bundle, scenario_path, scenario, size, out_dir, display, 
                 except Exception:
                     pass
             finally:
-                app.close()
+                try:
+                    app.close()
+                except Exception as e:  # the host must not take the cleanup and the result with it
+                    result["evidence"]["close_error"] = f"{type(e).__name__}: {e}"
+                    result["environment_error"] = True
             result["evidence"]["log"] = str(run_dir / "card-host.log")
             if nonce:
                 try:
-                    calls = app.calls()
+                    calls = app.calls(final=True)
                     (run_dir / "calls.json").write_text(json.dumps(calls, ensure_ascii=False, indent=1))
                     result["evidence"]["calls"] = str(run_dir / "calls.json")
                     undeclared = sorted({c["service"] for c in calls if c.get("declared") is False})
@@ -980,6 +1024,12 @@ def run_one(card_host, bundle, scenario_path, scenario, size, out_dir, display, 
                         result["undeclared_services"] = undeclared
                 except Exception as e:
                     result["evidence"]["calls_error"] = f"{type(e).__name__}: {e}"
+                    if result["passed"]:
+                        # Without readable call evidence the run did not show what the scenario
+                        # describes (the fake host's replies): not a pass, not the app's fault.
+                        result["passed"] = False
+                        result.update(expected="the fake host's call evidence is complete",
+                                      actual=result["evidence"]["calls_error"], detail={}, environment_error=True)
             # What the app left in its jail: evidence, and a seed for a restart scenario.
             try:
                 if copy_jail(jail, run_dir / "jail"):
@@ -1036,6 +1086,20 @@ def _unknown(keys, allowed, where, what):
         raise ScenarioError(f"{where}: unknown {what} key(s) {bad}; allowed: {sorted(allowed)}")
 
 
+def _num(v):
+    """A finite number that is not a bool (JSON true would otherwise count as 1)."""
+    return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
+
+
+def _whole(v):
+    return isinstance(v, int) and not isinstance(v, bool) and v >= 0
+
+
+def _need(cond, where, message):
+    if not cond:
+        raise ScenarioError(f"{where}: {message}")
+
+
 def _list_of(value, kind, where, key):
     if not isinstance(value, list) or not all(isinstance(v, kind) for v in value):
         raise ScenarioError(f"{where}: \"{key}\" is a list of {'strings' if kind is str else 'selectors'}")
@@ -1051,8 +1115,9 @@ def validate_selector(sel, where):
     _unknown(sel, SELECTOR_KEYS, where, "selector")
     if not set(sel) - {"nth", "after"}:
         raise ScenarioError(f"{where}: a selector needs one of id, type, text or contains: {sel!r}")
-    if "nth" in sel and (not isinstance(sel["nth"], int) or sel["nth"] < 0):
-        raise ScenarioError(f"{where}: \"nth\" is a whole number from 0")
+    for key in ("id", "type", "text", "contains"):
+        _need(key not in sel or isinstance(sel[key], str), where, f"selector \"{key}\" is a string")
+    _need("nth" not in sel or _whole(sel["nth"]), where, "\"nth\" is a whole number from 0")
     if "after" in sel:
         validate_selector(sel["after"], where + " after")
 
@@ -1079,7 +1144,7 @@ def validate_expect(exp, where, fake_host=True):
         if not isinstance(item, dict):
             raise ScenarioError(f"{where}: a count item is an object")
         _unknown(item, COUNT_KEYS, where, "count")
-        if "of" not in item or not isinstance(item.get("n"), int):
+        if "of" not in item or not _whole(item.get("n")):
             raise ScenarioError(f"{where}: a count item has \"of\" and a whole number \"n\"")
         validate_selector(item["of"], where + " count")
     if exp.get("calls") and not fake_host:
@@ -1090,7 +1155,7 @@ def validate_expect(exp, where, fake_host=True):
         _unknown(item, CALL_KEYS, where, "calls")
         if not isinstance(item.get("service"), str):
             raise ScenarioError(f"{where}: a calls item names its \"service\"")
-        if "count" in item and (not isinstance(item["count"], int) or item["count"] < 0):
+        if "count" in item and not _whole(item["count"]):
             raise ScenarioError(f"{where}: calls \"count\" is a whole number")
         for key in ("contains", "excludes"):
             if key in item and not isinstance(item[key], str):
@@ -1100,8 +1165,11 @@ def validate_expect(exp, where, fake_host=True):
             raise ScenarioError(f"{where}: a files item is an object")
         _unknown(item, FILE_KEYS, where, "files")
         check_jail_name(item.get("name"), where + " files")
+        _need("missing" not in item or isinstance(item["missing"], bool), where, "files \"missing\" is true or false")
         if "contains" in item:
             _list_of(item["contains"], str, where, "contains")
+        _need(not (item.get("missing") is True and item.get("contains")), where,
+              "a files item cannot require a file to be missing and to contain text")
 
 
 def validate_step(step, where, fake_host=True):
@@ -1110,6 +1178,9 @@ def validate_step(step, where, fake_host=True):
         raise ScenarioError(f"{where}: a step has exactly one of {sorted(STEP_ACTIONS)} or \"run\", got {step!r}")
     action = actions.pop()
     _unknown(set(step) - {action}, STEP_MODIFIERS[action], where, f"\"{action}\" step")
+    _need("allow_runtime_errors" not in step or isinstance(step["allow_runtime_errors"], bool), where,
+          "\"allow_runtime_errors\" is true or false")
+    _need("note" not in step or isinstance(step["note"], str), where, "\"note\" is a string")
     value = step[action]
     if action == "click":
         validate_selector(value, where)
@@ -1117,6 +1188,7 @@ def validate_step(step, where, fake_host=True):
         if not isinstance(value, dict) or not isinstance(value.get("text"), str):
             raise ScenarioError(f"{where}: \"type\" is an object with \"text\"")
         _unknown(value, TYPE_KEYS, where, "type")
+        _need("clear" not in value or isinstance(value["clear"], bool), where, "\"clear\" is true or false")
         if "into" in value:
             validate_selector(value["into"], where + " into")
     elif action == "key":
@@ -1126,19 +1198,44 @@ def validate_step(step, where, fake_host=True):
         if not isinstance(value, dict) or "on" not in value:
             raise ScenarioError(f"{where}: \"scroll\" is an object with \"on\"")
         _unknown(value, SCROLL_KEYS, where, "scroll")
+        _need("dy" not in value or _num(value["dy"]), where, "\"dy\" is a number")
         validate_selector(value["on"], where + " scroll")
     elif action == "scroll_to":
         for sel in (value if isinstance(value, list) else [value]):
             validate_selector(sel, where + " scroll_to")
         if "on" in step:
             validate_selector(step["on"], where + " on")
+        _need("max" not in step or (_whole(step["max"]) and step["max"] > 0), where, "\"max\" is a whole number above 0")
     elif action == "sleep":
-        if not isinstance(value, (int, float)) or value < 0:
-            raise ScenarioError(f"{where}: \"sleep\" is a number of seconds")
+        _need(_num(value) and value >= 0, where, "\"sleep\" is a number of seconds")
     else:
         validate_expect(value, where, fake_host)
-    if "timeout" in step and (not isinstance(step["timeout"], (int, float)) or step["timeout"] < 0):
-        raise ScenarioError(f"{where}: \"timeout\" is a number of seconds")
+    _need("timeout" not in step or (_num(step["timeout"]) and step["timeout"] >= 0), where,
+          "\"timeout\" is a number of seconds")
+
+
+SIZE_RE = re.compile(r"[1-9][0-9]{1,4}x[1-9][0-9]{1,4}")
+
+
+def validate_scenario(sc, where):
+    """Types of the scenario's own fields, after its parts are merged."""
+    for key in ("fake_host", "allow_runtime_errors"):
+        _need(key not in sc or isinstance(sc[key], bool), where, f"\"{key}\" is true or false")
+    for key in ("name", "description", "note"):
+        _need(key not in sc or isinstance(sc[key], str), where, f"\"{key}\" is a string")
+    _need(sc.get("host_profile", "octosense") in HOST_PROFILES, where,
+          f"host_profile must be one of {list(HOST_PROFILES)}")
+    _need("startup_timeout" not in sc or (_num(sc["startup_timeout"]) and sc["startup_timeout"] > 0), where,
+          "\"startup_timeout\" is a number of seconds above 0")
+    sizes = sc.get("sizes") if "sizes" in sc else ([sc["size"]] if "size" in sc else [])
+    _need(isinstance(sizes, list) and all(isinstance(z, str) and SIZE_RE.fullmatch(z) for z in sizes), where,
+          "\"sizes\" is a list of \"WxH\" strings such as \"412x892\"")
+    if "viewport" in sc:
+        v = sc["viewport"]
+        _need(isinstance(v, list) and len(v) == 4 and all(_num(x) for x in v) and v[2] > 0 and v[3] > 0, where,
+              "\"viewport\" is [x, y, w, h] in points")
+    _need(isinstance(sc.get("host"), dict), where, "\"host\" is an object of replies by service")
+    _need(isinstance(sc.get("storage"), dict), where, "\"storage\" is an object of files by name")
 
 
 def read_json(f):
@@ -1206,8 +1303,7 @@ def load_scenarios(target):
         _unknown(data, SCENARIO_KEYS, f, "scenario")
         scenario = resolve_scenario(f, data)
         normalise_replies(scenario["host"])  # report a bad fixture before anything starts
-        if scenario.get("host_profile", "octosense") not in HOST_PROFILES:
-            raise ScenarioError(f"{f}: host_profile must be one of {list(HOST_PROFILES)}")
+        validate_scenario(scenario, str(f))
         for name in scenario["storage"]:
             check_jail_name(name, f"{f}: storage")
         for i, step in enumerate(scenario["steps"]):
@@ -1237,7 +1333,7 @@ def cmd_run(args):
     write_summary(out_dir, summary)
 
     def abort(message):
-        summary.update(status="aborted", error=message)
+        summary.update(status="aborted", error=message, finished=time.strftime("%Y-%m-%dT%H:%M:%S%z"))
         write_summary(out_dir, summary)
         print(f"uitest: {message}", file=sys.stderr)
         return 2
@@ -1254,29 +1350,40 @@ def cmd_run(args):
     except ScenarioError as e:
         return abort(str(e))
     results = summary["results"]
-    with Display() as display:
-        for path, sc in scenarios:
-            sizes = sc.get("sizes") or [sc.get("size") or DEFAULT_SIZE]
-            for size in sizes:
-                try:
-                    r = run_one(card_host, bundle, path, sc, size, out_dir, display, run_id)
-                except ScenarioError as e:
-                    return abort(f"{path}: {e}")
-                results.append(r)
-                summary["passed"] = sum(x["passed"] for x in results)
-                summary["failed"] = sum(not x["passed"] for x in results)
-                write_summary(out_dir, summary)
-                mark = "PASS" if r["passed"] else ("ENV " if r.get("environment_error") else "FAIL")
-                mem = f", {r['peak_rss_mb']} MB" if r.get("peak_rss_mb") else ""
-                print(f"{mark} {r['scenario']} @ {r['size']} ({r['seconds']}s{mem})")
-                for line in warnings_for(r):
-                    print(f"     note: {line}")
-                if not r["passed"]:
-                    print(f"     expected: {r['expected']}\n     actual:   {r['actual']}\n     feedback: {r['feedback']}")
-                    if not args.keep_going:
-                        break
-            if results and not results[-1]["passed"] and not args.keep_going:
-                break
+    try:
+        with Display() as display:
+            for path, sc in scenarios:
+                sizes = sc.get("sizes") or [sc.get("size") or DEFAULT_SIZE]
+                for size in sizes:
+                    try:
+                        r = run_one(card_host, bundle, path, sc, size, out_dir, display, run_id)
+                    except ScenarioError as e:
+                        return abort(f"{path}: {e}")
+                    results.append(r)
+                    summary["passed"] = sum(x["passed"] for x in results)
+                    summary["failed"] = sum(not x["passed"] for x in results)
+                    write_summary(out_dir, summary)
+                    mark = "PASS" if r["passed"] else ("ENV " if r.get("environment_error") else "FAIL")
+                    mem = f", {r['peak_rss_mb']} MB" if r.get("peak_rss_mb") else ""
+                    print(f"{mark} {r['scenario']} @ {r['size']} ({r['seconds']}s{mem})")
+                    for line in warnings_for(r):
+                        print(f"     note: {line}")
+                    if not r["passed"]:
+                        print(f"     expected: {r['expected']}\n     actual:   {r['actual']}\n     feedback: {r['feedback']}")
+                        if not args.keep_going:
+                            break
+                if results and not results[-1]["passed"] and not args.keep_going:
+                    break
+    except Exception as e:  # the display, the host or the disk: the environment, never a pass
+        summary.update(status="environment_error", error=f"{type(e).__name__}: {e}",
+                       finished=time.strftime("%Y-%m-%dT%H:%M:%S%z"))
+        write_summary(out_dir, summary)
+        print(f"uitest: environment error: {type(e).__name__}: {e}", file=sys.stderr)
+        return 2
+    except BaseException:
+        summary.update(status="aborted", error="interrupted", finished=time.strftime("%Y-%m-%dT%H:%M:%S%z"))
+        write_summary(out_dir, summary)
+        raise
     env_error = any(r.get("environment_error") for r in results)
     summary["status"] = "environment_error" if env_error else ("passed" if summary["failed"] == 0 else "failed")
     summary["finished"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
