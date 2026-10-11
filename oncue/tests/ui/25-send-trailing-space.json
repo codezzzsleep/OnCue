@@ -1,0 +1,49 @@
+{
+  "name": "A8 草稿首尾有空白：只提示，不读群也不发送",
+  "use": "_room.json",
+  "steps": [
+    {
+      "run": "_load.json"
+    },
+    {
+      "scroll_to": {
+        "id": "cue_draft"
+      }
+    },
+    {
+      "type": {
+        "into": {
+          "id": "cue_draft"
+        },
+        "text": "我中午以后可以出发。 "
+      }
+    },
+    {
+      "scroll_to": "发到群里"
+    },
+    {
+      "click": "发到群里"
+    },
+    {
+      "wait": {
+        "text": [
+          "草稿首尾有空白"
+        ]
+      }
+    },
+    {
+      "expect": {
+        "calls": [
+          {
+            "service": "matrix.room_info",
+            "count": 1
+          },
+          {
+            "service": "matrix.send_message",
+            "count": 0
+          }
+        ]
+      }
+    }
+  ]
+}

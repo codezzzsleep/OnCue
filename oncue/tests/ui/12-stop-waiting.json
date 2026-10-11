@@ -1,0 +1,55 @@
+{
+  "name": "A5 助手不回复时点停止等待：结束等待并请求中断",
+  "use": "_room.json",
+  "host": {
+    "octos.turn.start": {
+      "never": true
+    }
+  },
+  "steps": [
+    {
+      "run": "_load.json"
+    },
+    {
+      "run": "_allow.json"
+    },
+    {
+      "scroll_to": "试映下一幕"
+    },
+    {
+      "click": "试映下一幕"
+    },
+    {
+      "wait": {
+        "text": [
+          "助手正在准备三种说法…"
+        ],
+        "calls": [
+          {
+            "service": "octos.turn.start",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "scroll_to": "停止等待"
+    },
+    {
+      "click": "停止等待"
+    },
+    {
+      "wait": {
+        "text": [
+          "已停止等待。"
+        ],
+        "calls": [
+          {
+            "service": "octos.turn.interrupt",
+            "count": 1
+          }
+        ]
+      }
+    }
+  ]
+}

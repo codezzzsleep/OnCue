@@ -7,9 +7,9 @@ name: test-infrastructure
 
 on:
   push:
-    paths: ['oncue/tests/**', 'oncue/tools/**', 'oncue/bundle/**', '.github/workflows/**']
+    paths: ['oncue/tests/**', 'oncue/tools/**', 'bundle/**', '.github/workflows/**']
   pull_request:
-    paths: ['oncue/tests/**', 'oncue/tools/**', 'oncue/bundle/**', '.github/workflows/**']
+    paths: ['oncue/tests/**', 'oncue/tools/**', 'bundle/**', '.github/workflows/**']
 
 jobs:
   selftest:

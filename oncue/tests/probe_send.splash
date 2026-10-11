@@ -1,0 +1,416 @@
+// Controlled 0.5.2 send/freshness tests. Only host is replaced; production,
+// native editor, filesystem, Unicode implementation and timers are real VM APIs.
+// All identities are synthetic; no callback can reach a live Matrix service.
+let probe_send_disk = ""
+let probe_send_late = nil
+let probe_send_wait_started = 0.0
+
+fn probe_draft_disk(){
+    let files = []
+    for name in ["rehearsals-v1.json", "draft.txt", "take-a.txt", "take-b.txt"] {
+        let exists = fs.exists(name)
+        let raw = nil
+        if exists { raw = fs.read(name) }
+        files.push([name, exists, raw])
+    }
+    files.to_json()
+}
+fn probe_send_reset(case_id, body){
+    probe_reset(case_id)
+    probe_manual(body)
+    probe_send_disk = probe_draft_disk()
+}
+fn probe_send_prepare_ready(){
+    let start = probe_requests.len()
+    cue_send_prepare()
+    probe_window_reply(start, cue_source_window.rows, true)
+}
+fn probe_send_submit(){
+    probe_send_prepare_ready()
+    let start = probe_requests.len()
+    cue_send_confirm_now()
+    probe_window_reply(start, cue_source_window.rows, true)
+    probe_requests.len() - 1
+}
+fn probe_send_observe(index, rows){
+    probe_deliver(index, {is_ok: true, data: {}, error: ""})
+    probe_window_reply(index + 1, rows, true)
+}
+fn probe_send_new_rows(body){
+    let rows = cue_source_window.rows.to_json().parse_json()
+    rows.push(probe_row("$new-self", "@self:example.invalid", body))
+    rows
+}
+fn probe_send(){
+    probe_send_reset("send.body", "正文")
+    probe_assert("send.blank_rejected", cue_send_body_error("") != "" && cue_send_body_error(" \n\t　") != "", {})
+    probe_assert("send.boundary_4096_4097_ascii", cue_send_body_error(probe_repeat("a", 4096)) == "" && cue_send_body_error(probe_repeat("a", 4097)) != "", {})
+    probe_assert("send.boundary_4096_unicode_scalars", cue_send_body_error(probe_repeat("界", 4096)) == "" && cue_send_body_error(probe_repeat("🙂", 4096)) == "" && cue_send_body_error(probe_repeat("🙂", 4097)) != "", {})
+    let cluster = "é👩‍👩‍👧‍👦"
+    probe_assert("send.combining_zwj_scalar_count", cluster.to_chars().len() == 9 && cue_send_body_error(probe_repeat(cluster, 455) + "a") == "" && cue_send_body_error(probe_repeat(cluster, 455) + "ab") != "", {})
+    probe_assert("send.whitespace_requires_explicit_edit", cue_send_body_error(" 正文 ") != "" && cue_send_body_error("正文\n第二行  内部") == "", {policy: "reject surrounding whitespace rather than silently trim"})
+    let prefix = probe_repeat("界🙂é", 125)
+    probe_assert("send.prefix500_unicode_exact", prefix.to_chars().len() == 500 && cue_send_prefix(prefix + "后文") == prefix, {})
+    probe_manual(" \n ")
+    cue_send_prepare()
+    probe_assert("send.blank_no_host_or_disk_change", probe_requests.len() == 0 && ui.cue_draft.text() == " \n " && probe_draft_disk() == probe_send_disk, {})
+    probe_manual(probe_repeat("a", 4097))
+    cue_send_prepare()
+    probe_assert("send.overlimit_no_host_or_editor_change", probe_requests.len() == 0 && ui.cue_draft.text().to_chars().len() == 4097 && probe_draft_disk() == probe_send_disk, {})
+    start_timeout(0.01, fn(){ probe_send_windows() })
+}
+fn probe_send_windows(){
+    probe_send_reset("send.window_validation", "正文")
+    let rows = []
+    for i in 30 { rows.push(probe_row("$window-" + i, "@fixture:example.invalid", "正文")) }
+    let valid30 = cue_window_valid(rows, cue_room_id)
+    rows.push(probe_row("$window-30", "@fixture:example.invalid", "正文"))
+    probe_assert("send.window_30_not_500_messages", valid30 && !cue_window_valid(rows, cue_room_id), {})
+    let row = probe_row("$row", "@self:example.invalid", "正文")
+    probe_assert("send.window_missing_ids_fail_closed", !cue_window_valid([{body: "正文", sender: "夹具", msgtype: "m.text"}], cue_room_id) && !cue_window_valid([probe_row("", "@self:example.invalid", "正文")], cue_room_id) && !cue_window_valid([probe_row("$row", "", "正文")], cue_room_id), {})
+    probe_assert("send.window_duplicate_ids_rejected", !cue_window_valid([row, row], cue_room_id), {})
+    row.room_id = "!other:example.invalid"
+    probe_assert("send.window_wrong_room_rejected", !cue_window_valid([row], cue_room_id), {})
+    probe_assert("send.window_body_500_scalar_bound", cue_window_valid([probe_row("$row", "@self:example.invalid", probe_repeat("🙂", 500))], cue_room_id) && !cue_window_valid([probe_row("$row", "@self:example.invalid", probe_repeat("🙂", 501))], cue_room_id), {})
+    let attempt = {room: cue_room_id, own: "@self:example.invalid", body: "正文", baseline: cue_source_window.rows}
+    probe_assert("send.matcher_new_own_full", cue_send_matches(attempt, probe_send_new_rows("正文")).len() == 1, {})
+    row = probe_row("$new", "@other:example.invalid", "正文")
+    row.sender = "self"
+    probe_assert("send.matcher_own_sender_not_display_label", cue_send_matches(attempt, [row]).len() == 0, {})
+    row = probe_row("$baseline-0", "@self:example.invalid", "正文")
+    probe_assert("send.matcher_old_same_body_id_rejected", cue_send_matches(attempt, [row]).len() == 0, {})
+    probe_assert("send.matcher_edited_old_event_rejected", attempt.baseline[0].body != row.body && cue_send_matches(attempt, [row]).len() == 0, {})
+    attempt.own = ""
+    probe_assert("send.matcher_unknown_own_id_fail_closed", cue_send_matches(attempt, probe_send_new_rows("正文")).len() == 0, {})
+    attempt.own = "@self:example.invalid"
+    row = probe_row("$new", attempt.own, "正文")
+    row.msgtype = "m.notice"
+    probe_assert("send.matcher_non_text_rejected", cue_send_matches(attempt, [row]).len() == 0, {})
+    probe_assert("send.matcher_ambiguity_preserved", cue_send_matches(attempt, [probe_row("$one", attempt.own, "正文"), probe_row("$two", attempt.own, "正文")]).len() == 2, {})
+    attempt.body = "> quoted\n\n正文"
+    probe_assert("send.reply_fallback_mismatch_unknown", cue_send_matches(attempt, [probe_row("$new", attempt.own, "正文")]).len() == 0, {})
+    start_timeout(0.01, fn(){ probe_send_success() })
+}
+fn probe_send_success(){
+    probe_send_reset("send.success", "正文🙂\n第二行  内部")
+    let body = ui.cue_draft.text()
+    probe_send_prepare_ready()
+    probe_assert("send.prepare_requires_explicit_confirmation", cue_send_phase == "confirm" && cue_send_confirmation.body == body && cue_send_confirmation.own == "@self:example.invalid" && probe_count_service("matrix.send_message") == 0, {})
+    let start = probe_requests.len()
+    cue_send_confirm_now()
+    cue_send_confirm_now()
+    probe_window_reply(start, cue_source_window.rows, true)
+    let index = probe_requests.len() - 1
+    cue_send_confirm_now()
+    cue_send_prepare()
+    probe_assert("send.doubleclick_one_dispatch", cue_send_phase == "submitted" && cue_send_latch && probe_count_service("matrix.send_message") == 1, {})
+    let services = []
+    let read30 = true
+    for request in probe_requests {
+        services.push(request.service)
+        if request.service == "matrix.read_messages" { read30 = read30 && request.payload.to_json() == "{\"limit\":30}" }
+    }
+    probe_assert("send.wire_exact_body_and_final_read_order", services.to_json() == "[\"matrix.room_info\",\"matrix.account_info\",\"matrix.read_messages\",\"matrix.room_info\",\"matrix.account_info\",\"matrix.read_messages\",\"matrix.send_message\"]" && read30 && probe_requests[index].payload.to_json() == {body: body}.to_json(), {services: services})
+    probe_deliver(index, {is_ok: true, data: {}, error: ""})
+    probe_assert("send.empty_ack_is_not_verified", cue_send_phase == "readback" && cue_send_history[0].ack && cue_send_history[0].receipt == nil && cue_editor_sent == nil && ui.cue_draft.text() == body && probe_draft_disk() == probe_send_disk, {})
+    probe_window_reply(index + 1, probe_send_new_rows(body), true)
+    probe_assert("send.success_new_own_readback", cue_send_phase == "observed_full" && cue_send_history[0].receipt.event_id == "$new-self" && !cue_send_latch && cue_send_text.search("已发到") >= 0 && cue_send_text.search("刚才读回时看到了这条") >= 0, {})
+    probe_assert("send.success_editor_disk_unchanged", ui.cue_draft.text() == body && probe_draft_disk() == probe_send_disk && cue_editor_sent != nil, {})
+    let before = cue_send_history.to_json()
+    probe_deliver(index, {is_ok: true, data: {}, error: ""})
+    cue_send_reread()
+    probe_assert("send.duplicate_ack_and_reread_never_resend", before == cue_send_history.to_json() && probe_count_service("matrix.send_message") == 1, {})
+    start_timeout(0.01, fn(){ probe_send_delayed() })
+}
+fn probe_send_delayed(){
+    probe_send_reset("send.ack_not_found", "延迟正文")
+    let index = probe_send_submit()
+    probe_send_observe(index, cue_source_window.rows)
+    probe_assert("send.ack_absent_is_unknown", cue_send_phase == "unknown" && cue_send_history[0].ack && cue_send_history[0].receipt == nil && !cue_send_allow_resend && cue_send_text.search("不能确认") >= 0, {})
+    let start = probe_requests.len()
+    cue_send_reread()
+    probe_window_reply(start, probe_send_new_rows("延迟正文"), true)
+    probe_assert("send.reread_found_original_attempt", cue_send_phase == "observed_full" && cue_send_history.len() == 1 && probe_count_service("matrix.send_message") == 1 && probe_draft_disk() == probe_send_disk, {})
+    probe_send_reset("send.error_manual_resend", "可能已发")
+    index = probe_send_submit()
+    probe_deliver(index, {is_ok: false, data: nil, error: "controlled transport error"})
+    cue_send_prepare()
+    cue_send_resend()
+    probe_assert("send.error_unknown_no_automatic_retry", cue_send_phase == "unknown" && !cue_send_allow_resend && probe_count_service("matrix.send_message") == 1 && cue_send_text.search("可能已发送") >= 0, {})
+    start = probe_requests.len()
+    cue_send_reread()
+    probe_window_reply(start, cue_source_window.rows, true)
+    probe_assert("send.reread_absent_enables_manual_resend_only", cue_send_phase == "unknown" && cue_send_allow_resend && cue_send_text == "本次最近消息仍未看到，无法确认。重新发送可能重复" && probe_count_service("matrix.send_message") == 1, {})
+    start = probe_requests.len()
+    cue_send_resend()
+    probe_window_reply(start, cue_source_window.rows, true)
+    probe_assert("send.manual_resend_needs_new_confirmation", cue_send_phase == "confirm" && cue_send_confirmation.resend_of == 0 && cue_send_history[0].state == "unknown" && probe_count_service("matrix.send_message") == 1, {})
+    start = probe_requests.len()
+    cue_send_confirm_now()
+    probe_window_reply(start, cue_source_window.rows, true)
+    probe_assert("send.manual_resend_linked_new_attempt", cue_send_history.len() == 2 && cue_send_history[1].resend_of == 0 && cue_send_history[0].state == "unknown" && probe_count_service("matrix.send_message") == 2 && probe_draft_disk() == probe_send_disk, {})
+    start_timeout(0.01, fn(){ probe_send_auth() })
+}
+fn probe_send_auth(){
+    probe_send_reset("send.auth_prepare", "保留编辑")
+    cue_keep_draft()
+    probe_manual("未保存编辑")
+    cue_grant_model()
+    probe_send_disk = probe_draft_disk()
+    cue_send_prepare()
+    probe_deliver(0, {is_ok: true, data: {room_id: cue_room_id}, error: ""})
+    probe_deliver(1, {is_ok: false, data: nil, error: "MiNi-App AUTHORIZATION EXPIRED"})
+    probe_assert("send.auth_failure_clears_consent_preserves_editor_disk", cue_consent_key == "" && ui.cue_draft.text() == "未保存编辑" && probe_draft_disk() == probe_send_disk && probe_count_service("matrix.send_message") == 0 && cue_send_text.search("授权已过期") >= 0, {})
+    probe_send_reset("send.identity_missing", "正文")
+    cue_send_prepare()
+    probe_deliver(0, {is_ok: true, data: {room_id: cue_room_id}, error: ""})
+    probe_deliver(1, {is_ok: true, data: {}, error: ""})
+    probe_assert("send.missing_account_id_no_dispatch", probe_count_service("matrix.send_message") == 0 && probe_count_service("matrix.read_messages") == 0 && cue_send_phase != "confirm", {})
+    probe_send_reset("send.identity_changed", "正文")
+    probe_send_prepare_ready()
+    cue_send_confirm_now()
+    probe_deliver(3, {is_ok: true, data: {room_id: cue_room_id}, error: ""})
+    probe_deliver(4, {is_ok: true, data: {user_id: "@other:example.invalid"}, error: ""})
+    probe_assert("send.account_switch_final_read_no_dispatch", probe_count_service("matrix.send_message") == 0 && cue_own_id == "" && ui.cue_draft.text() == "正文" && probe_draft_disk() == probe_send_disk, {})
+    probe_send_reset("send.auth_after_dispatch", "原正文")
+    let index = probe_send_submit()
+    cue_grant_model()
+    probe_deliver(index, {is_ok: false, data: nil, error: "MiNi-App AUTHORIZATION EXPIRED"})
+    probe_assert("send.postdispatch_auth_clears_consent_keeps_uncertainty", cue_consent_key == "" && cue_send_phase == "unknown" && cue_send_history[0].receipt == nil && ui.cue_draft.text() == "原正文" && probe_draft_disk() == probe_send_disk && probe_count_service("matrix.send_message") == 1, {})
+    start_timeout(0.01, fn(){ probe_send_confirmation() })
+}
+fn probe_send_confirmation(){
+    probe_send_reset("send.edit_after_confirm", "原正文")
+    probe_send_prepare_ready()
+    ui.cue_draft.set_text("原生输入尚未on_change")
+    cue_send_confirm_now()
+    probe_assert("send.queued_edit_after_confirm_refused", cue_send_phase != "confirm" && probe_count_service("matrix.send_message") == 0 && ui.cue_draft.text() == "原生输入尚未on_change", {})
+    probe_send_reset("send.edit_aba", "原正文")
+    probe_send_prepare_ready()
+    probe_manual("临时编辑")
+    probe_manual("原正文")
+    cue_send_confirm_now()
+    probe_assert("send.edit_back_does_not_restore_confirmation", cue_send_confirmation == nil && probe_count_service("matrix.send_message") == 0, {})
+    probe_send_reset("send.expired_confirm", "原正文")
+    probe_send_prepare_ready()
+    cue_send_confirmation.expires = time_now() - 1.0
+    cue_send_confirm_now()
+    probe_assert("send.expired_confirmation_refused", cue_send_phase == "idle" && probe_count_service("matrix.send_message") == 0, {clock: "real; confirmation expiry field made past"})
+    probe_send_reset("send.new_message_confirm_twice", "原正文")
+    probe_send_prepare_ready()
+    let nonce = cue_send_confirmation.nonce
+    let changed = cue_source_window.rows.to_json().parse_json()
+    changed.push(probe_row("$new-context", "@other:example.invalid", "新条件"))
+    cue_send_confirm_now()
+    probe_window_reply(3, changed, true)
+    probe_assert("send.new_messages_require_second_confirmation", cue_send_phase == "confirm" && cue_send_confirmation.nonce != nonce && cue_send_confirmation.rows.len() == 1 && probe_count_service("matrix.send_message") == 0, {})
+    let start = probe_requests.len()
+    cue_send_confirm_now()
+    probe_window_reply(start, changed, true)
+    probe_assert("send.second_confirm_uses_immediate_baseline", cue_send_phase == "submitted" && cue_send_history[0].baseline.len() == changed.len() && cue_send_history[0].baseline[4].event_id == "$new-context" && probe_count_service("matrix.send_message") == 1, {})
+    probe_send_reset("send.demo", "样例正文")
+    cue_demo = true
+    cue_send_prepare()
+    cue_send_confirm_now()
+    probe_assert("send.demo_never_requests_host", probe_requests.len() == 0 && cue_send_text.search("样例") >= 0 && probe_draft_disk() == probe_send_disk, {})
+    // Suite "send" ends here (44 assertions). Suite "send2" re-enters at probe_send_races
+    // so each real card-host process serializes its result within the 32 MiB heap quota.
+    probe_finish()
+}
+fn probe_send2(){
+    start_timeout(0.01, fn(){ probe_send_races() })
+}
+fn probe_send_races(){
+    probe_send_reset("send.late_prepare_room", "原正文")
+    cue_send_prepare()
+    let callback = probe_requests[0].callback
+    cue_room_id = "!changed:example.invalid"
+    callback({is_ok: true, data: {room_id: "probe-room"}, error: ""})
+    probe_assert("send.late_room_callback_cannot_dispatch", probe_requests.len() == 1 && ui.cue_draft.text() == "原正文" && cue_send_confirmation == nil, {})
+    probe_send_reset("send.late_final_editor", "原正文")
+    probe_send_prepare_ready()
+    cue_send_confirm_now()
+    probe_deliver(3, {is_ok: true, data: {room_id: cue_room_id}, error: ""})
+    probe_deliver(4, {is_ok: true, data: {user_id: "@self:example.invalid"}, error: ""})
+    ui.cue_draft.set_text("最终读取期间修改")
+    probe_deliver(5, {is_ok: true, data: {messages: cue_source_window.rows}, error: ""})
+    probe_assert("send.late_final_read_editor_changed_no_dispatch", probe_count_service("matrix.send_message") == 0 && ui.cue_draft.text() == "最终读取期间修改", {})
+    probe_send_reset("send.late_ack_editor", "原正文")
+    let index = probe_send_submit()
+    probe_manual("发送之后的新稿")
+    probe_send_observe(index, probe_send_new_rows("原正文"))
+    probe_assert("send.late_ack_never_marks_edited_draft", cue_send_history[0].state == "observed_full" && ui.cue_draft.text() == "发送之后的新稿" && cue_editor_sent == nil && probe_draft_disk() == probe_send_disk, {})
+    probe_send_reset("send.late_ack_room", "原正文")
+    index = probe_send_submit()
+    cue_room_id = "!changed:example.invalid"
+    probe_deliver(index, {is_ok: true, data: {}, error: ""})
+    probe_assert("send.late_ack_wrong_current_room_unknown", cue_send_history[0].state == "unknown" && cue_send_history[0].receipt == nil && probe_count_service("matrix.send_message") == 1 && ui.cue_draft.text() == "原正文", {})
+    start_timeout(0.01, fn(){ probe_send_adversarial() })
+}
+fn probe_send_adversarial(){
+    probe_send_reset("send.wrong_sender_readback", "同样正文")
+    let index = probe_send_submit()
+    let rows = cue_source_window.rows.to_json().parse_json()
+    rows.push(probe_row("$other-body", "@other:example.invalid", "同样正文"))
+    probe_send_observe(index, rows)
+    probe_assert("send.wrong_sender_readback_stays_unknown", cue_send_phase == "unknown" && cue_send_history[0].receipt == nil && probe_count_service("matrix.send_message") == 1, {})
+    probe_send_reset("send.old_same_body_baseline", "同样正文")
+    cue_source_window.rows.push(probe_row("$old-own", "@self:example.invalid", "同样正文"))
+    index = probe_send_submit()
+    probe_send_observe(index, cue_source_window.rows)
+    probe_assert("send.old_own_same_body_readback_unknown", cue_send_phase == "unknown" && cue_send_history[0].receipt == nil, {})
+    probe_send_reset("send.ambiguous_readback", "同样正文")
+    index = probe_send_submit()
+    rows = probe_send_new_rows("同样正文")
+    rows.push(probe_row("$second-self", "@self:example.invalid", "同样正文"))
+    probe_send_observe(index, rows)
+    probe_assert("send.ambiguous_readback_stays_unknown", cue_send_phase == "unknown" && cue_send_text.search("多条") >= 0 && cue_send_history[0].receipt == nil, {})
+    probe_send_reset("send.prefix_readback", probe_repeat("界🙂é", 125) + "未回读的尾部")
+    let body = ui.cue_draft.text()
+    index = probe_send_submit()
+    let sent_full = probe_requests[index].payload.body == body
+    probe_send_observe(index, probe_send_new_rows(probe_repeat("界🙂é", 125)))
+    probe_assert("send.long_unicode_prefix_only_full_body_sent", sent_full && cue_send_phase == "observed_prefix500" && cue_send_text.search("后续正文未能回读核对") >= 0 && ui.cue_draft.text() == body && probe_draft_disk() == probe_send_disk, {})
+    probe_send_reset("send.exact_500_readback", probe_repeat("界", 500))
+    index = probe_send_submit()
+    probe_send_observe(index, probe_send_new_rows(probe_repeat("界", 500)))
+    probe_assert("send.exact_500_boundary_full_match", cue_send_phase == "observed_full" && cue_send_history[0].receipt != nil, {limit: "500-char observable equality is not causal delivery proof"})
+    start_timeout(0.01, fn(){ probe_send_freshness() })
+}
+fn probe_send_freshness(){
+    probe_begin("send.fresh_route")
+    probe_deliver(1, probe_good_reply())
+    let snapshot = cue_route_window.to_json()
+    let start = probe_requests.len()
+    cue_choose_route(0)
+    let before = ui.cue_draft.text()
+    probe_assert("send.use_waits_for_real_read_gate", cue_io_busy && ui.cue_draft.text() == before && before != cue_routes[0].draft, {})
+    probe_window_reply(start, cue_source_window.rows, false)
+    probe_assert("send.nochange_use_applies_exact_candidate", ui.cue_draft.text() == cue_routes[0].draft && cue_fresh_state == "checked", {})
+    let applied = cue_editor_revision
+    probe_deliver(start + 1, {is_ok: true, data: {messages: cue_source_window.rows}, error: ""})
+    probe_assert("send.duplicate_freshness_callback_applies_once", cue_editor_revision == applied, {})
+    cue_source_window.rows[0].body = "修改可变源窗口"
+    probe_assert("send.generation_snapshot_is_value_clone", cue_route_window.to_json() == snapshot, {})
+    probe_begin("send.new_unselected_blocks_use")
+    probe_deliver(1, probe_good_reply())
+    probe_manual("手工稿保留")
+    start = probe_requests.len()
+    cue_choose_route(0)
+    let rows = cue_source_window.rows.to_json().parse_json()
+    rows.push(probe_row("$unselected-new", "@other:example.invalid", "未被模型引用的新消息"))
+    probe_window_reply(start, rows, false)
+    probe_assert("send.new_event_blocks_apply_preserves_editor", cue_fresh_state == "stale" && ui.cue_draft.text() == "手工稿保留" && cue_fresh_rows.len() == 1, {})
+    start_timeout(0.01, fn(){ probe_send_freshness_more() })
+}
+fn probe_send_freshness_more(){
+    probe_refine_begin("send.fresh_refine")
+    probe_deliver(1, probe_refine_reply())
+    let start = probe_requests.len()
+    cue_apply_refinement()
+    probe_window_reply(start, cue_source_window.rows, false)
+    probe_assert("send.nochange_refinement_applies", ui.cue_draft.text() == "这次先不参加，谢谢邀请。" && cue_pending_revision == "", {})
+    probe_refine_begin("send.changed_refine")
+    probe_deliver(1, probe_refine_reply())
+    let original = ui.cue_draft.text()
+    start = probe_requests.len()
+    cue_apply_refinement()
+    let rows = cue_source_window.rows.to_json().parse_json()
+    rows[0].body = "原事件编辑成新条件"
+    probe_window_reply(start, rows, false)
+    probe_assert("send.edited_same_event_blocks_refinement", ui.cue_draft.text() == original && cue_fresh_state == "stale", {})
+    probe_begin("send.missing_anchor")
+    probe_deliver(1, probe_good_reply())
+    start = probe_requests.len()
+    cue_choose_route(0)
+    probe_window_reply(start, [], false)
+    probe_assert("send.missing_anchor_never_applies", cue_fresh_state != "checked" && ui.cue_draft.text() == "", {})
+    probe_send_reset("send.known_own_exception", "本人消息")
+    let baseline = cue_source_window.rows.to_json().parse_json()
+    let index = probe_send_submit()
+    rows = probe_send_new_rows("本人消息")
+    probe_send_observe(index, rows)
+    let same = cue_window_diff(baseline, rows)
+    probe_assert("send.verified_own_new_message_not_stale", same.state == "same" && same.rows.len() == 0, {})
+    rows[4].body = "本人消息已被编辑"
+    probe_assert("send.known_own_receipt_changed_body_not_exempt", cue_window_diff(baseline, rows).state == "changed", {})
+    rows[4] = probe_row("$different-own", "@self:example.invalid", "本人消息")
+    probe_assert("send.other_client_own_message_not_exempt", cue_window_diff(baseline, rows).state == "changed", {})
+    probe_assert("send.empty_window_transition_is_new_context", cue_window_diff([], []).state == "same" && cue_window_diff([], [rows[0]]).state == "changed", {})
+    probe_finish()
+}
+fn probe_send3(){
+    start_timeout(0.01, fn(){ probe_send_known_own_use() })
+}
+fn probe_send_known_own_use(){
+    // Establish a verified-own readback first so the own-message exemption has
+    // a real receipt in history; then a fresh generation must pass the use gate
+    // even though that own row is new relative to the generation snapshot.
+    probe_send_reset("send.verified_own_use_gate", "本人消息")
+    let index = probe_send_submit()
+    probe_send_observe(index, probe_send_new_rows("本人消息"))
+    // No reset here: history must keep the verified-own receipt. Start a fresh
+    // generation on the unchanged room, then adopt route A while the read window
+    // contains that known-own row; the exemption must let the gate pass.
+    cue_rehearse()
+    let so = probe_requests.len() - 1
+    probe_deliver(so, {is_ok: true, data: {}, error: ""})
+    probe_deliver(so + 1, probe_good_reply())
+    let start_use = probe_requests.len()
+    cue_choose_route(0)
+    probe_window_reply(start_use, probe_send_new_rows("本人消息"), false)
+    probe_assert("send.verified_own_message_allows_real_use_gate", cue_fresh_state == "checked" && ui.cue_draft.text() == probe_fixtures.canonical_blocks[2], {})
+    start_timeout(0.01, fn(){ probe_send_metadata() })
+}
+fn probe_send_metadata(){
+    probe_send_reset("send.explicit_metadata", "保存已观察正文")
+    let index = probe_send_submit()
+    probe_send_observe(index, probe_send_new_rows("保存已观察正文"))
+    let marker = cue_editor_sent.to_json()
+    let old = ["旧九字段草稿", 1, "manual", "", "", "旧快照", "", "", 0]
+    probe_assert("send.old_nine_field_store_readable", cue_slot_valid(old) && cue_decode_store([1, 1, [[cue_room_id, old, nil, nil]]].to_json()) != nil, {})
+    cue_keep_draft()
+    let saved = fs.read("rehearsals-v1.json")
+    let slot = cue_room_record()[1]
+    probe_assert("send.metadata_only_written_on_explicit_save", saved != "" && probe_draft_disk() != probe_send_disk && slot.len() == 10 && slot[9].to_json() == marker, {compatibility: "new reader accepts old nine fields; ten fields are not downgrade-compatible"})
+    probe_manual("编辑清除当前标记")
+    probe_assert("send.edit_clears_marker_without_disk_write", cue_editor_sent == nil && fs.read("rehearsals-v1.json") == saved, {})
+    cue_send_history = []
+    cue_send_active = -1
+    cue_own_id = ""
+    cue_own_epoch = -1
+    cue_restore_draft()
+    probe_assert("send.restored_metadata_historical_not_identity", ui.cue_draft.text() == "保存已观察正文" && cue_editor_sent != nil && cue_own_id == "" && cue_send_history.len() == 0 && fs.read("rehearsals-v1.json") == saved, {})
+    let corrupt = slot.to_json().parse_json()
+    corrupt[9][0] = "UNKNOWN_TAG"
+    probe_assert("send.corrupt_metadata_fails_closed", !cue_slot_valid(corrupt) && cue_decode_store([1, 1, [[cue_room_id, corrupt, nil, nil]]].to_json()) == nil, {})
+    corrupt = slot.to_json().parse_json()
+    corrupt[9][4] = "不同正文"
+    probe_assert("send.metadata_body_binding_required", !cue_slot_valid(corrupt), {})
+    probe_finish()
+}
+fn probe_send4(){
+    start_timeout(0.01, fn(){ probe_send_timeout() })
+}
+fn probe_send_timeout(){
+    probe_send_reset("send.real_transport_timeout", "超时仍可能已发送")
+    let index = probe_send_submit()
+    probe_send_late = probe_requests[index].callback
+    probe_send_wait_started = time_now()
+    start_timeout(30.4, fn(){
+        probe_assert("send.real_timeout_unknown_no_retry", cue_send_phase == "unknown" && cue_send_history[0].state == "unknown" && !cue_send_latch && !cue_send_allow_resend && cue_send_text.search("超时") >= 0 && probe_count_service("matrix.send_message") == 1 && time_now() - probe_send_wait_started >= 30.0 && probe_draft_disk() == probe_send_disk, {})
+        // Fresh timer callbacks keep each JSON checkpoint write inside the real
+        // heap quota; the 30s-wait callback's accumulated heap otherwise fails
+        // its result serialization (the VM reports a garbage u64::MAX request).
+        start_timeout(0.01, fn(){
+            let before = cue_send_history.to_json()
+            let callback = probe_send_late
+            callback({is_ok: true, data: {}, error: ""})
+            probe_assert("send.late_success_after_timeout_no_state_rewrite", cue_send_history.to_json() == before && cue_send_phase == "unknown" && probe_count_service("matrix.send_message") == 1, {})
+            start_timeout(0.01, fn(){
+                probe_assert("send.no_unexpected_or_model_services", probe_unexpected == 0 && probe_count_service("octos.session.open") == 0 && probe_count_service("octos.turn.start") == 0, {})
+                probe_finish()
+            })
+        })
+    })
+}

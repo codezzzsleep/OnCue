@@ -1,0 +1,43 @@
+{
+  "name": "A12 保留这句：按房间写进 rehearsals-v1.json，不发送",
+  "use": "_room.json",
+  "steps": [
+    {
+      "run": "_load.json"
+    },
+    {
+      "run": "_draft.json"
+    },
+    {
+      "scroll_to": "保留这句"
+    },
+    {
+      "click": "保留这句"
+    },
+    {
+      "wait": {
+        "text": [
+          "草稿已保存在本机；本次保存不会发送消息。"
+        ],
+        "files": [
+          {
+            "name": "rehearsals-v1.json",
+            "contains": [
+              "!trip:example.org"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "expect": {
+        "calls": [
+          {
+            "service": "matrix.send_message",
+            "count": 0
+          }
+        ]
+      }
+    }
+  ]
+}

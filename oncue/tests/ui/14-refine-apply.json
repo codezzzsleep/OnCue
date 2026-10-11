@@ -1,0 +1,132 @@
+{
+  "name": "A7 修订：候选先暂存，原稿不变；应用前重读，没变化才替换草稿",
+  "use": "_room.json",
+  "host": {
+    "octos.turn.start": {
+      "data": {
+        "turn_id": "r1",
+        "text": "【R1依据】\n#1\n【R1建议】\n这次我先不去了。\n【R1说明】\n删掉后半句，更简短。"
+      }
+    }
+  },
+  "steps": [
+    {
+      "run": "_load.json"
+    },
+    {
+      "run": "_allow.json"
+    },
+    {
+      "scroll_to": {
+        "id": "cue_draft"
+      }
+    },
+    {
+      "type": {
+        "into": {
+          "id": "cue_draft"
+        },
+        "text": "这次我先不去了，你们玩得开心。"
+      }
+    },
+    {
+      "scroll_to": {
+        "id": "cue_refine_input"
+      }
+    },
+    {
+      "type": {
+        "into": {
+          "id": "cue_refine_input"
+        },
+        "text": "更短一点"
+      }
+    },
+    {
+      "scroll_to": "准备修订候选"
+    },
+    {
+      "click": "准备修订候选"
+    },
+    {
+      "wait": {
+        "text": [
+          "修订候选已准备"
+        ]
+      },
+      "timeout": 5
+    },
+    {
+      "scroll_to": [
+        {
+          "contains": "修订候选：这次我先不去了。"
+        },
+        {
+          "contains": "删掉后半句，更简短。"
+        }
+      ]
+    },
+    {
+      "scroll_to": {
+        "id": "cue_draft"
+      }
+    },
+    {
+      "expect": {
+        "count": [
+          {
+            "of": {
+              "id": "cue_draft",
+              "contains": "这次我先不去了，你们玩得开心。"
+            },
+            "n": 1
+          }
+        ]
+      }
+    },
+    {
+      "scroll_to": "应用修订"
+    },
+    {
+      "click": "应用修订"
+    },
+    {
+      "wait": {
+        "text": [
+          "修订已应用到编辑框，尚未保存或发送。"
+        ],
+        "calls": [
+          {
+            "service": "matrix.read_messages",
+            "count": 2
+          }
+        ]
+      }
+    },
+    {
+      "scroll_to": {
+        "id": "cue_draft"
+      }
+    },
+    {
+      "expect": {
+        "count": [
+          {
+            "of": {
+              "id": "cue_draft",
+              "contains": "这次我先不去了。"
+            },
+            "n": 1
+          },
+          {
+            "of": {
+              "id": "cue_draft",
+              "contains": "你们玩得开心"
+            },
+            "n": 0
+          }
+        ]
+      }
+    }
+  ]
+}

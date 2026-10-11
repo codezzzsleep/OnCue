@@ -1,0 +1,58 @@
+{
+  "name": "S10/A11 读回没看到：说还不能确认，只给重新读取；再读仍没有才允许人工决定重发",
+  "use": "_room.json",
+  "steps": [
+    {
+      "run": "_load.json"
+    },
+    {
+      "run": "_confirm.json"
+    },
+    {
+      "click": "确认发送"
+    },
+    {
+      "wait": {
+        "text": [
+          "尚不能确认"
+        ]
+      },
+      "timeout": 5
+    },
+    {
+      "scroll_to": "重新读取确认"
+    },
+    {
+      "expect": {
+        "absent": [
+          "发送失败",
+          "我已核对，仍要再次发送（可能重复）"
+        ]
+      }
+    },
+    {
+      "click": "重新读取确认"
+    },
+    {
+      "wait": {
+        "text": [
+          "本次最近消息仍未看到，无法确认。"
+        ]
+      },
+      "timeout": 5
+    },
+    {
+      "scroll_to": "我已核对，仍要再次发送（可能重复）"
+    },
+    {
+      "expect": {
+        "calls": [
+          {
+            "service": "matrix.send_message",
+            "count": 1
+          }
+        ]
+      }
+    }
+  ]
+}

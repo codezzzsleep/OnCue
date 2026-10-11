@@ -14,8 +14,9 @@ import re
 import sys
 
 HERE = Path(__file__).resolve().parent
-DEFAULT_SOURCE = HERE.parent / "bundle" / "main.splash"
-SUITES = ("parser", "pagination", "retry", "deadline", "playback", "storage", "grounding", "envelope")
+DEFAULT_SOURCE = HERE.parent.parent / "bundle" / "main.splash"
+CORE_SUITES = ("parser", "pagination", "retry", "deadline", "playback", "storage", "grounding", "envelope")
+SUITES = (*CORE_SUITES, "send", "send2", "send3", "send4")
 REQUIRED_FUNCTIONS = {
     "cue_split_blocks", "cue_validate_blocks", "cue_paginate",
     "cue_rehearse", "cue_start_turn", "cue_accept_reply", "cue_deadline",
@@ -27,8 +28,18 @@ REQUIRED_FUNCTIONS = {
     "cue_advance_playback", "cue_next_line", "cue_restart_playback",
     "cue_keep_draft", "cue_restore_draft", "cue_save_text", "cue_keep_take",
     "cue_refresh_takes", "cue_read_take", "cue_restore_take",
+    "cue_load_store", "cue_decode_store", "cue_store_valid", "cue_slot_valid",
+    "cue_store_write", "cue_reload_store", "cue_save_slot", "cue_capture_slot",
+    "cue_activate_room", "cue_set_editor", "cue_editor_current",
+    "cue_import_legacy", "cue_request_delete", "cue_confirm_delete",
+    "cue_source_payload", "cue_context_key", "cue_toggle_source", "cue_grant_model",
+    "cue_revoke_model", "cue_validate_route", "cue_route_refs", "cue_numbers_in",
+    "cue_refine", "cue_refine_identity", "cue_decode_refinement",
+    "cue_accept_refinement", "cue_apply_refinement", "cue_edit_refine",
 }
-STORAGE_FIXTURES = {"draft.txt": "draft", "take-a.txt": "take_a", "take-b.txt": "take_b"}
+STORAGE_FILE = "rehearsals-v1.json"
+LEGACY_FILES = ("draft.txt", "take-a.txt", "take-b.txt")
+STORAGE_FIXTURES = ("draft", "take_a", "take_b")
 INITIALIZER = re.compile(
     r"(?m)^start_timeout\(0\.05,\s*fn\(\)\{\s*"
     r"cue_show_demo\(\)\s+cue_(?:refresh_takes|boot_state)\(\)\s*\}\)\s*$"
@@ -159,11 +170,19 @@ def build_probe(source: str, fixture_bytes: bytes, harness: str, suite: str) -> 
         "production_functions_unchanged": True,
         "real_deadline_seconds": 90,
         "real_playback_interval_seconds": 1.4,
+        "real_send_timeout_seconds": 30,
+        "send_transport": "injected only; no Matrix service forwarding or native sends",
+        "send_identity": "synthetic @self:example.invalid; never inferred from readback",
         "filesystem": "real card-host jail; fs is not shadowed",
         "semantic_fact_verification": False,
-        "storage_file_sha256": {
-            name: digest(fixtures["storage"][key].encode("utf-8"))
-            for name, key in STORAGE_FIXTURES.items()
+        "storage_expectation": {
+            "file": STORAGE_FILE,
+            "room_id": "probe-room",
+            "schema": 1,
+            "slots": [[fixtures["storage"][key], None, "manual", "", "", "", "", "", 0]
+                      for key in STORAGE_FIXTURES],
+            "absent_files": list(LEGACY_FILES),
+            "revision_note": "Only monotonic runtime editor/store revisions are variable; all other fields are literal fixtures",
         } if suite == "storage" else {},
     }
     header = (
@@ -201,6 +220,12 @@ def build_probe(source: str, fixture_bytes: bytes, harness: str, suite: str) -> 
     return generated, inventory
 
 
+def load_harness() -> str:
+    """The eight core suites plus the separately maintained injected send suite."""
+    return "\n".join((HERE / name).read_text(encoding="utf-8")
+                     for name in ("probe_harness.splash", "probe_send.splash"))
+
+
 def generate(source_path: Path, workdir: Path, suite: str) -> Path:
     source_path = source_path.resolve(strict=True)
     workdir = workdir.resolve()
@@ -218,7 +243,7 @@ def generate(source_path: Path, workdir: Path, suite: str) -> Path:
     original = source_path.read_bytes()
     source = original.decode("utf-8")
     fixture_bytes = (HERE / "fixtures.json").read_bytes()
-    harness = (HERE / "probe_harness.splash").read_text(encoding="utf-8")
+    harness = load_harness()
     generated, inventory = build_probe(source, fixture_bytes, harness, suite)
     manifest = json.loads((source_path.parent / "manifest.json").read_text(encoding="utf-8"))
     app_id = "oncue-probe-" + suite

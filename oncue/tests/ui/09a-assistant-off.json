@@ -1,0 +1,36 @@
+{
+  "name": "S11 Rinx 助手没开：说助手不可用，不说「没有读到群聊」，不显示英文原文",
+  "use": "_room.json",
+  "host": {
+    "octos.session.open": {
+      "error": "The assistant is off. Choose this device or a server in the assistant settings."
+    }
+  },
+  "steps": [
+    {
+      "run": "_load.json"
+    },
+    {
+      "run": "_allow.json"
+    },
+    {
+      "scroll_to": "试映下一幕"
+    },
+    {
+      "click": "试映下一幕"
+    },
+    {
+      "wait": {
+        "text": [
+          "助手"
+        ],
+        "absent": [
+          "正在准备",
+          "The assistant is off",
+          "没有读到群聊"
+        ]
+      },
+      "timeout": 5
+    }
+  ]
+}

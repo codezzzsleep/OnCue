@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <title>OnCue</title>
+  <rect width="256" height="256" rx="56" fill="#17654b"/>
+  <path d="M122 128H155M155 128C173 128 180 99 198 80M155 128H198M155 128C173 128 180 157 198 176" fill="none" stroke="#e9f3ed" stroke-width="12" stroke-linecap="round"/>
+  <path d="M58 78L132 128L58 178Z" fill="#e9f3ed"/>
+  <circle cx="198" cy="80" r="10" fill="#e9f3ed"/>
+  <circle cx="198" cy="128" r="10" fill="#e9f3ed"/>
+  <circle cx="198" cy="176" r="10" fill="#e9f3ed"/>
+</svg>

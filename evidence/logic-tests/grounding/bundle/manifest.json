@@ -9,7 +9,7 @@
   },
   "id": "oncue-probe-grounding",
   "integrity": {
-    "bundle_blake3": "97732cad44d444fb9f79f2ec4b279e96cb7bfe9e35e541d894ab58070b463d73"
+    "bundle_blake3": "ff76784a9738cc2ad4d293de4e7d1ae9807c80c45bb063a8ac8bc76c65997db0"
   },
   "name": "OnCue controlled grounding probe",
   "network": {
@@ -19,5 +19,5 @@
   "storage": {
     "max_bytes": 4194304
   },
-  "version": "0.4.8"
+  "version": "0.5.2"
 }

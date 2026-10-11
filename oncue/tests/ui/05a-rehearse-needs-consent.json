@@ -1,0 +1,33 @@
+{
+  "name": "S4 没允许就点试映：只提示，不调用助手",
+  "use": "_room.json",
+  "steps": [
+    {
+      "run": "_load.json"
+    },
+    {
+      "scroll_to": "试映下一幕"
+    },
+    {
+      "click": "试映下一幕"
+    },
+    {
+      "wait": {
+        "text": [
+          "先看一下勾选的消息，再点「允许当前范围内的试映与修订」。"
+        ]
+      }
+    },
+    {
+      "expect": {
+        "calls": [
+          {
+            "service": "octos.session.open",
+            "count": 0
+          }
+        ]
+      },
+      "timeout": 1
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "name": "S11 载入群聊时 matrix.read_messages 报「Attached room was not granted」：显示中文，不显示原文",
+  "use": "_room.json",
+  "host": {
+    "matrix.read_messages": {
+      "error": "Attached room was not granted"
+    }
+  },
+  "steps": [
+    {
+      "click": "载入群聊"
+    },
+    {
+      "wait": {
+        "text": [
+          "宿主没有授权"
+        ],
+        "absent": [
+          "Attached room was not granted"
+        ]
+      },
+      "timeout": 5
+    }
+  ]
+}

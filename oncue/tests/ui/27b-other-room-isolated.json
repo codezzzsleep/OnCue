@@ -1,0 +1,37 @@
+{
+  "name": "A13 别的房间的草稿不会出现在这个房间",
+  "use": "_room.json",
+  "storage": {
+    "rehearsals-v1.json": "[1,4,[[\"!other:example.org\",[\"上次存的：中午以后出发。\",2,\"manual\",\"\",\"\",\"\",\"\",\"\",0],[\"版本A：当天回来。\",1,\"manual\",\"\",\"\",\"\",\"\",\"\",0],null]]]"
+  },
+  "steps": [
+    {
+      "run": "_load.json"
+    },
+    {
+      "scroll_to": {
+        "id": "cue_draft"
+      }
+    },
+    {
+      "expect": {
+        "count": [
+          {
+            "of": {
+              "id": "cue_draft",
+              "contains": "上次存的"
+            },
+            "n": 0
+          },
+          {
+            "of": {
+              "id": "cue_draft",
+              "contains": "选路线后用这句放入草稿"
+            },
+            "n": 1
+          }
+        ]
+      }
+    }
+  ]
+}

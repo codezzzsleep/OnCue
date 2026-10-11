@@ -1,0 +1,47 @@
+{
+  "name": "S10/S11 发送被限流（429）：说结果未确认、是限流，不显示英文原文，不自动重发",
+  "use": "_room.json",
+  "host": {
+    "matrix.send_message": {
+      "error": "couldn't send the message: the server returned an error: [429 / M_LIMIT_EXCEEDED] Too many requests"
+    }
+  },
+  "steps": [
+    {
+      "run": "_load.json"
+    },
+    {
+      "run": "_confirm.json"
+    },
+    {
+      "click": "确认发送"
+    },
+    {
+      "wait": {
+        "text": [
+          "可能已发送"
+        ]
+      },
+      "timeout": 5
+    },
+    {
+      "expect": {
+        "text": [
+          "限流"
+        ],
+        "absent": [
+          "couldn't send",
+          "M_LIMIT_EXCEEDED",
+          "没有读到群聊",
+          "发送失败"
+        ],
+        "calls": [
+          {
+            "service": "matrix.send_message",
+            "count": 1
+          }
+        ]
+      }
+    }
+  ]
+}

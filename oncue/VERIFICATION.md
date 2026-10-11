@@ -1,79 +1,93 @@
 # 验证记录
 
-本次验证日期：2026-10-04。包版本 `0.4.8`，内容对应提交 `e12d63c`。发布包在 `b34b0ab` 签名。
+版本 **0.5.2，未签名**。验证日期：2026-10-10。
 
-## 测试环境
-
-| 项 | 值 |
-| --- | --- |
-| OctoSense | `6c4746f` |
-| Rinx | `c515e5f`，官方提交，没有本地补丁 |
-| octos 内核 | `fe08d8e6` |
-| App Hub / card-host | `0f332112` |
-| 平台 | Linux aarch64，X11，软件渲染 |
-| Matrix 服务器 | `matrix.rinx.chat`（比赛服务器） |
-| 模型 | MiniMax-M2.7，由宿主配置 |
+生产入口SHA-256：`5d6db93e931040d10eb926c96a3d47d27f1da8ecee8e2e30af9818cac52c9b8d`（`bundle/main.splash`）。
 
 ## 包检查
 
-发布包已签名，`hub check oncue/bundle --publisher-key oncue.dev=50578fd7e0d8ac51a1e9e590835427ce8e71f46dba491860c75ae4e7c8c78042` 通过。
+最新未签名包经 App Hub `main`（`18cd41d`）构建的 `hub` 检查：
 
-只移除签名的开发副本通过 `hub check --allow-unsigned`，用于 card-host 和 Rinx 的本地导入。
+```text
+oncue-screening-room 0.5.2 — PASSED
+  [warning] publisher-signature: unsigned: accountability rests on the hub alone
+```
 
-## 逻辑测试
+申请能力八项：`storage`、`matrix.room_info`、`matrix.read_messages`、`matrix.account_info`、`matrix.send_message`、`octos.session.open`、`octos.turn.start`、`octos.turn.interrupt`；不直连网络。
 
-8 套共 149 项断言。测试把 `main.splash` 的 64 个函数原样放进测试包，在 card-host 的脚本虚拟机里运行。宿主服务的返回值由测试脚本模拟，不调用模型。
+## 界面场景测试
 
-| 套件 | 断言数 | 测什么 |
-| --- | --- | --- |
-| parser | 30 | 七段格式的解析，各种分隔写法，缺段、重复、乱序时拒绝 |
-| pagination | 15 | 长文本分页不丢字，不切断 emoji 和组合字符 |
-| retry | 9 | 格式不对时重试一次；停止、改台词、发新请求后，旧回答不生效 |
-| deadline | 6 | 90 秒超时，包含打开会话和重试的时间 |
-| playback | 18 | 逐句播放的计时，暂停、继续、重播，切换路线 |
-| storage | 14 | 草稿写入和读取，空白内容不覆盖 |
-| grounding | 53 | 相关原文的取出，编号、数字、固定用语的检查 |
-| envelope | 4 | 宿主返回的数据结构异常时不报错、不显示结果 |
+用 [splash-app-verify](../skills/splash-app-verify/)（仓库内，PR #6 合并后可见；上游 App Flow 链接在 13 号提交 App Flow PR 后补充）在 card-host 里运行 `oncue/tests/ui/` 的界面契约与 38 个场景（5 个场景跑两个尺寸，共 **43 次运行，全部通过**，中位数约 1.5 秒一次，全量约 170 秒；card-host 内存 227–233 MB）。宿主回复全部注入，形状与错误原文取自 Rinx `fdcfed1` 源码；**不是真机运行**，不调用真实 Matrix 或模型服务。运行器像真宿主一样拒绝 manifest 未申请的服务。
 
-结果文件和复核命令在 [evidence/logic-tests](../evidence/logic-tests/README.md)，重跑方法在[测试说明](tests/README.md)。
+| 项 | 结果 |
+|---|---|
+| 源码 SHA-256 | `5d6db93e…`（与本文一致） |
+| 通过 | 43 / 43 |
+| 尺寸 | 412×892 与 954×448 两种 |
+| 覆盖 | 首屏、样例试映、载入房间、授权六态、生成/选句/修订、发送确认/读回/限流/超时、新消息复核、存储、重启恢复、双尺寸布局 |
 
-这些测试对应的 `main.splash` SHA-256：`71c9fe59b92a12755d1810ba70e2278e7b092235c13efcdd9ce63bcab3961031`。改了 `main.splash` 就要重跑并更新这一行。
+基线与修复：在错误归因修复前，`09a`/`09b`/`10`/`11`/`18`/`20` 六个场景红（助手出错误报"没有读到群聊"、限流英文原文、授权过期按钮不刷新、确认作废状态条不刷新）；按契约修复后 43 次全绿。
 
-## 实机检查
+重跑：
 
-2026-10-04，用脚本在 Rinx 里模拟点击和输入。表头是实测 Rinx 框架尺寸；小程序可视区域分别为 954×448 和 376×727。
+```sh
+python3 <splash-app-verify>/scripts/uitest.py run bundle oncue/tests/ui --keep-going
+```
 
-| 检查 | 990×613 | 412×892 |
-| --- | --- | --- |
-| 读取授权房间的 12 条消息 | 通过 | 通过 |
-| 长消息在列表里自动换行 | 通过 | 通过 |
-| 助手按七段格式返回三种说法 | 通过 | 通过 |
-| 三种说法和相关原文都能读完 | 通过 | 通过 |
-| 播放、暂停、切换路线 | 通过 | 未判定：三次尝试都因暂停后剩余行数不足以区分播放与计时而停在检查处；不记通过也不记失败 |
-| 草稿 A、B 保存后读取一致 | 通过 | 通过 |
-| 关闭后重新打开，草稿还在 | 通过 | 通过 |
+## 12 套逻辑测试
 
-四种验收模式均不传 `--size`；窄屏直接指定 412×892。几何检查为零容差。
+真实 card-host 虚拟机，生产 154 个函数逐字节复制进测试包；宿主回包受控注入，UI、文件系统、时钟与计时器真实执行。同一源码 **12 套 368 项断言全部通过**，结果已归档 `evidence/logic-tests/` 可离线复核：
 
-默认窗口下小程序可视区域是 954×448，三种说法和草稿都在第一屏内。
+```sh
+for s in parser pagination retry deadline playback storage grounding envelope send send2 send3 send4; do
+  python3 oncue/tests/check_result.py --run-dir "evidence/logic-tests/$s" \
+    --wait-seconds 0 --current-source bundle/main.splash || exit $?
+done
+```
 
-连续 10 次真实试映：7 次首轮通过，2 次自动重试后通过，1 次失败（该次助手首轮与重试的回答都没通过应用检查）。耗时 15.6–41.3 秒。结果汇总见[本轮实测记录](../evidence/host-checks/design3-results.json)。
+| 套件 | 断言 | 内容 |
+|---|---:|---|
+| parser | 39 | 生成协议、标记、段落顺序、长度 |
+| pagination | 15 | 文本守恒、组合字符、分页导航 |
+| retry | 38 | 一次修复、实际拒绝原因及原请求保留、输入身份、许可、候选暂存与应用 |
+| deadline | 6 | 真实 90 秒共享期限、迟到回包；观察窗口约 93 秒 |
+| playback | 18 | 真实 1.4 秒计时、暂停/重播/切换 |
+| storage | 56 | 规范格式、真实 I/O 失败、房间隔离、容量、草稿保护 |
+| grounding | 96 | 来源、数字/单位（含中文数字、半天/半小时、复合单位）、承诺规则 |
+| envelope | 25 | 异常回包、失败载入保留旧房间、切换确认、授权/账号/未登录/无服务错误 |
+| send | 44 | 发送正文边界、窗口校验、匹配器、确认与单次发送、延迟/错误/重发 |
+| send2 | 21 | 迟到回调、读回对抗、Unicode 前缀、选句/修订采用门 |
+| send3 | 7 | 已核验本人消息采用门、发送记录元数据、显式保存 |
+| send4 | 3 | 真实 30 秒发送超时、迟到成功不重写、无意外模型服务 |
 
-## 授权和失败状态
+**断言修订说明**：`envelope.auth_model_5`（试映路径的 `no service answers`）原断言把"当前宿主不提供群聊服务"当作正确文案——那正是错误归因 bug 的症状（助手服务出错却说群聊）。修复归因后，该断言期望改为"这个宿主现在没有可用的助手。可以先手写草稿；在 Rinx 设置里打开助手后再试。"；读群聊路径 `envelope.auth_room_5` 期望不变。
 
-| 检查 | 结果 | 测试版本 | 截图 |
-| --- | --- | --- | --- |
-| 打开时没有选房间，点「载入群聊」 | 显示“这次打开没有选房间。请关闭应用，导入时填上房间再打开。” | 0.4.7（271e79d） | [截图](../evidence/screenshots/design3-no-room.png) |
-| 用另一个账号打开同一个应用 | 授权面板显示 `Allowed room: None`，没有沿用第一个账号的房间授权 | 0.4.4 | [截图](../evidence/screenshots/recipient-2-own-consent.png) |
-| 另一个账号点「取 A」 | 显示“版本 A 还没有内容”，读不到第一个账号的草稿 | 0.4.4 | [截图](../evidence/screenshots/recipient-4-draft-isolated.png) |
-| 点 Back | 应用关闭，回到小程序列表，同一 Rinx 进程继续运行 | 0.4.7（271e79d） | [截图](../evidence/screenshots/design3-back-closed.png) |
-| 关闭后重新导入 | 编辑框与保存的草稿逐字节一致；未重启宿主 | 0.4.7（271e79d） | [截图](../evidence/screenshots/design3-draft-after-reopen.png) |
-| 在 card-host 里点「载入群聊」 | 显示“当前宿主不提供群聊服务，请在 Rinx 里打开。” | 0.4.7（271e79d） | [截图](../evidence/screenshots/design3-card-host-room-unavailable.png) |
+## 工具单元测试
+
+**109 项通过**：生成器/检查器 12 项、原生验收工具 37 项、底层工具 60 项。不需要宿主和网络。
+
+## 真实 Rinx 记录
+
+| 证据 | 对应源码 | 内容 |
+|---|---|---|
+| `evidence/native-052/runs.json` | `56397f95…`（发送功能前） | 6 次真实模型试映：3 次首次通过、2 次修复后通过、1 次超时；拒绝原因原文在档 |
+| `evidence/native-052/send-flow-results.json` | `21c8e8a6…`（措辞"返回修改"前） | 真实房间完整流程：生成→选句→修订→应用→保存→确认发送→读回确认→重开恢复；真实发送 1 条 |
+| `evidence/native-052/auth-ui-results.json` | `21c8e8a6…` | 未选房间/未允许试映/未允许修订/撤回后四种授权状态实拍 |
+| 本文所列各项 | `5d6db93e…`（最终） | 界面场景 43 次、逻辑 12 套、工具 109 项、hub check |
+
+以上真实记录均早于最终源码（错误归因修复在前）；最终源码的行为差异仅限错误提示按服务归因、限流翻译、两处界面刷新，已由界面场景与逻辑测试覆盖。作者批准的话，可在最终源码上重发 1 条更新发送证据。
+
+## 发现的宿主问题（复现材料）
+
+**Palpo 房间密钥备份对无密钥房间返回 404，导致任何邀请失败。** Rinx `src/sliding_sync.rs:147` 开启"邀请时分享历史"，matrix-sdk `6892cb2` 的 `share_room_history`（`crates/matrix-sdk/src/room/shared_room_history.rs`）在邀请前先从**邀请人自己的备份**下载该房间密钥（`GET /room_keys/keys/{roomId}`），且不检查房间是否加密。Palpo（`crates/server/src/routing/client/room_key.rs:96`）对没有备份密钥的房间返回 `404 M_NOT_FOUND`，而 Matrix 规范要求返回 `200` 和 `{"sessions": {}}`。因此主账号（已开密钥备份）在新房间邀请任何人都会失败，不加密房间同样失败；第二账号未开备份时由其发起邀请则不会触发该查询。最小复现：开密钥备份的账号创建任意房间（可不加密），邀请任意用户 → 邀请接口报 `404 M_NOT_FOUND Backup key not found for this user's room`。是否向 Palpo 提 issue 由作者决定。
+
+## 授权到期实测（61 分钟）
+
+真实 Rinx、最终源码（`5d6db93e…`）实测：04:04:54+08 打开应用并载入房间，05:08+08（约 65 分钟）观察——Rinx 在租赁过期后由 `pump()` 检查（`src/miniapps/ui.rs:569-584`）停止了小程序会话，界面显示 "Session ended. Review and run again." 并回到导入表单；截图在 `evidence/native-052/session-ended.png`。即**真实宿主到期表现为会话被结束**，应用内的"授权已过期"中文文案（含撤销允许、保留草稿）由界面场景 `04a` 与 envelope 注入测试确定性覆盖。
 
 ## 未验证
 
-- 助手的回答是否符合事实。应用只检查编号、数字和几个固定用语。
-- macOS、Windows、移动端。
-- 用户在授权面板点拒绝、授权满一小时到期、回答进行中关闭应用。
-- 从 App Hub 商店安装。
-- 当前内容的跨账号授权和草稿隔离：本轮没有可供核对的第二个已登录宿主，因此上表两项保留 0.4.4 的历史结果。
+- 跨账号"群里有新消息"实机演示：由界面场景 `13`/`15`/`21` 注入覆盖；真人第二账号演示待作者在场时进行。
+- 最终源码上的真实发送（当前发送证据对应更早源码）。
+- macOS、Windows、移动端；商店安装路径；并发写入与断电一致性。
+- 语义正确性、数值归属、误拒率；字面规则不证明这些性质。

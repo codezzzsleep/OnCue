@@ -1,0 +1,54 @@
+{
+  "name": "A10 确认区打开时改了草稿：确认作废，不发送",
+  "use": "_room.json",
+  "steps": [
+    {
+      "run": "_load.json"
+    },
+    {
+      "run": "_confirm.json"
+    },
+    {
+      "scroll_to": {
+        "id": "cue_draft"
+      }
+    },
+    {
+      "type": {
+        "into": {
+          "id": "cue_draft"
+        },
+        "text": "！"
+      }
+    },
+    {
+      "scroll_to": {
+        "contains": "原发送确认失效"
+      }
+    },
+    {
+      "expect": {
+        "count": [
+          {
+            "of": "确认发送",
+            "n": 0
+          }
+        ],
+        "calls": [
+          {
+            "service": "matrix.send_message",
+            "count": 0
+          }
+        ]
+      }
+    },
+    {
+      "expect": {
+        "absent": [
+          "请核对完整正文后点「确认发送」"
+        ]
+      },
+      "note": "顶部状态条不能还在叫人点已经作废的确认"
+    }
+  ]
+}

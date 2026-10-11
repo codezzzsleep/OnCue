@@ -109,12 +109,21 @@ class NativeAcceptanceTests(unittest.TestCase):
 
     def test_retry_status_is_pending_not_terminal_failure(self):
         self.assertEqual(native.turn_state("助手的回答没通过检查，正在自动重试一次…"), "pending")
-        self.assertEqual(native.turn_state("助手的回答没通过检查，已丢弃。请再试一次。"), "failure")
-        self.assertEqual(native.turn_state("助手的回答不完整，请再试一次。"), "failure")
+        self.assertEqual(native.turn_state("助手候选未采用：引用无效。已用完一次修复，可改输入后重试或手工编辑。"), "failure")
+        self.assertEqual(native.turn_state("输入或来源已变化，旧回复未应用；原草稿保留。"), "failure")
         self.assertEqual(native.turn_state("这次试映没有完成：service error"), "failure")
         self.assertEqual(native.turn_state("助手试映等待超过 90 秒，已结束等待。"), "failure")
-        self.assertEqual(native.turn_state(native.SUCCESS + "；点 A、B、C 查看。"), "success")
+        self.assertEqual(native.turn_state(native.SUCCESS), "success")
         self.assertEqual(native.turn_state("unrecognized production contract"), "unknown")
+
+    def test_preuse_freshness_is_pending_and_fail_closed(self):
+        self.assertEqual(native.use_state("正在重新读取最近30条，采用前再核对…"), "pending")
+        self.assertEqual(native.use_state("已放进草稿框，可以继续修改；尚未保存或发送。"), "success")
+        for text in ("最近消息已变化或窗口衔接不足；旧候选不能直接采用，请重新载入并试映。",
+                     "缺少这份候选的原始消息快照，请重新载入并试映。",
+                     "读取等待超时或上下文已变化，请重新读取。", "授权已过期。请重新打开。"):
+            self.assertEqual(native.use_state(text), "failure")
+        self.assertEqual(native.use_state("unknown changed production contract"), "unknown")
 
     def test_room_empty_errors_and_pending_are_distinct(self):
         for text in ("这个群聊暂时没有可读取的文本消息。", "没有读到群聊：denied", "消息读取失败：offline",
@@ -137,6 +146,9 @@ class NativeAcceptanceTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "allow-draft-write"):
             native.validate_permissions(args)
         args.allow_draft_write = True
+        with self.assertRaisesRegex(RuntimeError, "allow-room-read"):
+            native.validate_permissions(args)
+        args.allow_room_read = True
         native.validate_permissions(args)
         args.display = "remote.example:0"
         with self.assertRaises(RuntimeError):
@@ -156,7 +168,7 @@ class NativeAcceptanceTests(unittest.TestCase):
     def test_waits_through_automatic_retry_and_records_status(self):
         recorder = self.recorder()
         recorder.status = Mock(side_effect=["助手正在准备三种说法…",
-                                           "助手的回答没通过检查，正在自动重试一次…", native.SUCCESS + "；假设"])
+                                           "助手的回答没通过检查，正在自动重试一次…", native.SUCCESS])
         with patch.object(native.time, "sleep"), patch.object(native.time, "monotonic", return_value=0):
             recorder.wait_status(native.turn_state, "test")
         self.assertEqual([event["state"] for event in recorder.actions], ["pending", "pending", "success"])
@@ -173,12 +185,36 @@ class NativeAcceptanceTests(unittest.TestCase):
         recorder = self.recorder()
         recorder.click, recorder.fill, recorder.wait_status = Mock(), Mock(), Mock()
         recorder.loaded, recorder._room = True, "!offline:example.invalid"
+        recorder.status = Mock(return_value=native.CONSENT_GRANTED)
+        recorder.overview = Mock()
         with self.assertRaisesRegex(RuntimeError, "disabled"):
             recorder.ensure_turn(trial="待确认？")
         recorder.click.assert_not_called()
         recorder.ensure_turn(allow_real_turn=True, trial="待确认？")
-        self.assertEqual([c.args[0] for c in recorder.click.call_args_list], ["载入群聊", "试映下一幕"])
+        self.assertEqual([c.args[0] for c in recorder.click.call_args_list], ["载入群聊", native.CONSENT, "试映下一幕"])
         self.assertTrue(recorder.real_turn_completed)
+
+    def test_overview_collects_cards_across_scroll_positions(self):
+        recorder = self.recorder()
+        views = []
+        for index, (_, title) in enumerate(native.ROUTES):
+            views.append([
+                {"i": "cue_overview", "ty": "View", "r": [0, 0, 400, 150]},
+                {"ty": "Label", "r": [5, 5, 380, 20], "t": title + "：候选" + str(index)},
+                {"ty": "Label", "r": [5, 30, 380, 40], "t": "相关原文片段：\n#2 原文"},
+            ])
+        recorder.b.snap.side_effect = views
+        self.assertEqual(len(recorder.overview()), 3)
+        self.assertEqual([call.args[0] for call in recorder.b.app_scroll.call_args_list], [-5000, 100, 100])
+
+    def test_overview_does_not_accept_missing_route_source(self):
+        recorder = self.recorder()
+        recorder.b.snap.return_value = [
+            {"i": "cue_overview", "ty": "View", "r": [0, 0, 400, 150]},
+            {"ty": "Label", "r": [5, 5, 380, 20], "t": native.ROUTES[0][1] + "：候选"},
+        ]
+        with self.assertRaisesRegex(RuntimeError, "Missing overview"):
+            recorder.overview()
 
     def test_fresh_import_does_not_trust_app_scroll(self):
         recorder = self.recorder()
@@ -192,16 +228,22 @@ class NativeAcceptanceTests(unittest.TestCase):
     def test_reopen_uses_same_bundle_and_checks_bytes(self):
         recorder = self.recorder()
         recorder.fill, recorder.click = Mock(), Mock()
-        recorder.fresh_draft = Mock(side_effect=lambda filename, text: text)
-        recorder.status = Mock(return_value="草稿已保存。")
-        recorder.saved_bytes = Mock(return_value="精确原文\n".encode("utf-8"))
+        recorder.fresh_draft = Mock(side_effect=lambda label, text: text)
+        recorder.status = Mock(return_value=native.SAVE_SUCCESS)
+        empty = {name: None for name in (native.STORE_FILE, *native.LEGACY_FILES)}
+        slot = ["精确原文\n", 3, "manual", "", "", "", "", "", 0]
+        saved = {**empty, native.STORE_FILE: json.dumps([1, 1, [["!offline:example.invalid", slot, None, None]]]).encode()}
+        recorder.storage_snapshot = Mock(side_effect=[empty, empty, saved, saved, saved])
         recorder.import_bundle = Mock()
-        recorder.b.snap.return_value = [{"i": "cue_draft", "ty": "TextInput", "val": "精确原文\n"}]
+        recorder.load_room = Mock()
+        recorder.editor_text = Mock(side_effect=["", "精确原文\n"])
+        recorder.room_loaded, recorder._room = True, "!offline:example.invalid"
         original = recorder.bundle
-        recorder.reopen_check("精确原文\n")
+        recorder.reopen_check("精确原文\n", allow_room_read=True)
         recorder.import_bundle.assert_called_once_with()
+        recorder.load_room.assert_called_once_with(allow_room_read=True)
         self.assertEqual(recorder.bundle, original)
-        self.assertEqual(recorder.saved_bytes.call_count, 2)
+        self.assertEqual(recorder.storage_snapshot.call_count, 5)
 
     def test_capture_uses_selected_display_and_no_inherited_xauthority(self):
         recorder = self.recorder()
@@ -272,6 +314,7 @@ class NativeAcceptanceTests(unittest.TestCase):
     def test_timer_check_rejects_only_synchronous_line_or_status_change(self):
         recorder = self.recorder()
         recorder.click = Mock()
+        recorder.click_control = Mock()
         recorder.status = Mock(side_effect=["正在逐句播放", "已暂停在 1 / 4 句"])
         recorder.playback_observation = Mock()
         with patch.object(native.time, "sleep"), self.assertRaisesRegex(RuntimeError, "synchronous"):
@@ -282,6 +325,7 @@ class NativeAcceptanceTests(unittest.TestCase):
     def test_timer_check_accepts_two_advances_with_numeric_counter(self):
         recorder = self.recorder()
         recorder.click = Mock()
+        recorder.click_control = Mock()
         recorder.status = Mock(side_effect=["正在逐句播放", "已暂停在 2 / 4 句"])
         recorder.playback_observation = Mock(return_value={"reader_text": "B1\\nB2"})
         with patch.object(native.time, "sleep"):
@@ -290,6 +334,7 @@ class NativeAcceptanceTests(unittest.TestCase):
     def test_timer_completion_supports_normal_four_line_route(self):
         recorder = self.recorder()
         recorder.click = Mock()
+        recorder.click_control = Mock()
         recorder.status = Mock(return_value="这条假设路线已逐句播完。")
         recorder.collect_pages = Mock(return_value="末句\\n建议台词：很长的建议，前缀不在最后页")
         recorder.playback_observation = Mock(return_value={"reader_text": "complete"})
@@ -308,18 +353,71 @@ class NativeAcceptanceTests(unittest.TestCase):
         recorder.saved_bytes = Mock(return_value=b"old fixture")
         recorder.import_bundle = Mock()
         with self.assertRaisesRegex(RuntimeError, "did not confirm"):
-            recorder.reopen_check("old fixture")
+            recorder.reopen_check("old fixture", allow_room_read=True)
         recorder.import_bundle.assert_not_called()
 
     def test_drafts_include_unique_run_nonce_and_reject_existing_fixture(self):
         recorder = self.recorder()
-        text = recorder.fresh_draft("draft.txt", "fixture")
+        recorder.room_loaded, recorder._room = True, "!offline:example.invalid"
+        text = recorder.fresh_draft("draft", "fixture")
         self.assertIn(recorder.run_nonce, text)
-        path = self.data_dir / "miniapps" / self.account.encode().hex() / native.APP_ID / "draft.txt"
+        path = self.data_dir / "miniapps" / self.account.encode().hex() / native.APP_ID / native.STORE_FILE
         path.parent.mkdir(parents=True)
-        path.write_text(text, encoding="utf-8")
+        slot = [text, 1, "manual", "", "", "", "", "", 0]
+        path.write_text(json.dumps([1, 1, [[recorder._room, slot, None, None]]]), encoding="utf-8")
         with self.assertRaisesRegex(RuntimeError, "already exists"):
-            recorder.fresh_draft("draft.txt", "fixture")
+            recorder.fresh_draft("draft", "fixture")
+
+    def test_turn_success_is_exact_and_failure_contracts_current(self):
+        self.assertEqual(native.turn_state(native.SUCCESS), "success")
+        self.assertEqual(native.turn_state(native.SUCCESS + " stale suffix"), "unknown")
+        for status in ("先看一下勾选的消息，再点「允许当前范围内的试映与修订」。",
+                       "请求超过宿主32 KiB限制，请减少参考消息或输入。",
+                       "助手候选未采用：数字。已用完一次修复。"):
+            self.assertEqual(native.turn_state(status), "failure")
+
+    def test_model_consent_failure_prevents_rehearsal(self):
+        recorder = self.recorder()
+        recorder.loaded, recorder._room = True, "!offline:example.invalid"
+        recorder.click, recorder.fill, recorder.wait_status = Mock(), Mock(), Mock()
+        recorder.status = Mock(return_value="not consented")
+        with self.assertRaisesRegex(RuntimeError, "consent"):
+            recorder.ensure_turn(allow_real_turn=True, trial="待确认？")
+        self.assertNotIn("试映下一幕", [call.args[0] for call in recorder.click.call_args_list])
+
+    def test_room_read_default_denied_without_click(self):
+        recorder = self.recorder()
+        recorder.click = Mock()
+        with self.assertRaisesRegex(RuntimeError, "disabled"):
+            recorder.load_room()
+        recorder.click.assert_not_called()
+
+    def test_no_save_distinguishes_absent_and_zero_byte_file(self):
+        recorder = self.recorder()
+        before = {name: None for name in (native.STORE_FILE, *native.LEGACY_FILES)}
+        recorder.storage_snapshot = Mock(return_value={**before, native.STORE_FILE: b""})
+        with self.assertRaisesRegex(RuntimeError, "without an explicit save"):
+            recorder.assert_no_save(before, "edited")
+
+    def test_saved_slot_exact_text_and_unrelated_room_guard(self):
+        recorder = self.recorder()
+        recorder.room_loaded, recorder._room = True, "!offline:example.invalid"
+        recorder.status = Mock(return_value=native.SAVE_SUCCESS)
+        old = [1, 1, [["!other:example.invalid", None, None, None]]]
+        new = [1, 2, [old[2][0], [recorder._room, None, ["literal", 1, "manual", "", "", "", "", "", 0], None]]]
+        before = {name: None for name in (native.STORE_FILE, *native.LEGACY_FILES)}
+        before[native.STORE_FILE] = json.dumps(old).encode()
+        after = {**before, native.STORE_FILE: json.dumps(new).encode()}
+        recorder.storage_snapshot = Mock(return_value=after)
+        self.assertEqual(recorder.save_readback("A", "literal", before), after)
+        for changed in (copy.deepcopy(new), copy.deepcopy(new)):
+            changed[2][0][0] = "!tampered:example.invalid"
+            recorder.storage_snapshot.return_value = {**after, native.STORE_FILE: json.dumps(changed).encode()}
+            with self.assertRaisesRegex(RuntimeError, "another room/slot"):
+                recorder.save_readback("A", "literal", before)
+        recorder.storage_snapshot.return_value = {**after, "draft.txt": b"changed legacy"}
+        with self.assertRaisesRegex(RuntimeError, "legacy"):
+            recorder.save_readback("A", "literal", before)
 
     def test_capture_rejects_scaled_multiple_or_outside_window(self):
         recorder = self.recorder()
@@ -331,6 +429,64 @@ class NativeAcceptanceTests(unittest.TestCase):
                     patch.object(native.subprocess, "run") as run, self.assertRaises(RuntimeError):
                 recorder.capture("not-created")
             run.assert_not_called()
+
+    def send_store(self, marker=None):
+        slot = ["literal🙂", 1, "manual", "", "", "plain snapshot", "", "", 0]
+        if marker is not None:
+            slot.append(marker)
+        return [1, 1, [["!offline:example.invalid", slot, None, None]]]
+
+    def encode_store(self, value):
+        return json.dumps(value, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+
+    def test_decode_old_nine_fields_unchanged(self):
+        value = self.send_store()
+        raw = self.encode_store(value)
+        self.assertEqual(native.decode_store(raw), value)
+        self.assertEqual(len(native.decode_store(raw)[2][0][1]), 9)
+        self.assertEqual(self.encode_store(native.decode_store(raw)), raw)
+
+    def test_decode_optional_send_metadata_states(self):
+        for state, event in (("unknown", ""), ("unknown", "$historical"), ("observed_full", "$synthetic"),
+                             ("observed_prefix500", "$synthetic")):
+            with self.subTest(state=state):
+                value = self.send_store(["OC_SEND_1", state, 1234.5, event, "literal🙂"])
+                self.assertEqual(native.decode_store(self.encode_store(value)), value)
+                self.assertEqual(len(value[2][0][1]), 10)
+
+    def test_decode_send_metadata_shape_tag_and_state_fail_closed(self):
+        invalid = ([], {}, "historical", ["OC_SEND_1"],
+                   ["UNKNOWN", "unknown", 0, "", "literal🙂"],
+                   ["OC_SEND_1", "sent", 0, "$e", "literal🙂"],
+                   ["OC_SEND_1", True, 0, "", "literal🙂"],
+                   ["OC_SEND_1", "unknown", 0, "", "literal🙂", "extra"])
+        for marker in invalid:
+            with self.subTest(marker=marker), self.assertRaises(RuntimeError):
+                native.decode_store(self.encode_store(self.send_store(marker)))
+
+    def test_decode_send_metadata_timestamp_bounds(self):
+        for stamp in (True, -1, float("nan"), float("inf"), 100000000000001, "0"):
+            marker = ["OC_SEND_1", "unknown", stamp, "", "literal🙂"]
+            with self.subTest(stamp=stamp), self.assertRaises(RuntimeError):
+                native.decode_store(self.encode_store(self.send_store(marker)))
+
+    def test_decode_send_metadata_body_and_event_binding(self):
+        for state, event, body in (("observed_full", "", "literal🙂"),
+                                   ("observed_prefix500", "", "literal🙂"),
+                                   ("observed_full", "界" * 171, "literal🙂"),
+                                   ("observed_full", 4, "literal🙂"),
+                                   ("unknown", "", "edited"), ("unknown", "", None)):
+            marker = ["OC_SEND_1", state, 0, event, body]
+            with self.subTest(marker=marker), self.assertRaises(RuntimeError):
+                native.decode_store(self.encode_store(self.send_store(marker)))
+
+    def test_optional_metadata_never_adds_native_send_mode(self):
+        parser = native.build_parser()
+        mode = next(action for action in parser._actions if action.dest == "mode")
+        self.assertEqual(tuple(mode.choices), ("routes", "playback", "draft", "reopen"))
+        source = (TOOLS / "native_acceptance.py").read_text(encoding="utf-8")
+        self.assertNotIn('click("确认发送")', source)
+        self.assertNotIn('click("发送到群聊…")', source)
 
     def test_require_stays_active_in_optimized_python(self):
         program = "import sys;sys.path.insert(0,sys.argv[1]);from native_acceptance import require;require(False,'guard-active')"

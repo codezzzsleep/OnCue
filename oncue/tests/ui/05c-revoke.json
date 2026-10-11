@@ -1,0 +1,49 @@
+{
+  "name": "A2 撤回允许后试映不调用助手",
+  "use": "_room.json",
+  "steps": [
+    {
+      "run": "_load.json"
+    },
+    {
+      "run": "_allow.json"
+    },
+    {
+      "click": "已允许 · 点这里撤回"
+    },
+    {
+      "wait": {
+        "text": [
+          "已撤回，之后不会再发给助手。"
+        ]
+      }
+    },
+    {
+      "scroll_to": "允许当前范围内的试映与修订"
+    },
+    {
+      "scroll_to": "试映下一幕"
+    },
+    {
+      "click": "试映下一幕"
+    },
+    {
+      "wait": {
+        "text": [
+          "先看一下勾选的消息"
+        ]
+      }
+    },
+    {
+      "expect": {
+        "calls": [
+          {
+            "service": "octos.session.open",
+            "count": 0
+          }
+        ]
+      },
+      "timeout": 1
+    }
+  ]
+}
