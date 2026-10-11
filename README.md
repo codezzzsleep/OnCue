@@ -96,7 +96,7 @@ python3 oncue/tools/prepare_dev_bundle.py "${DEV_ROOT}/bundle" --hub "$OCTO_HUB"
 
 1. **splash-app-verify Skill**：把"先写界面契约和场景、再写代码、每改一次全量跑场景"变成 Splash 应用的标准做法；它帮 OnCue 在交付前抓到 5 个真 bug（错误归因、限流翻译、两处状态与界面脱节）。已向 App Flow 提交 [PR #192](https://github.com/OctoSense-org/OctoSense-App-Flow/pull/192)。
 2. **Palpo 密钥备份 404 复现**：开密钥备份的账号邀请任何人到新房间都失败（规范要求 200 空 sessions，Palpo 返回 404），最小复现已写进[验证记录](oncue/VERIFICATION.md)。
-3. App Flow 的 Splash 空态语法文档已在 [PR #192](https://github.com/OctoSense-org/OctoSense-App-Flow/pull/192) 一并补充。
+3. App Flow 的 Splash 空态语法文档已随 [PR #192](https://github.com/OctoSense-org/OctoSense-App-Flow/pull/192) 一并提交，等待合并。
 
 ## 尚未验证
 
