@@ -1,11 +1,85 @@
 {
-  "name": "N23 恢复出 unknown 发送记录且草稿正文相符：发送被拦，只能先「重新读取确认」",
+  "name": "N23 恢复出 unknown 发送记录：连续零命中保持拦截、发送零调用，唯一命中后才视为已发到",
   "use": "_room.json",
   "storage": {
     "rehearsals-v1.json": "[1,1,[[\"!trip:example.org\",[\"昨晚写好的一句：车票我自己买。\",2,\"manual\",\"\",\"\",\"\",\"\",\"\",1759800000000,[\"OC_SEND_1\",\"unknown\",1759800000100,\"\",\"昨晚写好的一句：车票我自己买。\"]],null,null]]]"
   },
   "host": {
     "matrix.read_messages": [
+      {
+        "data": {
+          "messages": [
+            {
+              "sender": "xiaolin",
+              "sender_id": "@xiaolin:example.org",
+              "event_id": "$e1",
+              "body": "国庆找一天去杭州？",
+              "ts": 1759800000000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "ayou",
+              "sender_id": "@ayou:example.org",
+              "event_id": "$e2",
+              "body": "我中午 12 点以后才能走。",
+              "ts": 1759800060000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "qixi",
+              "sender_id": "@qixi:example.org",
+              "event_id": "$e3",
+              "body": "我想当天回来，预算 300 左右。",
+              "ts": 1759800120000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            }
+          ],
+          "has_more": false
+        }
+      },
+      {
+        "data": {
+          "messages": [
+            {
+              "sender": "xiaolin",
+              "sender_id": "@xiaolin:example.org",
+              "event_id": "$e1",
+              "body": "国庆找一天去杭州？",
+              "ts": 1759800000000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "ayou",
+              "sender_id": "@ayou:example.org",
+              "event_id": "$e2",
+              "body": "我中午 12 点以后才能走。",
+              "ts": 1759800060000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "qixi",
+              "sender_id": "@qixi:example.org",
+              "event_id": "$e3",
+              "body": "我想当天回来，预算 300 左右。",
+              "ts": 1759800120000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            }
+          ],
+          "has_more": false
+        }
+      },
       {
         "data": {
           "messages": [
@@ -157,10 +231,222 @@
     {
       "wait": {
         "text": [
-          "读回时看到了这条"
+          "最近 30 条里没看到那句，仍无法确认是否已发送；发送保持关闭"
+        ],
+        "calls": [
+          {
+            "service": "matrix.room_info",
+            "count": 2
+          },
+          {
+            "service": "matrix.read_messages",
+            "count": 2
+          },
+          {
+            "service": "matrix.account_info",
+            "count": 1
+          },
+          {
+            "service": "matrix.send_message",
+            "count": 0
+          }
         ]
       },
       "timeout": 5
+    },
+    {
+      "scroll_to": "重新读取确认"
+    },
+    {
+      "expect": {
+        "in_view": [
+          {
+            "text": "重新读取确认",
+            "type": "Button"
+          }
+        ],
+        "count": [
+          {
+            "of": {
+              "text": "重新读取确认",
+              "type": "Button"
+            },
+            "n": 1
+          }
+        ],
+        "absent": [
+          {
+            "text": "发到群里",
+            "type": "Button"
+          },
+          {
+            "text": "确认发送",
+            "type": "Button"
+          },
+          {
+            "text": "我已核对，仍要再次发送（可能重复）",
+            "type": "Button"
+          },
+          "很可能没有发出",
+          "现在可以正常发送"
+        ]
+      }
+    },
+    {
+      "scroll_to": "重新读取确认"
+    },
+    {
+      "click": "重新读取确认"
+    },
+    {
+      "wait": {
+        "text": [
+          "最近 30 条里没看到那句，仍无法确认是否已发送；发送保持关闭"
+        ],
+        "calls": [
+          {
+            "service": "matrix.room_info",
+            "count": 3
+          },
+          {
+            "service": "matrix.read_messages",
+            "count": 3
+          },
+          {
+            "service": "matrix.account_info",
+            "count": 2
+          },
+          {
+            "service": "matrix.send_message",
+            "count": 0
+          }
+        ]
+      },
+      "timeout": 5
+    },
+    {
+      "scroll_to": "重新读取确认"
+    },
+    {
+      "expect": {
+        "in_view": [
+          {
+            "text": "重新读取确认",
+            "type": "Button"
+          }
+        ],
+        "count": [
+          {
+            "of": {
+              "text": "重新读取确认",
+              "type": "Button"
+            },
+            "n": 1
+          }
+        ],
+        "absent": [
+          {
+            "text": "发到群里",
+            "type": "Button"
+          },
+          {
+            "text": "确认发送",
+            "type": "Button"
+          },
+          {
+            "text": "我已核对，仍要再次发送（可能重复）",
+            "type": "Button"
+          },
+          "很可能没有发出",
+          "现在可以正常发送"
+        ]
+      }
+    },
+    {
+      "click": "重新读取确认"
+    },
+    {
+      "wait": {
+        "text": [
+          "读回时看到了这条（事件已核对），视为已发到；不要再发一遍。"
+        ],
+        "calls": [
+          {
+            "service": "matrix.room_info",
+            "count": 4
+          },
+          {
+            "service": "matrix.read_messages",
+            "count": 4
+          },
+          {
+            "service": "matrix.account_info",
+            "count": 3
+          },
+          {
+            "service": "matrix.send_message",
+            "count": 0
+          },
+          {
+            "service": "octos.session.open",
+            "count": 0
+          },
+          {
+            "service": "octos.turn.start",
+            "count": 0
+          }
+        ]
+      },
+      "timeout": 5
+    },
+    {
+      "scroll_to": {
+        "id": "cue_draft"
+      }
+    },
+    {
+      "expect": {
+        "count": [
+          {
+            "of": {
+              "id": "cue_draft",
+              "contains": "昨晚写好的一句：车票我自己买。"
+            },
+            "n": 1
+          }
+        ],
+        "absent": [
+          {
+            "text": "发到群里",
+            "type": "Button"
+          },
+          {
+            "text": "确认发送",
+            "type": "Button"
+          },
+          {
+            "text": "我已核对，仍要再次发送（可能重复）",
+            "type": "Button"
+          },
+          {
+            "text": "重新读取确认",
+            "type": "Button"
+          }
+        ]
+      }
+    },
+    {
+      "scroll_to": "看反响"
+    },
+    {
+      "expect": {
+        "in_view": [
+          {
+            "text": "看反响",
+            "type": "Button"
+          }
+        ]
+      }
     }
   ]
 }

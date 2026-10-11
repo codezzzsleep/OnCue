@@ -1403,15 +1403,20 @@ fn cue_send_readback(attempt, reread){
 // 外部审查 G：恢复出的 unknown 记录（无本次打开的活请求）且草稿正文相符时，
 // 发送入口关闭，只留「重新读取确认」。
 fn cue_send_restored_unknown(){
-    if cue_send_active >= 0 { return false }
-    if cue_editor_sent == nil || cue_editor_sent[1] != "unknown" { return false }
-    cue_editor_sent[4] == ui.cue_draft.text()
+    if cue_editor_sent == nil || cue_editor_sent[1] != "unknown" || cue_editor_sent[4] != ui.cue_draft.text() { return false }
+    if cue_send_active >= 0 {
+        let attempt = cue_send_history[cue_send_active]
+        if attempt.room == cue_editor_room && attempt.editor_rev == cue_editor_revision && attempt.body == cue_editor_sent[4] { return false }
+    }
+    true
 }
 fn cue_send_reread(){
     if cue_send_latch || cue_io_busy { return }
     if cue_send_restored_unknown() {
         // G：恢复出的 unknown 没有活请求；按正文+发送时间在最近窗口里读回核对。
         let meta = cue_editor_sent.to_json().parse_json()
+        cue_send_allow_resend = false
+        cue_send_resend_of = -1
         cue_send_notice("仅重新读取原请求的结果，不会再次发送。")
         cue_checked_window(cue_binding(), true, true, fn(error, window, own){
             if error != "" { cue_set_status(error) cue_sync_workspace() return }
@@ -1434,9 +1439,10 @@ fn cue_send_reread(){
                 cue_sync_workspace()
                 return
             }
-            cue_editor_sent = nil
-            cue_send_phase = "idle"
-            cue_set_status("最近 30 条里没看到那句，上次请求很可能没有发出；现在可以正常发送。")
+            cue_send_phase = "unknown"
+            cue_send_allow_resend = false
+            cue_send_resend_of = -1
+            cue_set_status("最近 30 条里没看到那句，仍无法确认是否已发送；发送保持关闭，请继续「重新读取确认」。")
             cue_sync_workspace()
         })
         return
@@ -3049,7 +3055,7 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
                         if cue_send_phase == "unknown" || cue_send_phase == "readback" || cue_send_restored_unknown() {
                             if cue_io_busy || cue_send_latch { CueDisabled{text: "重新读取确认"} }
                             else { CueButton{text: "重新读取确认" on_click: || cue_send_reread()} }
-                            if cue_send_allow_resend && !cue_send_latch && !cue_io_busy { CueButton{text: "我已核对，仍要再次发送（可能重复）" on_click: || cue_send_resend()} }
+                            if cue_send_allow_resend && !cue_send_latch && !cue_io_busy && !cue_send_restored_unknown() { CueButton{text: "我已核对，仍要再次发送（可能重复）" on_click: || cue_send_resend()} }
                         }
                         if cue_send_active >= 0 {
                             CueLink{text: "查看本次打开的发送核对记录" on_click: || {cue_send_evidence_open = !cue_send_evidence_open cue_sync_workspace()}}
