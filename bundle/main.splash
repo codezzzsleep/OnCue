@@ -1958,6 +1958,51 @@ fn cue_commit_lazy(){
     cue_commit_cache.words = cue_commitment_words()
     cue_commit_cache.ready = true
 }
+// F6：先按 。！？；!?; 把一行切成句子并记住句末是不是问号（问句豁免用）。单趟扫描，省指令。
+fn cue_commit_sentences(line){
+    let out = []
+    let cur = "".to_chars()
+    for c in line.to_chars() {
+        if c == 12290 || c == 65281 || c == 65311 || c == 65307 || c == 63 || c == 33 || c == 59 {
+            out.push({text: cur.to_string(), q: c == 65311 || c == 63})
+            cur = "".to_chars()
+        } else { cur.push(c) }
+    }
+    if cur.len() > 0 { out.push({text: cur.to_string(), q: false}) }
+    out
+}
+fn cue_has_conditional_marker(sent){
+    sent.search("如果") >= 0 || sent.search("要是") >= 0 || sent.search("倘若") >= 0 || sent.search("假如") >= 0
+}
+// F6：只豁免条件从句本身——「如果/要是/倘若/假如」起，到其后第一个「，」（含，吞掉）或「就」（不含，留给主句）为止；
+// 没有界标则从句到句尾。主句和同句其他部分照常检查。单趟扫描，无重复查找。
+fn cue_cut_conditional(sent){
+    let chars = sent.to_chars()
+    let out = "".to_chars()
+    let skip = false
+    let i = 0
+    while i < chars.len() {
+        if !skip && i + 1 < chars.len() {
+            let a = chars[i]
+            let b = chars[i + 1]
+            if (a == 22914 && b == 26524) || (a == 35201 && b == 26159) || (a == 20626 && b == 33509) || (a == 20551 && b == 22914) {
+                skip = true
+                i += 2
+                continue
+            }
+        }
+        if skip {
+            let c = chars[i]
+            if c == 65292 { skip = false }
+            else { if c == 23601 { skip = false out.push(c) } }
+            i += 1
+            continue
+        }
+        out.push(chars[i])
+        i += 1
+    }
+    out.to_string()
+}
 fn cue_commitment_spans(text){
     cue_commit_lazy()
     let spans = []
@@ -1976,14 +2021,18 @@ fn cue_commitment_spans(text){
         let line = lines[li].trim()
         if line == "" { continue }
         if pending_re.test(line) { continue }
-        // 条件句（要是/如果/倘若/假如…）是在假设，不是承诺。
-        if line.search("要是") >= 0 || line.search("如果") >= 0 || line.search("倘若") >= 0 || line.search("假如") >= 0 { continue }
+        // F6：条件从句豁免按句处理，主句与其余句子照常检查。
+        let sents = cue_commit_sentences(line)
+        for si in sents.len() {
+        let line = sents[si].text
+        if cue_has_conditional_marker(line) { line = cue_cut_conditional(line) }
+        line = line.trim()
+        if line == "" { continue }
         let chars = line.to_chars()
-        // 疑问豁免只在整行是问句（？结尾）且不是「待确认」声明行时生效；
+        // 疑问豁免只在整句是问句（？结尾）且不是「待确认」声明句时生效；
         // 「待确认：大家已同意了吗？」这类陈述加问号仍是承诺。
-        let last_c = chars[chars.len() - 1]
         let full_question = false
-        if (last_c == 65311 || last_c == 63) && line.search("待确认") != 0 { full_question = true }
+        if sents[si].q && line.search("待确认") != 0 { full_question = true }
         for j in words.len() {
             if line.search(words[j]) >= 0 {
                 let wi_idx = cue_chars_find(chars, words[j].to_chars(), 0)
@@ -2024,6 +2073,7 @@ fn cue_commitment_spans(text){
                 if idx > 0 && cue_neg_char(chars[idx - 1]) { idx = -1 }
                 if idx >= 0 && !(full_question && cue_commit_question_tail(chars, idx + fixed[wi].len())) { spans.push(fixed_words[wi]) }
             }
+        }
         }
     }
     spans
