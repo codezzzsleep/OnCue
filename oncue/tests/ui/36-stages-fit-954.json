@@ -1,5 +1,5 @@
 {
-  "name": "N7 954x448 每个阶段：关键按钮不滚动就完整可见",
+  "name": "N7 954×448：点「去核对」进确认视图：正文末行与「确认发送」同框可见，全程无滚动；确认后才发",
   "use": "_room.json",
   "sizes": [
     "954x448"
@@ -270,13 +270,53 @@
       "expect": {
         "in_view": [
           {
-            "contains": "将发到 周末出游群："
+            "text": "去核对",
+            "type": "Button"
           }
         ]
       }
     },
     {
-      "scroll_to": "确认发送"
+      "click": "去核对"
+    },
+    {
+      "expect": {
+        "in_view": [
+          {
+            "contains": "预算 300 左右包括车票吗？"
+          },
+          {
+            "text": "确认发送",
+            "type": "Button"
+          },
+          {
+            "text": "返回编辑",
+            "type": "Button"
+          }
+        ],
+        "absent": [
+          "我想："
+        ],
+        "calls": [
+          {
+            "service": "matrix.send_message",
+            "count": 0
+          }
+        ]
+      }
+    },
+    {
+      "expect": {
+        "in_view": [
+          {
+            "contains": "预算 300 左右包括车票吗？"
+          },
+          {
+            "text": "确认发送",
+            "type": "Button"
+          }
+        ]
+      }
     },
     {
       "click": "确认发送"

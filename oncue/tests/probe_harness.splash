@@ -1137,7 +1137,22 @@ fn probe_grounding_052(){
     probe_assert("grounding.052.qualified_classifier", cue_numeric_tokens("两个人 一个小时 一个晚 两个月 一个星期").to_json() == "[\"两个人\",\"一个小时\",\"一个晚\",\"两个月\",\"一个星期\"]", {})
     probe_assert("grounding.052.vague_ignored", cue_numeric_tokens("一个 两个 一次 两次 一点 十分 百分").len() == 0, {})
     probe_assert("grounding.052.minutes_kept", cue_numeric_tokens("十分钟 百分钟").to_json() == "[\"十分钟\",\"百分钟\"]", {})
-    probe_finish()
+    start_timeout(0.01, fn(){ probe_reaction_parse(0) })
+}
+
+// 外部审查 F：反响对照的两节格式——标记各一次、顺序固定、首标记前无文字、对照 ≤200 字。
+fn probe_reaction_parse(index){
+    let fixtures = probe_fixtures.grounding.reaction_parse
+    if index >= fixtures.len() { start_timeout(0.01, fn(){ probe_finish() }) return }
+    if index == 0 {
+        cue_send_history = [{body: "预算 300 左右包括车票吗？", receipt: {event_id: "$probe"}, own: "@me:example.org"}]
+        cue_reaction_attempt = 0
+        cue_reaction_rows = [{body: "我中午 12 点以后才能走。"}]
+    }
+    let fixture = fixtures[index]
+    let actual = cue_parse_reaction(fixture.text)
+    probe_assert("grounding." + fixture.id, actual.fine == fixture.fine, {fine: actual.fine, expected: fixture.fine, reason: cue_reject_reason})
+    start_timeout(0.01, fn(){ probe_reaction_parse(index + 1) })
 }
 
 fn probe_envelope(){

@@ -459,6 +459,15 @@ class NativeAcceptanceTests(unittest.TestCase):
                 self.assertEqual(native.decode_store(self.encode_store(value)), value)
                 self.assertEqual(len(value[2][0][1]), 10)
 
+    def test_decode_send_metadata_with_expectations(self):
+        marker = ["OC_SEND_1", "observed_full", 1234.5, "$e", "literal🙂",
+                  ["预想一", "预想二", "预想三"]]
+        value = self.send_store(marker)
+        self.assertEqual(native.decode_store(self.encode_store(value)), value)
+        bad = ["OC_SEND_1", "unknown", 0, "", "literal🙂", "not-a-list"]
+        with self.assertRaises(RuntimeError):
+            native.decode_store(self.encode_store(self.send_store(bad)))
+
     def test_decode_send_metadata_shape_tag_and_state_fail_closed(self):
         invalid = ([], {}, "historical", ["OC_SEND_1"],
                    ["UNKNOWN", "unknown", 0, "", "literal🙂"],

@@ -35,6 +35,7 @@ REQUIRED_FUNCTIONS = {
     "cue_source_payload", "cue_context_key", "cue_toggle_source", "cue_grant_model",
     "cue_revoke_model", "cue_validate_route", "cue_route_refs", "cue_numbers_in",
     "cue_commitment_spans", "cue_commitments_grounded", "cue_grounding_allowed",
+    "cue_parse_reaction", "cue_reaction_reset",
     "cue_refine", "cue_refine_identity", "cue_decode_refinement",
     "cue_accept_refinement", "cue_apply_refinement", "cue_edit_refine",
 }

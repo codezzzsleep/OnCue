@@ -230,7 +230,7 @@ def decode_store(raw):
                 # authority from persisted data. Older nine-field slots stay valid,
                 # but a ten-field slot is not readable by the 0.5.1 reader.
                 sent = slot[9]
-                require(isinstance(sent, list) and len(sent) == 5
+                require(isinstance(sent, list) and len(sent) in (5, 6)
                         and sent[0] == "OC_SEND_1", "Invalid saved send metadata")
                 require(sent[1] in ("unknown", "observed_full", "observed_prefix500"),
                         "Invalid saved send state")
@@ -242,6 +242,13 @@ def decode_store(raw):
                         "Observed send metadata requires an event id")
                 require(isinstance(sent[4], str) and sent[4] == slot[0],
                         "Saved send body differs from draft")
+                # 0.5.3: optional sixth element carries the rehearsal's three
+                # expectation drafts for reaction comparison.
+                if len(sent) == 6:
+                    require(isinstance(sent[5], list) and len(sent[5]) <= 8
+                            and all(isinstance(e, str) and len(e.encode("utf-8")) <= 4096
+                                    for e in sent[5]),
+                            "Invalid saved expectation list")
     return value
 
 

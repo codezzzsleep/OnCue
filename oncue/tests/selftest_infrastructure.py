@@ -115,7 +115,7 @@ class InfrastructureTests(unittest.TestCase):
         dynamic = {
             "parser": {"parser." + case["id"] for case in self.fixtures["parser"] + self.fixtures["refinement"] + self.fixtures["recommendations"]},
             "pagination": {"pagination." + case["id"] for case in self.fixtures["pagination"]},
-            "grounding": {"grounding." + case["id"] for group in ("excerpts", "tokens", "numbers", "references", "commitments")
+            "grounding": {"grounding." + case["id"] for group in ("excerpts", "tokens", "numbers", "references", "commitments", "reaction_parse")
                           for case in self.fixtures["grounding"][group]},
             "envelope": {"envelope.auth_" + mode + "_" + str(i) for mode in ("room", "model") for i in range(6)},
             "storage": {"storage." + case["id"] for case in self.fixtures["storage"]["invalid_cases"]}
@@ -234,9 +234,9 @@ class InfrastructureTests(unittest.TestCase):
         self.assertEqual(generate_probe.CORE_SUITES,
                          ("parser", "pagination", "retry", "deadline", "playback", "storage", "grounding", "envelope"))
         self.assertEqual(generate_probe.SUITES, (*generate_probe.CORE_SUITES, "send", "send2", "send3", "send4"))
-        # 0.5.3 复审新增：承诺句式 12 项（grounding.commitments）+ 同行推荐 4 项（recommendations）。
+        # 0.5.3 复审：承诺句式扩至 38 项 + 同行推荐 7 项 + 反响对照格式 7 项（reaction_parse）。
         self.assertEqual(sum(len(self.fixtures["assertion_ids"][suite])
-                             for suite in generate_probe.CORE_SUITES), 309)
+                             for suite in generate_probe.CORE_SUITES), 346)
         self.assertEqual(len(self.fixtures["assertion_ids"]["send"]), 44)
         self.assertEqual(len(self.fixtures["assertion_ids"]["send2"]), 21)
         self.assertEqual(len(self.fixtures["assertion_ids"]["send3"]), 7)

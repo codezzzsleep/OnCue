@@ -1,7 +1,9 @@
 {
-    "opened_local": "2026-10-11T13:37:01+0800",
-    "observed_local": "2026-10-11T14:44+08",
-    "elapsed_min": 67.4,
-    "result": "Rinx 在租约过期后停止小程序会话，导入表单显示 \"Session ended. Review and run again.\"（截图 session-ended-053.png，房间号按补丁正确保留在表单里）。应用内「授权已过期」文案由界面场景04a与envelope注入测试覆盖；真实机过期表现为会话被宿主结束，未保存编辑随会话消失，已保存草稿在应用私有存储不受影响。",
-    "source_sha256": "89a23d4c2e6c850b4aa6d4fc1f134d58cb11c4f21d39207ab9ab98e7daa766f0"
+  "source_sha256": "89a23d4c2e6c850b4aa6d4fc1f134d58cb11c4f21d39207ab9ab98e7daa766f0",
+  "host": "官方 Rinx c515e5fc9b6dc22e67f7d551b09fdd793ec685a1（零本地补丁）",
+  "opened_at": "2026-10-11T15:55:46+0800",
+  "observed_at": "2026-10-11T17:03:30+0800",
+  "elapsed_minutes": 67.7,
+  "observation": "宿主界面显示「Session ended. Review and run again.」（screenshot: session-ended-053.png）；期间未保存任何内容丢失（本次未产生待保存草稿，应用内无未保存编辑）",
+  "note": "未补丁宿主上的历史授权到期记录；截图仅遮盖导入栏中的本机路径与完整测试房间标识，Session ended 状态与其余界面未改动"
 }

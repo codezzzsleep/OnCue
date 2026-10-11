@@ -24,11 +24,13 @@ card-host 可以打开应用并看内置样例，但它不提供 Matrix 和助�
 
 0.4.8主流程也有 OctoSense `a3098486` + octos `056173e8` 的历史运行记录。
 
-## Rinx 房间绑定补丁（本地 vendored，未上游）
+## Rinx 房间绑定修复（官方已含；v1.1.0 需回移植）
 
-0.5.x 的验证宿主是 **Rinx v1.1.0（`4b89097d8791a7190d01de1c576979c93df0013d`）加一处本地补丁**。OctoSense 的 `Cargo.toml` 用 `[patch."https://github.com/hagency-org/Rinx.git"] rinx = { path = "../rinx" }` 指向本地检出的 Rinx，补丁就在这份检出里（`src/miniapps/ui.rs`，未提交、未上游）。
+**0.5.3 的验证宿主是官方 Rinx `c515e5fc9b6dc22e67f7d551b09fdd793ec685a1`（零本地补丁）**，2026-10-11 完整跑通主流程（打开即读群 → 允许并试映 → 两步确认发送 → 读回核实 → 看反响）。官方自 v1.2.0 起已修复房间绑定（`src/miniapps/ui.rs` 用 `ids!(import_form.room)` 限定导入表单，c515e5f 亦含此修复），评委使用官方新版 Rinx 不需要任何补丁。
 
-**症状**：不补丁时，导入面板里填写的房间号在 Review/Run 路径上读到的是隐藏库组件里的同名输入框（`ids!(room)` 的深度优先匹配先命中库里的 DropDown，而不是导入表单里的 `import_form.room`），应用最终以无房间状态启动。
+**只有仍钉在 v1.1.0（`4b89097d`）的构建需要下面的回移植**。OctoSense 的 `Cargo.toml` 用 `[patch."https://github.com/hagency-org/Rinx.git"] rinx = { path = "../rinx" }` 指向本地检出即可带上它（补丁存根 `.private/rinx-room-binding.patch`，上游 PR 素材 `build/RINX-PR-room-binding.md`）。
+
+**症状**（未修复的 v1.1.0）：导入面板里填写的房间号在 Review/Run 路径上读到的是隐藏库组件里的同名输入框（`ids!(room)` 的深度优先匹配先命中库里的 DropDown，而不是导入表单里的 `import_form.room`），应用最终以无房间状态启动。
 
 **补丁全文**（4 处，同一改动）：
 

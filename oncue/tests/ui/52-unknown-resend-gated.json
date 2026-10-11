@@ -1,0 +1,166 @@
+{
+  "name": "N23 恢复出 unknown 发送记录且草稿正文相符：发送被拦，只能先「重新读取确认」",
+  "use": "_room.json",
+  "storage": {
+    "rehearsals-v1.json": "[1,1,[[\"!trip:example.org\",[\"昨晚写好的一句：车票我自己买。\",2,\"manual\",\"\",\"\",\"\",\"\",\"\",1759800000000,[\"OC_SEND_1\",\"unknown\",1759800000100,\"\",\"昨晚写好的一句：车票我自己买。\"]],null,null]]]"
+  },
+  "host": {
+    "matrix.read_messages": [
+      {
+        "data": {
+          "messages": [
+            {
+              "sender": "xiaolin",
+              "sender_id": "@xiaolin:example.org",
+              "event_id": "$e1",
+              "body": "国庆找一天去杭州？",
+              "ts": 1759800000000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "ayou",
+              "sender_id": "@ayou:example.org",
+              "event_id": "$e2",
+              "body": "我中午 12 点以后才能走。",
+              "ts": 1759800060000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "qixi",
+              "sender_id": "@qixi:example.org",
+              "event_id": "$e3",
+              "body": "我想当天回来，预算 300 左右。",
+              "ts": 1759800120000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            }
+          ],
+          "has_more": false
+        }
+      },
+      {
+        "data": {
+          "messages": [
+            {
+              "sender": "xiaolin",
+              "sender_id": "@xiaolin:example.org",
+              "event_id": "$e1",
+              "body": "国庆找一天去杭州？",
+              "ts": 1759800000000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "ayou",
+              "sender_id": "@ayou:example.org",
+              "event_id": "$e2",
+              "body": "我中午 12 点以后才能走。",
+              "ts": 1759800060000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "qixi",
+              "sender_id": "@qixi:example.org",
+              "event_id": "$e3",
+              "body": "我想当天回来，预算 300 左右。",
+              "ts": 1759800120000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "我",
+              "sender_id": "@me:example.org",
+              "event_id": "$sentLate",
+              "body": "昨晚写好的一句：车票我自己买。",
+              "ts": 1759800000200,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            }
+          ],
+          "has_more": false
+        }
+      }
+    ]
+  },
+  "steps": [
+    {
+      "run": "_load.json"
+    },
+    {
+      "scroll_to": {
+        "id": "cue_draft"
+      }
+    },
+    {
+      "expect": {
+        "count": [
+          {
+            "of": {
+              "id": "cue_draft",
+              "contains": "昨晚写好的一句：车票我自己买。"
+            },
+            "n": 1
+          }
+        ]
+      }
+    },
+    {
+      "expect": {
+        "text": [
+          "上次这句的发送没有读回确认"
+        ]
+      }
+    },
+    {
+      "expect": {
+        "absent": [
+          "发到群里"
+        ]
+      }
+    },
+    {
+      "scroll_to": "重新读取确认"
+    },
+    {
+      "expect": {
+        "in_view": [
+          {
+            "text": "重新读取确认",
+            "type": "Button"
+          }
+        ]
+      }
+    },
+    {
+      "expect": {
+        "calls": [
+          {
+            "service": "matrix.send_message",
+            "count": 0
+          }
+        ]
+      }
+    },
+    {
+      "click": "重新读取确认"
+    },
+    {
+      "wait": {
+        "text": [
+          "读回时看到了这条"
+        ]
+      },
+      "timeout": 5
+    }
+  ]
+}
