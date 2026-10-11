@@ -318,27 +318,38 @@ fn probe_send_freshness_more(){
     cue_apply_refinement()
     probe_window_reply(start, cue_source_window.rows, false)
     probe_assert("send.nochange_refinement_applies", ui.cue_draft.text() == "这次先不参加，谢谢邀请。" && cue_pending_revision == "", {})
+    // 运行时每次回调硬上限 20 万条指令：每个用例单独一步，不把多个完整流程
+    // （修订对照解析 + 应用 + 新鲜度核对）链进同一回调。
+    start_timeout(0.01, fn(){ probe_send_freshness_changed() })
+}
+fn probe_send_freshness_changed(){
     probe_refine_begin("send.changed_refine")
     probe_deliver(1, probe_refine_reply())
     let original = ui.cue_draft.text()
-    start = probe_requests.len()
+    let start = probe_requests.len()
     cue_apply_refinement()
     let rows = cue_source_window.rows.to_json().parse_json()
     rows[0].body = "原事件编辑成新条件"
     probe_window_reply(start, rows, false)
     probe_assert("send.edited_same_event_blocks_refinement", ui.cue_draft.text() == original && cue_fresh_state == "stale", {})
+    start_timeout(0.01, fn(){ probe_send_freshness_anchor() })
+}
+fn probe_send_freshness_anchor(){
     probe_begin("send.missing_anchor")
     probe_deliver(1, probe_good_reply())
     probe_complete_freshness()
     probe_manual("")
-    start = probe_requests.len()
+    let start = probe_requests.len()
     cue_choose_route(0)
     probe_window_reply(start, [], false)
     probe_assert("send.missing_anchor_never_applies", cue_fresh_state != "checked" && ui.cue_draft.text() == "", {})
+    start_timeout(0.01, fn(){ probe_send_freshness_known_own() })
+}
+fn probe_send_freshness_known_own(){
     probe_send_reset("send.known_own_exception", "本人消息")
     let baseline = cue_source_window.rows.to_json().parse_json()
     let index = probe_send_submit()
-    rows = probe_send_new_rows("本人消息")
+    let rows = probe_send_new_rows("本人消息")
     probe_send_observe(index, rows)
     let same = cue_window_diff(baseline, rows)
     probe_assert("send.verified_own_new_message_not_stale", same.state == "same" && same.rows.len() == 0, {})
