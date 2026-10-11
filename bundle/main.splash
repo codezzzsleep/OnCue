@@ -679,20 +679,32 @@ fn cue_known_sent(row){
     false
 }
 fn cue_window_diff(before, after){
+    // 指令预算：每行键只序列化一次（O(n+m) 次），查表比较；旧实现是 O(n×m) 次序列化，
+    // 两百行窗口对撞时单步就超出运行时预算。
+    let old_keys = {}
+    for old in before { old_keys[old.event_id] = cue_row_key(old) }
+    let sent_keys = {}
+    for attempt in cue_send_history {
+        if attempt.room == cue_room_id && attempt.epoch == cue_room_epoch && attempt.own == cue_own_id && cue_own_epoch == cue_room_epoch && attempt.receipt != nil {
+            sent_keys[attempt.receipt.event_id] = attempt.receipt.row_key
+        }
+    }
     let changed = []
     let added = 0
     let edited = 0
     let anchor = before.len() == 0
+    let last_id = ""
+    if before.len() > 0 { last_id = before[before.len() - 1].event_id }
     for row in after {
-        let found = false
-        for old in before {
-            if row.event_id == old.event_id {
-                found = true
-                if cue_row_key(row) != cue_row_key(old) { changed.push(row) edited += 1 }
-            }
+        let key = cue_row_key(row)
+        let old_key = try { old_keys[row.event_id] } catch { nil }
+        if old_key != nil {
+            if key != old_key { changed.push(row) edited += 1 }
+        } else {
+            let sent_key = try { sent_keys[row.event_id] } catch { nil }
+            if sent_key == nil || key != sent_key { changed.push(row) added += 1 }
         }
-        if !found && !cue_known_sent(row) { changed.push(row) added += 1 }
-        if before.len() > 0 && row.event_id == before[before.len() - 1].event_id { anchor = true }
+        if row.event_id == last_id && before.len() > 0 { anchor = true }
     }
     // Missing rows are not assumed deleted. The newest old anchor must survive.
     let state = "same"
