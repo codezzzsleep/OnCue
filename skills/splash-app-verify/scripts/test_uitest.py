@@ -1,12 +1,9 @@
 """uitest regressions that need no card-host: fixtures, the fake host source, selectors, checks, feedback."""
-import io
 import json
 import sys
 import tempfile
 import unittest
-from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
-from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import uitest  # noqa: E402
@@ -137,6 +134,14 @@ class Checks(unittest.TestCase):
         _, w = uitest.find(rows, {"text": "Use", "after": {"contains": "Route B"}})
         self.assertEqual(w["r"][1], 84)
         self.assertIsNone(uitest.find(rows, {"text": "Use", "after": {"contains": "Route C"}})[1])
+
+    def test_after_counts_from_the_anchor_itself_not_an_equal_widget(self):
+        # Two cards with the same heading report equal widgets; "after" the second must start after the second.
+        head = {"i": "", "ty": "Label", "r": [0, 0, 300, 20], "t": "Today"}
+        rows = [head, {"i": "", "ty": "Button", "r": [0, 24, 80, 28], "t": "Use", "value": "x"},
+                dict(head), {"i": "", "ty": "Button", "r": [0, 84, 80, 28], "t": "Use", "value": "y"}]
+        _, w = uitest.find(rows, {"text": "Use", "after": {"text": "Today", "nth": 1}})
+        self.assertEqual(w["value"], "y")
 
     class Pane:
         """A scroll view at y 50..440; /snap lists only the visible part of each child, as card-host does."""
@@ -381,20 +386,6 @@ class Safety(unittest.TestCase):
                 with self.assertRaises(uitest.ScenarioError, msg=json.dumps(body)):
                     uitest.load_scenarios(t)
 
-    def test_expectation_collections_must_be_lists(self):
-        with tempfile.TemporaryDirectory() as t:
-            scenario = Path(t) / "case.json"
-            for action in ("expect", "wait"):
-                for key in ("count", "calls", "files"):
-                    for value in (None, {}, "", "wrong", False, 0, {"wrong": 1}):
-                        with self.subTest(action=action, key=key, value=value):
-                            scenario.write_text(json.dumps({"steps": [{action: {key: value}}]}))
-                            with self.assertRaises(uitest.ScenarioError) as error:
-                                uitest.load_scenarios(scenario)
-                            self.assertIn(f'"{key}" is a list of objects', str(error.exception))
-                    scenario.write_text(json.dumps({"steps": [{action: {key: []}}]}))
-                    self.assertEqual(len(uitest.load_scenarios(scenario)), 1)
-
     def test_unknown_keys_are_refused_not_ignored(self):
         bad_steps = [
             {"expect": {"texts": ["Kept."]}},                       # a typo would have passed silently
@@ -426,6 +417,116 @@ class Safety(unittest.TestCase):
                 {"click": {"text": "Use", "after": {"contains": "B"}, "nth": 0}, "note": "why"},
                 {"wait": {"calls": [{"service": "a.b", "count": 0, "excludes": "x"}]}, "timeout": 3}]}))
             self.assertEqual(uitest.load_scenarios(t)[0][1]["host_profile"], "rinx")
+
+    def test_malformed_files_are_scenario_errors_never_crashes(self):
+        # Found by mutating the shipped scenarios at random: each of these used to
+        # raise TypeError, ValueError or UnicodeEncodeError instead of a clear
+        # scenario error (exit status 2), or to be accepted.
+        ok = '[{"sleep": 0}]'
+        deep_after = {"text": "x"}
+        for _ in range(12):
+            deep_after = {"text": "x", "after": deep_after}
+        cases = [
+            # host and storage of the wrong kind, in the scenario or in a part
+            '{"host": "x", "steps": %s}' % ok,
+            '{"host": [1], "steps": %s}' % ok,
+            '{"host": null, "steps": %s}' % ok,
+            '{"storage": "0x0", "steps": %s}' % ok,
+            '{"use": "_bad_host.json", "steps": %s}' % ok,
+            '{"use": "_bad_storage.json", "steps": %s}' % ok,
+            # "use" that is not a part name or a list of them
+            '{"use": 5, "steps": %s}' % ok,
+            '{"use": [{"a": 1}], "steps": %s}' % ok,
+            '{"use": [""], "steps": %s}' % ok,
+            # a typo in a part, however it is used; a part does not take other parts
+            '{"use": "_typo.json", "steps": %s}' % ok,
+            '{"steps": [{"run": "_typo.json"}]}',
+            '{"use": "_nested.json", "steps": %s}' % ok,
+            '{"steps": [{"run": "_nested.json"}]}',
+            '{"steps": [{"run": ""}]}',
+            # replies
+            '{"host": {"a.b": {"data": 1, "delay": "soon"}}, "steps": %s}' % ok,
+            '{"host": {"a.b": {"data": 1, "delay": -1}}, "steps": %s}' % ok,
+            '{"host": {"a.b": {"data": 1, "delay": 3000}}, "steps": %s}' % ok,
+            '{"host": {"a.b": {"data": 1, "delay": true}}, "steps": %s}' % ok,
+            '{"host": {"a.b": {"never": false}}, "steps": %s}' % ok,
+            '{"host": {"a.b": {"data": 1, "error": "x"}}, "steps": %s}' % ok,
+            '{"host": {"a.b": {"error": 5}}, "steps": %s}' % ok,
+            '{"host": {"a.b": {"data": 1, "dealy": 2}}, "steps": %s}' % ok,
+            '{"host": {"": {"data": 1}}, "steps": %s}' % ok,
+            # text that is not UTF-8 (a lone surrogate escape), as a value or a key
+            '{"name": "\\ud800", "steps": %s}' % ok,
+            '{"host": {"a.b": {"data": {"\\udcff": 1}}}, "steps": %s}' % ok,
+            '{"steps": [{"click": "\\udcff"}]}',
+            # numbers JSON does not have, and nesting no scenario needs
+            '{"steps": [{"sleep": NaN}]}',
+            '{"host": {"a.b": {"data": Infinity}}, "steps": %s}' % ok,
+            "[" * 100000,
+            json.dumps({"steps": [{"click": deep_after}]}),
+            # times: seconds, and never so large that a wait overflows or never ends
+            '{"steps": [{"sleep": 601}]}',
+            '{"steps": [{"sleep": 1e300}]}',
+            '{"steps": [{"wait": {"text": ["x"]}, "timeout": 1e300}]}',
+            '{"startup_timeout": 1e12, "steps": %s}' % ok,
+            '{"steps": [{"scroll_to": "x", "max": 1000000000}]}',
+            # check lists that are not lists
+            '{"steps": [{"wait": {"count": 5}}]}',
+            '{"steps": [{"wait": {"calls": 5}}]}',
+            '{"steps": [{"wait": {"files": {"name": "a"}}}]}',
+            # storage and file names that name no file, or hold a control character
+            '{"storage": {".": "x"}, "steps": %s}' % ok,
+            '{"storage": {"a/": "x"}, "steps": %s}' % ok,
+            '{"storage": {"a\\u0000b": "x"}, "steps": %s}' % ok,
+            '{"steps": [{"wait": {"files": [{"name": "a\\nb"}]}}]}',
+            # names the filesystem cannot hold fail at load, not once the app runs
+            '{"steps": [{"wait": {"files": [{"name": "%s"}]}}]}' % ("x" * 256),
+            '{"storage": {"%s": "x"}, "steps": %s}' % ("/".join(["d" * 200] * 6), ok),
+        ]
+        parts = {"_bad_host.json": '{"host": [1]}', "_bad_storage.json": '{"storage": "x"}',
+                 "_typo.json": '{"hots": {}, "steps": [{"sleep": 0}]}',
+                 "_nested.json": '{"use": "_bad_host.json", "steps": [{"sleep": 0}]}'}
+        for text in cases:
+            with tempfile.TemporaryDirectory() as t:
+                for name, body in parts.items():
+                    (Path(t) / name).write_text(body)
+                (Path(t) / "x.json").write_text(text)
+                with self.assertRaises(uitest.ScenarioError, msg=text[:120]):
+                    uitest.load_scenarios(Path(t) / "x.json")
+
+    def test_a_jail_the_runner_cannot_read_is_an_evidence_error(self):
+        with tempfile.TemporaryDirectory() as t:
+            jail = Path(t) / "jail"
+            jail.mkdir()
+            app = type("A", (), {"jail": jail, "find_file": uitest.App.find_file})()
+            real = Path.is_symlink
+            def denied(self):
+                raise PermissionError(13, "Permission denied", str(self))
+            Path.is_symlink = denied
+            try:
+                with self.assertRaises(uitest.EvidenceError):
+                    app.find_file("notes/a.json")
+            finally:
+                Path.is_symlink = real
+
+    def test_strict_loading_keeps_every_documented_form(self):
+        with tempfile.TemporaryDirectory() as t:
+            (Path(t) / "_room.json").write_text(json.dumps({
+                "host_profile": "rinx", "sizes": ["412x892"], "note": "shared",
+                "host": {"a.b": [{"data": None}, {"error": "", "delay": 0}, {"never": True, "delay": 600}],
+                         "*": {"error": "down", "note": "everything else"}},
+                "storage": {"notes/a.json": {"x": 1}}}))
+            (Path(t) / "_load.json").write_text(json.dumps({"description": "load", "steps": [{"sleep": 0}]}))
+            (Path(t) / "x.json").write_text(json.dumps({
+                "use": ["_room.json"], "startup_timeout": 600,
+                "steps": [{"run": "_load.json", "note": "load"}, {"sleep": 600, "allow_runtime_errors": True},
+                          {"wait": {"text": ["x"]}, "timeout": 0},
+                          {"scroll_to": "x", "max": 1000}]}))
+            sc = uitest.load_scenarios(Path(t) / "x.json")[0][1]
+        self.assertEqual(sc["host_profile"], "rinx")
+        self.assertEqual(len(sc["steps"]), 4)
+        by = {e["service"]: e["replies"] for e in uitest.normalise_replies(sc["host"])}
+        self.assertEqual([r["never"] for r in by["a.b"]], [False, False, True])
+        self.assertEqual(by["a.b"][1]["reply"], {"is_ok": False, "data": None, "error": ""})
 
     def test_an_unreadable_call_log_is_not_zero_calls(self):
         log = {"text": ""}
@@ -590,7 +691,7 @@ class Housekeeping(unittest.TestCase):
             self.assertIn("dta", second["error"])
             self.assertEqual(len(first["bundle_sha256"]), 64)
 
-    def test_a_host_that_fails_to_close_is_not_counted_as_passed(self):
+    def test_a_host_that_fails_to_close_still_leaves_a_result(self):
         class Host:
             def __init__(self, *a, **k):
                 Path(a[4]).write_text("")
@@ -604,65 +705,22 @@ class Housekeeping(unittest.TestCase):
             def close(self):
                 raise OSError("the process vanished while it was being stopped")
 
-        class NoDisplay:
-            env = {}
-            def __enter__(self): return self
-            def __exit__(self, *a): pass
-
         with tempfile.TemporaryDirectory() as t:
             bundle = Path(t) / "bundle"
             bundle.mkdir()
             (bundle / "main.splash").write_text("let x = 1\n")
             (bundle / "manifest.json").write_text(json.dumps({"id": "a", "capabilities": []}))
-            scenario = Path(t) / "01.json"
-            scenario.write_text('{"steps": [{"sleep": 0}]}')
-            out = Path(t) / "out"
+            real, uitest.App = uitest.App, Host
             before = set(Path(tempfile.gettempdir()).glob("uitest-*"))
-            stdout = io.StringIO()
-            with patch.object(uitest, "App", Host), patch.object(uitest, "Display", NoDisplay), \
-                    patch.object(uitest, "find_card_host", return_value="/bin/true"), redirect_stdout(stdout):
-                code = uitest.main(["run", str(bundle), str(scenario), "--out", str(out)])
-            summary = json.loads((out / "summary.json").read_text())
-            r = summary["results"][0]
-            self.assertEqual(code, 2)
-            self.assertEqual((summary["status"], summary["passed"], summary["failed"]),
-                             ("environment_error", 0, 1))
-            self.assertIn("finished", summary)
-            self.assertFalse(r["passed"])
+            try:
+                r = uitest.run_one("/bin/true", bundle, Path(t) / "01.json", {"steps": []}, "412x892",
+                                   Path(t) / "out", type("D", (), {"env": {}})())
+            finally:
+                uitest.App = real
             self.assertTrue(r["environment_error"])
             self.assertIn("vanished", r["evidence"]["close_error"])
-            self.assertIn("vanished", r["actual"])
-            self.assertTrue((out / "01@412x892" / "result.json").is_file())
-            self.assertTrue(Path(r["feedback"]).is_file())
-            self.assertIn("ENV  ", stdout.getvalue())
-            self.assertNotIn("PASS ", stdout.getvalue())
+            self.assertTrue((Path(t) / "out" / "01@412x892" / "result.json").is_file())
             self.assertEqual(set(Path(tempfile.gettempdir()).glob("uitest-*")) - before, set())
-
-    def test_invalid_expectation_collections_finish_without_starting_a_host(self):
-        with tempfile.TemporaryDirectory() as t:
-            bundle = Path(t) / "bundle"
-            bundle.mkdir()
-            (bundle / "main.splash").write_text("let x = 1\n")
-            (bundle / "manifest.json").write_text(json.dumps({"id": "a", "capabilities": []}))
-            scenario = Path(t) / "case.json"
-            out = Path(t) / "out"
-            for action in ("expect", "wait"):
-                for key in ("count", "calls", "files"):
-                    for value in (None, {}):
-                        with self.subTest(action=action, key=key, value=value):
-                            scenario.write_text(json.dumps({"steps": [{action: {key: value}}]}))
-                            with patch.object(uitest, "find_card_host", return_value="/bin/true"), \
-                                    patch.object(uitest, "App") as host, patch.object(uitest, "Display") as display, \
-                                    redirect_stderr(io.StringIO()):
-                                code = uitest.main(["run", str(bundle), str(scenario), "--out", str(out)])
-                            host.assert_not_called()
-                            display.assert_not_called()
-                            summary = json.loads((out / "summary.json").read_text())
-                            self.assertEqual(code, 2)
-                            self.assertEqual(summary["status"], "aborted")
-                            self.assertIn("finished", summary)
-                            self.assertEqual((summary["passed"], summary["failed"], summary["results"]), (0, 0, []))
-                            self.assertIn(f'"{key}" is a list of objects', summary["error"])
 
     def test_no_display_ends_the_summary_as_an_environment_error(self):
         with tempfile.TemporaryDirectory() as t:

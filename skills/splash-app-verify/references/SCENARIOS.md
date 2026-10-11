@@ -43,7 +43,7 @@ whose names start with `_` are shared parts, not scenarios.
 | `host` | Replies for `host.request`, by service name; see below | every call answers `no service answers "<family>" on this device`, as card-host does |
 | `host_profile` | What a request for a service the manifest does not declare gets: `octosense` answers it, as the current OctoSense hosts do (capability names are disclosures there), and the run lists it as undisclosed; `rinx` refuses it with Rinx's `Mini app was not granted <service>` | `octosense` |
 | `fake_host` | `false` runs the bundle as it is, with card-host's real (empty) services | `true` |
-| `startup_timeout` | Seconds to wait for the first widgets | 60 |
+| `startup_timeout` | Seconds to wait for the first widgets, at most 600 | 60 |
 | `allow_runtime_errors` | `true` stops a runtime error in the log from failing the scenario | `false` |
 | `description`, `note` | Free text for people; the runner ignores it | none |
 
@@ -53,10 +53,13 @@ value of the wrong kind (`"text": "Kept."` instead of a list, `"false"` in quote
 where `false` is meant, `true` where a count is meant, a size that is not
 `WxH`) stops the run with exit status 2 before any app starts: a check the
 runner skipped, or a switch it read the wrong way, would otherwise pass
-without testing anything. `count`, `calls` and `files` must be lists of objects;
-`null` or an object in their place is refused, and `[]` is an empty list.
-A bundle that contains a symbolic link is refused too: the runner never writes
-through a link.
+without testing anything. The same holds for what JSON allows but nothing
+after it can use: `NaN` or `Infinity`, a lone surrogate escape such as
+`\ud800`, nesting more than 64 deep. Every time (`sleep`, `timeout`,
+`startup_timeout`, `delay`) is seconds from 0 to 600, since a larger number is
+almost always milliseconds; a file name must fit the filesystem (255 bytes a
+part) and hold no control character. A bundle that contains a symbolic link is
+refused too: the runner never writes through a link.
 
 Size the app the way its hosts do. A shell that gives the app part of its
 window gives it a smaller rectangle than the window: measure that rectangle
@@ -69,7 +72,9 @@ with `"use"`, and its steps with a `{"run": "_part.json"}` step, which the
 runner replaces by the part's `steps`. Keep one part for the host replies of
 the normal path (`_room.json`) and one for each sequence many scenarios repeat
 (`_load.json`, `_confirm.json`). A scenario then states only what differs:
-the one reply that fails, the steps after it, the checks.
+the one reply that fails, the steps after it, the checks. A part may hold both
+fixtures and steps; it cannot `use` another part, and its keys are checked like
+a scenario's.
 
 ## Host replies
 
@@ -81,7 +86,10 @@ order with the last one repeating. `"*"` answers any service not listed.
 | `{"data": …}` | `{is_ok: true, data: …, error: ""}` |
 | `{"error": "text"}` | `{is_ok: false, data: nil, error: "text"}` |
 | `{"never": true}` | No callback: test the app's own timeout or stop button |
-| `"delay": seconds` | Wait before the callback (default 0.05); use it to test a second click while a request is out |
+| `"delay": seconds` | Wait before the callback (default 0.05, at most 600); use it to test a second click while a request is out |
+
+A reply has exactly one of `data`, `error` and `never`, and may add `delay` and
+a `"note"` for people. `error` is the text the app gets; `never` is `true`.
 
 A host answers each request once ([SCRIPT-API](../../../docs/SCRIPT-API.md#host-services-hostrequest)),
 so a reply is one callback.
@@ -129,8 +137,10 @@ written makes a check wait for it.
 | `{"sleep": 0.5}` | Waits; prefer `wait` |
 | `{"run": "_part.json"}` | The part's steps, in place |
 
-Any step may add `"allow_runtime_errors": true`, and a `"note"` that says why
-the step is there.
+Any step but `run` may add `"allow_runtime_errors": true` (the log is checked
+after every step), and any step a `"note"` that says why it is there.
+`timeout` and `sleep` are seconds, at most 600; `scroll_to` tries at most
+`"max"` scrolls (default 25, at most 1000).
 
 A `SELECTOR` is a string, matched against a widget's whole text, or an object:
 
@@ -140,7 +150,7 @@ A `SELECTOR` is a string, matched against a widget's whole text, or an object:
 | `text` | Its whole text, trimmed |
 | `contains` | Part of its text or of an input's value |
 | `type` | Its widget type, such as `TextInput` |
-| `after` | Only widgets listed after the first match of this selector: the button in the same card as a text, in a list whose rows have no ids |
+| `after` | Only widgets listed after the one this selector picks (its own `nth` counts): the button in the same card as a text, in a list whose rows have no ids. At most 8 deep |
 | `nth` | Which match, from 0, among those on screen now |
 
 ## Checks

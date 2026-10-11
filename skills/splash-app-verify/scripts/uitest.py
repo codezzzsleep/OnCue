@@ -77,7 +77,7 @@ STEP_MODIFIERS = {"click": {"note", "allow_runtime_errors"},
                   "key": {"note", "allow_runtime_errors"},
                   "scroll": {"note", "allow_runtime_errors"},
                   "scroll_to": {"on", "max", "note", "allow_runtime_errors"},
-                  "sleep": {"note"},
+                  "sleep": {"note", "allow_runtime_errors"},   # errors are checked after every step
                   "expect": {"timeout", "note", "allow_runtime_errors"},
                   "wait": {"timeout", "note", "allow_runtime_errors"}}
 EXPECT_KEYS = {"text", "absent", "in_view", "enabled", "disabled", "count", "calls", "files"}
@@ -87,6 +87,17 @@ COUNT_KEYS = {"of", "n"}
 FILE_KEYS = {"name", "missing", "contains"}
 TYPE_KEYS = {"into", "text", "clear"}
 SCROLL_KEYS = {"on", "dy"}
+REPLY_FORMS = ("data", "error", "never")
+REPLY_KEYS = set(REPLY_FORMS) | {"delay", "note"}
+# A part may hold fixtures (taken with "use") and steps (taken with "run"); a
+# part does not take other parts, and a typo in one is refused like anywhere else.
+PART_KEYS = SCENARIO_KEYS - {"use"}
+# Any time in a scenario is seconds, at most this: a larger number is almost
+# always milliseconds, and an unbounded one can overflow a wait or never end.
+MAX_SECONDS = 600
+MAX_SCROLLS = 1000
+MAX_DEPTH = 64          # nesting of a scenario file, fixtures included
+MAX_AFTER = 8           # selectors chained with "after"
 
 
 class ScenarioError(Exception):
@@ -133,29 +144,40 @@ def splash_string(text):
 def normalise_replies(host):
     """{service: reply | [reply, ...]} -> [{service, replies: [reply...]}] with full reply objects.
 
-    A reply is {"data": …}, {"error": "…"} or {"never": true}, with an optional
-    "delay" in seconds. A host answers every request once (SCRIPT-API: host
-    services), so there is no form that calls back twice.
+    A reply is exactly one of {"data": …}, {"error": "…"} or {"never": true},
+    with an optional "delay" in seconds. A host answers every request once
+    (SCRIPT-API: host services), so there is no form that calls back twice.
     """
+    if not isinstance(host, dict):
+        raise ScenarioError(f"\"host\" is an object of replies by service, got {_short(host)}")
     out = []
-    for service, value in (host or {}).items():
+    for service, value in host.items():
+        if not isinstance(service, str) or not service.strip():
+            raise ScenarioError(f"host: a service name is a non-empty string, got {service!r}")
+        where = f"host reply for {service!r}"
         items = value if isinstance(value, list) else [value]
         if not items:
             raise ScenarioError(f"host replies for {service!r} are an empty list")
         replies = []
         for item in items:
-            if not isinstance(item, dict) or not ({"data", "error", "never"} & set(item)):
-                raise ScenarioError(f"host reply for {service!r} must be an object with \"data\", \"error\" "
-                                    f"or \"never\", got {item!r}")
+            if not isinstance(item, dict):
+                raise ScenarioError(f"{where} must be an object with \"data\", \"error\" or \"never\", "
+                                    f"got {_short(item)}")
             if "stream" in item:
-                raise ScenarioError(f"host reply for {service!r}: a host answers each request once; "
-                                    "\"stream\" is not a reply form")
+                raise ScenarioError(f"{where}: a host answers each request once; \"stream\" is not a reply form")
+            _unknown(item, REPLY_KEYS, where, "reply")
+            if len([k for k in REPLY_FORMS if k in item]) != 1:
+                raise ScenarioError(f"{where} has exactly one of \"data\", \"error\" or \"never\", got {_short(item)}")
+            _need("error" not in item or isinstance(item["error"], str), where, "\"error\" is the error text")
+            _need("never" not in item or item["never"] is True, where,
+                  "\"never\" is true; leave it out for a reply that comes")
+            delay = item.get("delay", 0.05)
+            _need(_seconds(delay), where, f"\"delay\" is a number of seconds from 0 to {MAX_SECONDS}")
             if "error" in item:
-                reply = {"is_ok": False, "data": None, "error": str(item["error"])}
+                reply = {"is_ok": False, "data": None, "error": item["error"]}
             else:
                 reply = {"is_ok": True, "data": item.get("data"), "error": ""}
-            replies.append({"never": bool(item.get("never")), "delay": float(item.get("delay", 0.05)),
-                            "reply": reply})
+            replies.append({"never": "never" in item, "delay": float(delay), "reply": reply})
         out.append({"service": service, "replies": replies})
     return out
 
@@ -251,7 +273,7 @@ def prepare_copy(bundle, workdir, scenario, nonce="0"):
     check_app_id(manifest.get("id"))
     shim_lines = 0
     if scenario.get("fake_host", True):
-        shim = shim_source(scenario.get("host"), scenario.get("host_profile", "octosense"),
+        shim = shim_source(scenario.get("host", {}), scenario.get("host_profile", "octosense"),
                            manifest.get("capabilities", []), nonce)
         shim_lines = shim.count("\n")
         main.write_text(shim + main.read_text(encoding="utf-8"), encoding="utf-8")
@@ -289,11 +311,20 @@ def jail_path(jail, name, where="storage"):
 def check_jail_name(name, where):
     if not isinstance(name, str) or not name.strip():
         raise ScenarioError(f"{where}: a file name is a non-empty string, got {name!r}")
+    if any(ord(ch) < 32 or ch == "\x7f" for ch in name):
+        raise ScenarioError(f"{where}: {name!r} contains a control character")
     p = Path(name)
     if p.is_absolute() or name.startswith(("/", "\\")) or re.match(r"^[A-Za-z]:", name):
         raise ScenarioError(f"{where}: {name!r} is absolute; name a file inside the app's jail")
     if "\\" in name or ".." in p.parts or any(ch in name for ch in "*?[]"):
         raise ScenarioError(f"{where}: {name!r} may not contain '..', a backslash or a glob character")
+    if not p.parts or name.rstrip().endswith("/"):
+        raise ScenarioError(f"{where}: {name!r} names a directory; name a file")
+    # Common filesystem limits (NAME_MAX 255 bytes; well under PATH_MAX with the jail
+    # in front): past them the name can only fail once the app is already running.
+    if len(name.encode("utf-8")) > 1024 or any(len(part.encode("utf-8")) > 255 for part in p.parts):
+        raise ScenarioError(f"{where}: {_short(name, 60)} is longer than a file name may be "
+                            "(255 bytes a part, 1024 in all)")
 
 
 # --------------------------------------------------------------- card-host
@@ -459,11 +490,14 @@ class App:
             raise EvidenceError("the runner does not know the app's jail")
         check_jail_name(name, "files")
         path = self.jail
-        for part in Path(name).parts:
-            path = path / part
-            if path.is_symlink():   # a link may point anywhere: not the app's file
-                return None
-        return path if path.is_file() else None
+        try:
+            for part in Path(name).parts:
+                path = path / part
+                if path.is_symlink():   # a link may point anywhere: not the app's file
+                    return None
+            return path if path.is_file() else None
+        except OSError as e:
+            raise EvidenceError(f"cannot look at {name!r} in the app's jail: {e}") from None
 
     def calls(self, final=False):
         """Every host.request the app made, from the fake host's lines in card-host's log.
@@ -569,7 +603,9 @@ def find(widgets, sel):
     pool = widgets
     if isinstance(sel, dict) and "after" in sel:
         _, anchor = find(widgets, sel["after"])
-        pool = widgets[widgets.index(anchor) + 1:] if anchor is not None else []
+        # By identity: two cards with the same heading report equal widgets.
+        at = next((i for i, w in enumerate(widgets) if w is anchor), None)
+        pool = widgets[at + 1:] if at is not None else []
     found = [w for w in pool if matches(w, sel)]
     nth = sel.get("nth", 0) if isinstance(sel, dict) else 0
     return found, (found[nth] if len(found) > nth else None)
@@ -738,7 +774,10 @@ def check_expectation(app, exp, view):
             continue
         if not p:
             raise StepFailed(f"file {item['name']} in the jail", "missing", {})
-        body = p.read_text(encoding="utf-8", errors="replace")
+        try:
+            body = p.read_text(encoding="utf-8", errors="replace")
+        except OSError as e:
+            raise EvidenceError(f"cannot read {item['name']} in the app's jail: {e}") from None
         for c in item.get("contains", []):
             if c not in body:
                 raise StepFailed(f"{item['name']} contains \"{c}\"", "it does not", {"head": body[:400]})
@@ -1013,9 +1052,6 @@ def run_one(card_host, bundle, scenario_path, scenario, size, out_dir, display, 
                 except Exception as e:  # the host must not take the cleanup and the result with it
                     result["evidence"]["close_error"] = f"{type(e).__name__}: {e}"
                     result["environment_error"] = True
-                    if result["passed"]:
-                        result.update(passed=False, expected="the card-host closes cleanly",
-                                      actual=result["evidence"]["close_error"], detail={})
             result["evidence"]["log"] = str(run_dir / "card-host.log")
             if nonce:
                 try:
@@ -1098,9 +1134,25 @@ def _whole(v):
     return isinstance(v, int) and not isinstance(v, bool) and v >= 0
 
 
+def _seconds(v, positive=False):
+    """A wait the runner can make: a finite number from 0 (above 0 if positive) to MAX_SECONDS."""
+    return _num(v) and (v > 0 if positive else v >= 0) and v <= MAX_SECONDS
+
+
+def _short(v, limit=160):
+    text = repr(v)
+    return text if len(text) <= limit else text[:limit] + "…"
+
+
 def _need(cond, where, message):
     if not cond:
         raise ScenarioError(f"{where}: {message}")
+
+
+def _list(value, where, key, what):
+    if not isinstance(value, list):
+        raise ScenarioError(f"{where}: \"{key}\" is a list of {what}, got {_short(value)}")
+    return value
 
 
 def _list_of(value, kind, where, key):
@@ -1108,29 +1160,28 @@ def _list_of(value, kind, where, key):
         raise ScenarioError(f"{where}: \"{key}\" is a list of {'strings' if kind is str else 'selectors'}")
 
 
-def validate_selector(sel, where):
+def validate_selector(sel, where, depth=0):
     if isinstance(sel, str):
         if not sel:
             raise ScenarioError(f"{where}: an empty selector")
         return
     if not isinstance(sel, dict) or not sel:
-        raise ScenarioError(f"{where}: a selector is a text or an object, got {sel!r}")
+        raise ScenarioError(f"{where}: a selector is a text or an object, got {_short(sel)}")
     _unknown(sel, SELECTOR_KEYS, where, "selector")
     if not set(sel) - {"nth", "after"}:
-        raise ScenarioError(f"{where}: a selector needs one of id, type, text or contains: {sel!r}")
+        raise ScenarioError(f"{where}: a selector needs one of id, type, text or contains: {_short(sel)}")
     for key in ("id", "type", "text", "contains"):
         _need(key not in sel or isinstance(sel[key], str), where, f"selector \"{key}\" is a string")
     _need("nth" not in sel or _whole(sel["nth"]), where, "\"nth\" is a whole number from 0")
     if "after" in sel:
-        validate_selector(sel["after"], where + " after")
+        _need(depth < MAX_AFTER, where, f"\"after\" chains more than {MAX_AFTER} selectors")
+        validate_selector(sel["after"], where + " after", depth + 1)
 
 
 def validate_expect(exp, where, fake_host=True):
     if not isinstance(exp, dict) or not exp:
         raise ScenarioError(f"{where}: an expectation is a non-empty object")
     _unknown(exp, EXPECT_KEYS, where, "expectation")
-    for key in ("count", "calls", "files"):
-        _need(key not in exp or isinstance(exp[key], list), where, f'"{key}" is a list of objects')
     if "text" in exp:
         _list_of(exp["text"], str, where, "text")
     if "absent" in exp:
@@ -1145,7 +1196,7 @@ def validate_expect(exp, where, fake_host=True):
                 raise ScenarioError(f"{where}: \"{key}\" is a list of selectors")
             for sel in exp[key]:
                 validate_selector(sel, f"{where} {key}")
-    for item in exp.get("count", []):
+    for item in _list(exp.get("count", []), where, "count", "{\"of\", \"n\"} objects"):
         if not isinstance(item, dict):
             raise ScenarioError(f"{where}: a count item is an object")
         _unknown(item, COUNT_KEYS, where, "count")
@@ -1154,7 +1205,7 @@ def validate_expect(exp, where, fake_host=True):
         validate_selector(item["of"], where + " count")
     if exp.get("calls") and not fake_host:
         raise ScenarioError(f"{where}: \"calls\" needs the fake host, and this scenario sets \"fake_host\": false")
-    for item in exp.get("calls", []):
+    for item in _list(exp.get("calls", []), where, "calls", "call checks"):
         if not isinstance(item, dict):
             raise ScenarioError(f"{where}: a calls item is an object")
         _unknown(item, CALL_KEYS, where, "calls")
@@ -1165,7 +1216,7 @@ def validate_expect(exp, where, fake_host=True):
         for key in ("contains", "excludes"):
             if key in item and not isinstance(item[key], str):
                 raise ScenarioError(f"{where}: calls \"{key}\" is a string")
-    for item in exp.get("files", []):
+    for item in _list(exp.get("files", []), where, "files", "file checks"):
         if not isinstance(item, dict):
             raise ScenarioError(f"{where}: a files item is an object")
         _unknown(item, FILE_KEYS, where, "files")
@@ -1210,13 +1261,14 @@ def validate_step(step, where, fake_host=True):
             validate_selector(sel, where + " scroll_to")
         if "on" in step:
             validate_selector(step["on"], where + " on")
-        _need("max" not in step or (_whole(step["max"]) and step["max"] > 0), where, "\"max\" is a whole number above 0")
+        _need("max" not in step or (_whole(step["max"]) and 0 < step["max"] <= MAX_SCROLLS), where,
+              f"\"max\" is a whole number of scrolls from 1 to {MAX_SCROLLS}")
     elif action == "sleep":
-        _need(_num(value) and value >= 0, where, "\"sleep\" is a number of seconds")
+        _need(_seconds(value), where, f"\"sleep\" is a number of seconds from 0 to {MAX_SECONDS}")
     else:
         validate_expect(value, where, fake_host)
-    _need("timeout" not in step or (_num(step["timeout"]) and step["timeout"] >= 0), where,
-          "\"timeout\" is a number of seconds")
+    _need("timeout" not in step or _seconds(step["timeout"]), where,
+          f"\"timeout\" is a number of seconds from 0 to {MAX_SECONDS}")
 
 
 SIZE_RE = re.compile(r"[1-9][0-9]{1,4}x[1-9][0-9]{1,4}")
@@ -1230,8 +1282,8 @@ def validate_scenario(sc, where):
         _need(key not in sc or isinstance(sc[key], str), where, f"\"{key}\" is a string")
     _need(sc.get("host_profile", "octosense") in HOST_PROFILES, where,
           f"host_profile must be one of {list(HOST_PROFILES)}")
-    _need("startup_timeout" not in sc or (_num(sc["startup_timeout"]) and sc["startup_timeout"] > 0), where,
-          "\"startup_timeout\" is a number of seconds above 0")
+    _need("startup_timeout" not in sc or _seconds(sc["startup_timeout"], positive=True), where,
+          f"\"startup_timeout\" is a number of seconds above 0, at most {MAX_SECONDS}")
     sizes = sc.get("sizes") if "sizes" in sc else ([sc["size"]] if "size" in sc else [])
     _need(isinstance(sizes, list) and all(isinstance(z, str) and SIZE_RE.fullmatch(z) for z in sizes), where,
           "\"sizes\" is a list of \"WxH\" strings such as \"412x892\"")
@@ -1243,13 +1295,65 @@ def validate_scenario(sc, where):
     _need(isinstance(sc.get("storage"), dict), where, "\"storage\" is an object of files by name")
 
 
-def read_json(f):
+def _not_json_number(name):
+    raise ValueError(f"{name} is not a JSON number")
+
+
+def _check_text(s, where):
     try:
-        return json.loads(Path(f).read_text(encoding="utf-8"))
+        s.encode("utf-8")
+    except UnicodeEncodeError:
+        raise ScenarioError(f"{where}: a text holds a lone surrogate escape such as \\ud800, which is not "
+                            f"UTF-8: {_short(s, 60)}") from None
+
+
+def check_document(doc, where):
+    """Refuse what Python's JSON reader lets through but nothing after it can use:
+    text that is not UTF-8 (a lone surrogate escape) and nesting deeper than
+    MAX_DEPTH. Walked without recursion, so a deep file cannot crash the check."""
+    stack = [(doc, 0)]
+    while stack:
+        o, depth = stack.pop()
+        if depth > MAX_DEPTH:
+            raise ScenarioError(f"{where}: nested more than {MAX_DEPTH} deep")
+        if isinstance(o, dict):
+            for k, v in o.items():
+                _check_text(k, where)
+                stack.append((v, depth + 1))
+        elif isinstance(o, list):
+            stack.extend((v, depth + 1) for v in o)
+        elif isinstance(o, str):
+            _check_text(o, where)
+
+
+def read_json(f):
+    """A scenario or part file as standard JSON: no NaN or Infinity, UTF-8 text, bounded nesting."""
+    try:
+        text = Path(f).read_text(encoding="utf-8")
     except OSError as e:
         raise ScenarioError(f"{f}: cannot read ({e})")
     except ValueError as e:
+        raise ScenarioError(f"{f}: not UTF-8 ({e})")
+    try:
+        data = json.loads(text, parse_constant=_not_json_number)
+    except RecursionError:
+        raise ScenarioError(f"{f}: nested too deep to read") from None
+    except ValueError as e:
         raise ScenarioError(f"{f}: not JSON ({e})")
+    check_document(data, f)
+    return data
+
+
+def _part_file(base, name, where, key):
+    if not isinstance(name, str) or not name.strip() or any(ord(ch) < 32 for ch in name):
+        raise ScenarioError(f"{where}: \"{key}\" names a part file, got {_short(name)}")
+    return base / name
+
+
+def _object(value, where, key, what):
+    if not isinstance(value, dict):
+        raise ScenarioError(f"{where}: \"{key}\" is an object of {what}, got {_short(value)}")
+    return value
 
 
 def expand_steps(steps, base, f, depth=0):
@@ -1259,15 +1363,14 @@ def expand_steps(steps, base, f, depth=0):
     out = []
     for step in steps:
         if not isinstance(step, dict):
-            raise ScenarioError(f"{f}: a step is an object, got {step!r}")
+            raise ScenarioError(f"{f}: a step is an object, got {_short(step)}")
         if "run" in step:
             _unknown(step, {"run", "note"}, f, "\"run\" step")
-            if not isinstance(step["run"], str):
-                raise ScenarioError(f"{f}: \"run\" names a part file")
-            part = base / step["run"]
+            part = _part_file(base, step["run"], f, "run")
             data = read_json(part)
             if not isinstance(data, dict) or not isinstance(data.get("steps"), list):
                 raise ScenarioError(f"{part}: a part used by \"run\" is an object with a \"steps\" list")
+            _unknown(data, PART_KEYS, part, "part")
             out += expand_steps(data["steps"], part.parent, part, depth + 1)
             continue
         out.append(step)
@@ -1279,19 +1382,22 @@ def resolve_scenario(f, data):
     base = Path(f).parent
     uses = data.get("use", [])
     uses = [uses] if isinstance(uses, str) else uses
+    if not isinstance(uses, list):
+        raise ScenarioError(f"{f}: \"use\" names a part file or a list of them, got {_short(uses)}")
     host, storage, shared = {}, {}, {}
     for name in uses:
-        part = read_json(base / name)
+        path = _part_file(base, name, f, "use")
+        part = read_json(path)
         if not isinstance(part, dict):
-            raise ScenarioError(f"{base / name}: a part is an object")
-        _unknown(part, SCENARIO_KEYS - {"use"}, base / name, "part")
-        host.update(part.get("host") or {})
-        storage.update(part.get("storage") or {})
+            raise ScenarioError(f"{path}: a part is an object")
+        _unknown(part, PART_KEYS, path, "part")
+        host.update(_object(part.get("host", {}), path, "host", "replies by service"))
+        storage.update(_object(part.get("storage", {}), path, "storage", "files by name"))
         shared.update({k: part[k] for k in SHARED_KEYS if k in part})
     out = dict(shared)
     out.update({k: v for k, v in data.items() if k != "use"})
-    out["host"] = dict(host, **(data.get("host") or {}))
-    out["storage"] = dict(storage, **(data.get("storage") or {}))
+    out["host"] = {**host, **_object(data.get("host", {}), f, "host", "replies by service")}
+    out["storage"] = {**storage, **_object(data.get("storage", {}), f, "storage", "files by name")}
     out["steps"] = expand_steps(data["steps"], base, f)
     return out
 
@@ -1307,7 +1413,10 @@ def load_scenarios(target):
             raise ScenarioError(f"{f}: a scenario is an object with a \"steps\" list")
         _unknown(data, SCENARIO_KEYS, f, "scenario")
         scenario = resolve_scenario(f, data)
-        normalise_replies(scenario["host"])  # report a bad fixture before anything starts
+        try:
+            normalise_replies(scenario["host"])  # report a bad fixture before anything starts
+        except ScenarioError as e:
+            raise ScenarioError(f"{f}: {e}") from None
         validate_scenario(scenario, str(f))
         for name in scenario["storage"]:
             check_jail_name(name, f"{f}: storage")
