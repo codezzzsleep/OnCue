@@ -968,6 +968,41 @@
         "id": "commitment_conditional_zaojiu_blocked_check",
         "text": "如果他早就订好了票，我们就出发",
         "expected": true
+      },
+      {
+        "id": "commitment_conditional_jiu_main_before_comma_blocked",
+        "text": "如果大家同意就这么定了，周六见",
+        "expected": false
+      },
+      {
+        "id": "commitment_fact_inside_condition_no_comma_blocked",
+        "text": "要是没问题我已经订好了票，周六见",
+        "expected": false
+      },
+      {
+        "id": "commitment_fact_inside_condition_no_boundary_blocked",
+        "text": "如果下雨我已经付了定金",
+        "expected": false
+      },
+      {
+        "id": "commitment_conditional_already_agreed_allowed",
+        "text": "如果大家已经同意了，就出发",
+        "expected": true
+      },
+      {
+        "id": "commitment_conditional_i_already_booked_allowed",
+        "text": "如果我已经订好了票，就不用你买了",
+        "expected": true
+      },
+      {
+        "id": "commitment_conditional_everyone_and_me_allowed",
+        "text": "如果大家和我都同意，就定周六",
+        "expected": true
+      },
+      {
+        "id": "commitment_conditional_jiu_no_comma_allowed",
+        "text": "要是下雨就改天",
+        "expected": true
       }
     ],
     "reaction_parse": [
@@ -1354,7 +1389,14 @@
       "grounding.commitment_conditional_yaoshi_allowed",
       "grounding.commitment_conditional_jiaru_allowed",
       "grounding.commitment_conditional_jiujiu_allowed",
-      "grounding.commitment_conditional_zaojiu_blocked_check"
+      "grounding.commitment_conditional_zaojiu_blocked_check",
+      "grounding.commitment_conditional_jiu_main_before_comma_blocked",
+      "grounding.commitment_fact_inside_condition_no_comma_blocked",
+      "grounding.commitment_fact_inside_condition_no_boundary_blocked",
+      "grounding.commitment_conditional_already_agreed_allowed",
+      "grounding.commitment_conditional_i_already_booked_allowed",
+      "grounding.commitment_conditional_everyone_and_me_allowed",
+      "grounding.commitment_conditional_jiu_no_comma_allowed"
     ],
     "envelope": [
       "envelope.normal_open_started_turn",

@@ -1986,9 +1986,12 @@ fn cue_commit_sentences(line){
 fn cue_has_conditional_marker(sent){
     sent.search("如果") >= 0 || sent.search("要是") >= 0 || sent.search("倘若") >= 0 || sent.search("假如") >= 0
 }
-// F6：只豁免条件从句本身——「如果/要是/倘若/假如」起，到其后第一个「，」（含，吞掉）为止；
-// 没有「，」时才用「就」（不含，留给主句），避免「早就」「就是」误截从句。
-// 没有界标则从句到句尾。主句和同句其他部分照常检查。
+// F6：只豁免条件从句本身——「如果/要是/倘若/假如」起，到以下三者最先出现处结束：
+//   1. 「，」（含，吞掉）；
+//   2. 「就」（不含，留给主句）——但「早就」「也就」「就是」「就算」里的「就」不算；
+//   3. 「我已」「我们已」（不含，留给主句检查）——条件词后至少隔一个字才生效，
+//      所以「如果我已经订好了票」整句仍是假设。
+// 没有界标则从句到句尾。
 fn cue_cut_conditional(sent){
     let markers = ["如果", "要是", "倘若", "假如"]
     let s = sent
@@ -2004,12 +2007,22 @@ fn cue_cut_conditional(sent){
         }
         if mpos < 0 { return s }
         let comma = cue_chars_find(chars, [65292], mpos + mlen)
-        let cut_end = chars.len()
-        if comma >= 0 { cut_end = comma + 1 }
-        else {
-            let jiu = cue_chars_find(chars, "就".to_chars(), mpos + mlen)
-            if jiu >= 0 { cut_end = jiu }
+        let jiu = cue_chars_find(chars, "就".to_chars(), mpos + mlen)
+        let jiu_at = 0 - 1
+        while jiu >= 0 {
+            let next_c = 0
+            if jiu + 1 < chars.len() { next_c = chars[jiu + 1] }
+            if chars[jiu - 1] == 26089 || chars[jiu - 1] == 20063 || next_c == 26159 || next_c == 31639 {
+                jiu = cue_chars_find(chars, "就".to_chars(), jiu + 1)
+            } else { jiu_at = jiu jiu = 0 - 1 }
         }
+        let wo = cue_chars_find(chars, "我已".to_chars(), mpos + mlen + 1)
+        let women = cue_chars_find(chars, "我们已".to_chars(), mpos + mlen + 1)
+        if women >= 0 && (wo < 0 || women < wo) { wo = women }
+        let cut_end = chars.len()
+        if comma >= 0 && comma + 1 < cut_end { cut_end = comma + 1 }
+        if jiu_at >= 0 && jiu_at < cut_end { cut_end = jiu_at }
+        if wo >= 0 && wo < cut_end { cut_end = wo }
         let out = "".to_chars()
         for k in mpos { out.push(chars[k]) }
         for k in chars.len() - cut_end { out.push(chars[cut_end + k]) }

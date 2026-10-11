@@ -1128,6 +1128,11 @@ fn probe_grounding_052(){
     probe_assert("grounding.052.allow_one_choice", cue_numbers_in("再给大家一个选择", basis), {})
     probe_assert("grounding.052.allow_confirm_once", cue_numbers_in("我再确认一次", basis), {})
     probe_assert("grounding.052.allow_apology", cue_numbers_in("十分抱歉", basis), {})
+    // 每条断言都会把累计结果全量序列化写盘（崩溃证据）；一个回调里断言太多会撞
+    // 运行时每次回调 20 万条指令上限，052 拆成两步。
+    start_timeout(0.01, fn(){ probe_grounding_052b(basis) })
+}
+fn probe_grounding_052b(basis){
     probe_assert("grounding.052.allow_two_directions", cue_numbers_in("给两个方向", basis), {})
     probe_assert("grounding.052.allow_together", cue_numbers_in("我们一起去", basis), {})
     probe_assert("grounding.052.reject_people_commitment", !cue_numbers_in("三个人都已经同意了", basis) || cue_has_commitment_claim("三个人都已经同意了"), {})
