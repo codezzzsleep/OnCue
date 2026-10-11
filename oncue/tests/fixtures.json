@@ -958,6 +958,16 @@
         "id": "commitment_conditional_jiaru_allowed",
         "text": "假如他答应了，我们就出发",
         "expected": true
+      },
+      {
+        "id": "commitment_conditional_jiujiu_allowed",
+        "text": "如果他早就答应了，我们就出发",
+        "expected": true
+      },
+      {
+        "id": "commitment_conditional_zaojiu_blocked_check",
+        "text": "如果他早就订好了票，我们就出发",
+        "expected": true
       }
     ],
     "reaction_parse": [
@@ -1342,7 +1352,9 @@
       "grounding.commitment_conditional_main_clause_blocked",
       "grounding.commitment_conditional_full_allowed",
       "grounding.commitment_conditional_yaoshi_allowed",
-      "grounding.commitment_conditional_jiaru_allowed"
+      "grounding.commitment_conditional_jiaru_allowed",
+      "grounding.commitment_conditional_jiujiu_allowed",
+      "grounding.commitment_conditional_zaojiu_blocked_check"
     ],
     "envelope": [
       "envelope.normal_open_started_turn",

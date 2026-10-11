@@ -1986,34 +1986,36 @@ fn cue_commit_sentences(line){
 fn cue_has_conditional_marker(sent){
     sent.search("如果") >= 0 || sent.search("要是") >= 0 || sent.search("倘若") >= 0 || sent.search("假如") >= 0
 }
-// F6：只豁免条件从句本身——「如果/要是/倘若/假如」起，到其后第一个「，」（含，吞掉）或「就」（不含，留给主句）为止；
-// 没有界标则从句到句尾。主句和同句其他部分照常检查。单趟扫描，无重复查找。
+// F6：只豁免条件从句本身——「如果/要是/倘若/假如」起，到其后第一个「，」（含，吞掉）为止；
+// 没有「，」时才用「就」（不含，留给主句），避免「早就」「就是」误截从句。
+// 没有界标则从句到句尾。主句和同句其他部分照常检查。
 fn cue_cut_conditional(sent){
-    let chars = sent.to_chars()
-    let out = "".to_chars()
-    let skip = false
-    let i = 0
-    while i < chars.len() {
-        if !skip && i + 1 < chars.len() {
-            let a = chars[i]
-            let b = chars[i + 1]
-            if (a == 22914 && b == 26524) || (a == 35201 && b == 26159) || (a == 20626 && b == 33509) || (a == 20551 && b == 22914) {
-                skip = true
-                i += 2
-                continue
-            }
+    let markers = ["如果", "要是", "倘若", "假如"]
+    let s = sent
+    let guard = 0
+    while guard < 4 {
+        guard += 1
+        let chars = s.to_chars()
+        let mpos = -1
+        let mlen = 0
+        for m in markers {
+            let p = cue_chars_find(chars, m.to_chars(), 0)
+            if p >= 0 && (mpos < 0 || p < mpos) { mpos = p mlen = m.to_chars().len() }
         }
-        if skip {
-            let c = chars[i]
-            if c == 65292 { skip = false }
-            else { if c == 23601 { skip = false out.push(c) } }
-            i += 1
-            continue
+        if mpos < 0 { return s }
+        let comma = cue_chars_find(chars, [65292], mpos + mlen)
+        let cut_end = chars.len()
+        if comma >= 0 { cut_end = comma + 1 }
+        else {
+            let jiu = cue_chars_find(chars, "就".to_chars(), mpos + mlen)
+            if jiu >= 0 { cut_end = jiu }
         }
-        out.push(chars[i])
-        i += 1
+        let out = "".to_chars()
+        for k in mpos { out.push(chars[k]) }
+        for k in chars.len() - cut_end { out.push(chars[cut_end + k]) }
+        s = out.to_string()
     }
-    out.to_string()
+    s
 }
 fn cue_commitment_spans(text){
     cue_commit_lazy()
