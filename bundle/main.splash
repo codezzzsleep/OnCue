@@ -2953,27 +2953,33 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
             }
         }}
     }
-    app_scroll := ScrollYView{width: Fill height: Fill flow: Down spacing: 6
-        content := View{width: Fill height: Fit flow: Down spacing: 6
-            // P：「去核对」切到确认视图——完整正文与「确认发送」在最前，任何窗口尺寸不用滚动。
-            cue_confirm_section := View{width: Fill height: Fit flow: Down spacing: 4 on_render: || {
-                if cue_confirm_view && cue_send_confirmation != nil {
-                    let confirmation = cue_send_confirmation
-                    CueCard{
-                        CueText{text: "确认视图：只留核对内容，其余分区收起；点「返回编辑」恢复。" draw_text.color: cue_muted draw_text.text_style.font_size: 10}
-                        CueText{text: "将发到：" + cue_scene draw_text.text_style.font_size: 12}
+    // P：确认视图挂在阶段条下方、滚动区之外——无论之前滚到哪里、正文多长，
+    // 「确认发送/返回编辑」都固定在卡片底部同框可见可点；新增消息与正文在框内滚动核对。
+    cue_confirm_section := View{width: Fill height: Fit flow: Down on_render: || {
+        if cue_confirm_view && cue_send_confirmation != nil {
+            let confirmation = cue_send_confirmation
+            CueCard{
+                CueText{text: "确认视图：只留核对内容；点「返回编辑」恢复。" draw_text.color: cue_muted draw_text.text_style.font_size: 10}
+                CueText{text: "将发到：" + cue_scene draw_text.text_style.font_size: 12}
+                ScrollYView{width: Fill height: 180 draw_bg.color: #xf5f7f3
+                    View{width: Fill height: Fit flow: Down padding: 4 spacing: 3
                         for row in confirmation.rows { CueText{text: "新增/变化：" + row.sender + "：" + row.body draw_text.color: #xa03425 draw_text.text_style.font_size: 11} }
-                        CueText{text: "完整发送正文（" + confirmation.body.to_chars().len() + " / 4096 码点）：\n" + confirmation.body}
+                        CueText{text: "完整发送正文（" + confirmation.body.to_chars().len() + " / 4096 码点，框内可滚动逐字核对）："}
+                        CueText{text: confirmation.body}
                         CueText{text: "原样发送，不改草稿；不会自动保存。最近消息读取可能缓存，不能保证此后没有新消息。" draw_text.color: cue_muted draw_text.text_style.font_size: 10}
                         if confirmation.body.to_chars().len() > 500 { CueText{text: "宿主最多回读正文前500字，无法核对这之后是否还有正文。" draw_text.color: #xa03425 draw_text.text_style.font_size: 11} }
-                        View{width: Fill height: Fit flow: Right spacing: 4
-                            if cue_io_busy || cue_send_latch { CueDisabled{text: "确认发送"} }
-                            else { CuePrimary{text: "确认发送" on_click: || cue_send_confirm_now()} }
-                            CueButton{text: "返回编辑" on_click: || {cue_confirm_view = false cue_sync_workspace()}}
-                        }
                     }
                 }
-            }}
+                View{width: Fill height: Fit flow: Right spacing: 4
+                    if cue_io_busy || cue_send_latch { CueDisabled{text: "确认发送"} }
+                    else { CuePrimary{text: "确认发送" on_click: || cue_send_confirm_now()} }
+                    CueButton{text: "返回编辑" on_click: || {cue_confirm_view = false cue_sync_workspace()}}
+                }
+            }
+        }
+    }}
+    app_scroll := ScrollYView{width: Fill height: Fill flow: Down spacing: 6
+        content := View{width: Fill height: Fit flow: Down spacing: 6
             // A full-width task flow keeps controls reachable at 412px as well.
             source_panel := View{width: Fill height: Fit flow: Down spacing: 4
                 CueCard{
@@ -3122,7 +3128,12 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
                             CueLink{text: "核对房间与账号" on_click: || {cue_send_evidence_open = !cue_send_evidence_open cue_sync_workspace()}}
                             if cue_send_evidence_open { CueText{text: "房间ID：" + confirmation.binding.room + "\n账号：" + confirmation.own + "（宿主提供）" draw_text.text_style.font_size: 10} }
                             for row in confirmation.rows { CueText{text: "新增/变化：" + row.sender + "：" + row.body draw_text.color: #xa03425 draw_text.text_style.font_size: 11} }
-                            CueText{text: "完整发送正文（" + confirmation.body.to_chars().len() + " / 4096 码点）：\n" + confirmation.body}
+                            CueText{text: "完整发送正文（" + confirmation.body.to_chars().len() + " / 4096 码点，框内可滚动逐字核对）："}
+                        ScrollYView{width: Fill height: 170 draw_bg.color: #xf5f7f3
+                            View{width: Fill height: Fit flow: Down padding: 4
+                                CueText{text: confirmation.body}
+                            }
+                        }
                             CueText{text: "原样发送，不改草稿；不会自动保存。最近消息读取可能缓存，不能保证此后没有新消息。" draw_text.color: cue_muted draw_text.text_style.font_size: 10}
                             if confirmation.body.to_chars().len() > 500 { CueText{text: "宿主最多回读正文前500字，无法核对这之后是否还有正文。" draw_text.color: #xa03425 draw_text.text_style.font_size: 11} }
                             if confirmation.resend_of >= 0 { CueText{text: "这是另一次发送；上次请求仍可能成功，可能重复。" draw_text.color: #xa03425} }
