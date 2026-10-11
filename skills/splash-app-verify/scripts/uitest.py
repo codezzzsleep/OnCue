@@ -46,7 +46,10 @@ HERE = Path(__file__).resolve().parent
 SKILL = HERE.parent
 DEFAULT_SIZE = "412x892"
 RUNTIME_ERROR_MARKERS = ("[E] splash", "on_render closure failed", "splash host callback error",
-                         "isolate panic", "card-host: refused")
+                         "isolate panic", "card-host: refused",
+                         # Runtimes before makepad a772b370 (Rinx still ships one) stop a heap
+                         # whose instruction budget is spent, in these words:
+                         "spent its instruction budget", "instruction budget is spent")
 SHIM_BEGIN = "// ---- uitest fake host: test copy only ----"
 SHIM_END = "// ---- end uitest fake host ----"
 CALL_MARK = "UITEST_CALL_"     # + run nonce: one line per host.request in the card-host log

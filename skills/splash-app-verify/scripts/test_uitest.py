@@ -422,6 +422,8 @@ class Safety(unittest.TestCase):
 
     def test_runtime_errors_include_budget_stops_and_parse_errors(self):
         for line in ("splash: probe is stopped: its instruction budget is spent",
+                     "splash: an app spent its instruction budget evaluating its body and is stopped",
+                     "splash host: an app spent its instruction budget in a callback and is stopped",
                      "splash: splash:35135094784:0:0: expected expression",
                      "[E] splash: boom"):
             self.assertTrue(uitest.is_runtime_error(line), line)

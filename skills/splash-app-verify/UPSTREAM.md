@@ -5,7 +5,7 @@
 | 项 | 内容 |
 | --- | --- |
 | 作者 | OnCue 团队。为开发 OnCue 而写，本身是通用的，可以测试任何 Splash 脚本应用 |
-| 去向 | 仅作为 OnCue 仓库内的开发测试工具使用；当前没有向 OctoSense App Flow 提交 Skill 的授权 |
+| 去向 | 计划作为 PR 提交给 [OctoSense App Flow](https://github.com/OctoSense-org/OctoSense-App-Flow)，放在 `skills/splash-app-verify/`。PR 链接提交后补上；在那之前，App Flow 仓库里没有这个目录 |
 | 版本 | 第 3 版，`scripts/uitest.py` 中 `RUNNER_VERSION = 3` |
 | 对应补丁 | 基于 App Flow `main` 的 `dd25bdb6a3f9e3757b586447e4b5ca57d412deb5`（2026-10-10）。本目录与补丁里的 `skills/splash-app-verify/` 逐字相同（本文件除外），可以用 `diff -r` 核对 |
 | 验证环境 | card-host 用 App Hub `main` 的 `8d3853c9f9b6604fa1d095e7aff20911093e273a` 编译，Splash 运行时是 Octoscript-Makepad `6cf2d90aa33ff4ae603f49c7557f3ecf986207f0` |
