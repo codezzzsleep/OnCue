@@ -1,0 +1,781 @@
+{
+  "name": "N24 对照等待期间改草稿重发后重新对照：第一次的迟到回复不得解除第二次的等待状态",
+  "use": "_room.json",
+  "host": {
+    "matrix.read_messages": [
+      {
+        "data": {
+          "messages": [
+            {
+              "sender": "xiaolin",
+              "sender_id": "@xiaolin:example.org",
+              "event_id": "$e1",
+              "body": "国庆找一天去杭州？",
+              "ts": 1759800000000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "ayou",
+              "sender_id": "@ayou:example.org",
+              "event_id": "$e2",
+              "body": "我中午 12 点以后才能走。",
+              "ts": 1759800060000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "qixi",
+              "sender_id": "@qixi:example.org",
+              "event_id": "$e3",
+              "body": "我想当天回来，预算 300 左右。",
+              "ts": 1759800120000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            }
+          ],
+          "has_more": false
+        }
+      },
+      {
+        "data": {
+          "messages": [
+            {
+              "sender": "xiaolin",
+              "sender_id": "@xiaolin:example.org",
+              "event_id": "$e1",
+              "body": "国庆找一天去杭州？",
+              "ts": 1759800000000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "ayou",
+              "sender_id": "@ayou:example.org",
+              "event_id": "$e2",
+              "body": "我中午 12 点以后才能走。",
+              "ts": 1759800060000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "qixi",
+              "sender_id": "@qixi:example.org",
+              "event_id": "$e3",
+              "body": "我想当天回来，预算 300 左右。",
+              "ts": 1759800120000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            }
+          ],
+          "has_more": false
+        }
+      },
+      {
+        "data": {
+          "messages": [
+            {
+              "sender": "xiaolin",
+              "sender_id": "@xiaolin:example.org",
+              "event_id": "$e1",
+              "body": "国庆找一天去杭州？",
+              "ts": 1759800000000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "ayou",
+              "sender_id": "@ayou:example.org",
+              "event_id": "$e2",
+              "body": "我中午 12 点以后才能走。",
+              "ts": 1759800060000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "qixi",
+              "sender_id": "@qixi:example.org",
+              "event_id": "$e3",
+              "body": "我想当天回来，预算 300 左右。",
+              "ts": 1759800120000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            }
+          ],
+          "has_more": false
+        }
+      },
+      {
+        "data": {
+          "messages": [
+            {
+              "sender": "xiaolin",
+              "sender_id": "@xiaolin:example.org",
+              "event_id": "$e1",
+              "body": "国庆找一天去杭州？",
+              "ts": 1759800000000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "ayou",
+              "sender_id": "@ayou:example.org",
+              "event_id": "$e2",
+              "body": "我中午 12 点以后才能走。",
+              "ts": 1759800060000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "qixi",
+              "sender_id": "@qixi:example.org",
+              "event_id": "$e3",
+              "body": "我想当天回来，预算 300 左右。",
+              "ts": 1759800120000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "me",
+              "sender_id": "@me:example.org",
+              "event_id": "$e9",
+              "body": "预算 300 左右包括车票吗？",
+              "ts": 1759800400000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            }
+          ],
+          "has_more": false
+        }
+      },
+      {
+        "data": {
+          "messages": [
+            {
+              "sender": "xiaolin",
+              "sender_id": "@xiaolin:example.org",
+              "event_id": "$e1",
+              "body": "国庆找一天去杭州？",
+              "ts": 1759800000000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "ayou",
+              "sender_id": "@ayou:example.org",
+              "event_id": "$e2",
+              "body": "我中午 12 点以后才能走。",
+              "ts": 1759800060000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "qixi",
+              "sender_id": "@qixi:example.org",
+              "event_id": "$e3",
+              "body": "我想当天回来，预算 300 左右。",
+              "ts": 1759800120000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "me",
+              "sender_id": "@me:example.org",
+              "event_id": "$e9",
+              "body": "预算 300 左右包括车票吗？",
+              "ts": 1759800400000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "ayou",
+              "sender_id": "@ayou:example.org",
+              "event_id": "$e10",
+              "body": "车票包在里面，没问题。",
+              "ts": 1759800460000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": true
+            },
+            {
+              "sender": "qixi",
+              "sender_id": "@qixi:example.org",
+              "event_id": "$e11",
+              "body": "我都可以，听你们安排。",
+              "ts": 1759800520000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": true
+            }
+          ],
+          "has_more": false
+        }
+      },
+      {
+        "data": {
+          "messages": [
+            {
+              "sender": "xiaolin",
+              "sender_id": "@xiaolin:example.org",
+              "event_id": "$e1",
+              "body": "国庆找一天去杭州？",
+              "ts": 1759800000000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "ayou",
+              "sender_id": "@ayou:example.org",
+              "event_id": "$e2",
+              "body": "我中午 12 点以后才能走。",
+              "ts": 1759800060000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "qixi",
+              "sender_id": "@qixi:example.org",
+              "event_id": "$e3",
+              "body": "我想当天回来，预算 300 左右。",
+              "ts": 1759800120000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "me",
+              "sender_id": "@me:example.org",
+              "event_id": "$e9",
+              "body": "预算 300 左右包括车票吗？",
+              "ts": 1759800400000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            }
+          ],
+          "has_more": false
+        }
+      },
+      {
+        "data": {
+          "messages": [
+            {
+              "sender": "xiaolin",
+              "sender_id": "@xiaolin:example.org",
+              "event_id": "$e1",
+              "body": "国庆找一天去杭州？",
+              "ts": 1759800000000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "ayou",
+              "sender_id": "@ayou:example.org",
+              "event_id": "$e2",
+              "body": "我中午 12 点以后才能走。",
+              "ts": 1759800060000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "qixi",
+              "sender_id": "@qixi:example.org",
+              "event_id": "$e3",
+              "body": "我想当天回来，预算 300 左右。",
+              "ts": 1759800120000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "me",
+              "sender_id": "@me:example.org",
+              "event_id": "$e9",
+              "body": "预算 300 左右包括车票吗？",
+              "ts": 1759800400000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            }
+          ],
+          "has_more": false
+        }
+      },
+      {
+        "data": {
+          "messages": [
+            {
+              "sender": "xiaolin",
+              "sender_id": "@xiaolin:example.org",
+              "event_id": "$e1",
+              "body": "国庆找一天去杭州？",
+              "ts": 1759800000000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "ayou",
+              "sender_id": "@ayou:example.org",
+              "event_id": "$e2",
+              "body": "我中午 12 点以后才能走。",
+              "ts": 1759800060000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "qixi",
+              "sender_id": "@qixi:example.org",
+              "event_id": "$e3",
+              "body": "我想当天回来，预算 300 左右。",
+              "ts": 1759800120000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "me",
+              "sender_id": "@me:example.org",
+              "event_id": "$e9",
+              "body": "预算 300 左右包括车票吗？",
+              "ts": 1759800400000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "ayou",
+              "sender_id": "@ayou:example.org",
+              "event_id": "$e10",
+              "body": "车票包在里面，没问题。",
+              "ts": 1759800460000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": true
+            },
+            {
+              "sender": "qixi",
+              "sender_id": "@qixi:example.org",
+              "event_id": "$e11",
+              "body": "我都可以，听你们安排。",
+              "ts": 1759800520000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": true
+            },
+            {
+              "sender": "我",
+              "sender_id": "@me:example.org",
+              "event_id": "$e12",
+              "body": "车票我来买，时间你们定。",
+              "ts": 1759800300000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            }
+          ],
+          "has_more": false
+        }
+      },
+      {
+        "data": {
+          "messages": [
+            {
+              "sender": "xiaolin",
+              "sender_id": "@xiaolin:example.org",
+              "event_id": "$e1",
+              "body": "国庆找一天去杭州？",
+              "ts": 1759800000000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "ayou",
+              "sender_id": "@ayou:example.org",
+              "event_id": "$e2",
+              "body": "我中午 12 点以后才能走。",
+              "ts": 1759800060000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "qixi",
+              "sender_id": "@qixi:example.org",
+              "event_id": "$e3",
+              "body": "我想当天回来，预算 300 左右。",
+              "ts": 1759800120000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "me",
+              "sender_id": "@me:example.org",
+              "event_id": "$e9",
+              "body": "预算 300 左右包括车票吗？",
+              "ts": 1759800400000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "ayou",
+              "sender_id": "@ayou:example.org",
+              "event_id": "$e10",
+              "body": "车票包在里面，没问题。",
+              "ts": 1759800460000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": true
+            },
+            {
+              "sender": "qixi",
+              "sender_id": "@qixi:example.org",
+              "event_id": "$e11",
+              "body": "我都可以，听你们安排。",
+              "ts": 1759800520000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": true
+            },
+            {
+              "sender": "我",
+              "sender_id": "@me:example.org",
+              "event_id": "$e12",
+              "body": "车票我来买，时间你们定。",
+              "ts": 1759800300000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "ayou",
+              "sender_id": "@ayou:example.org",
+              "event_id": "$e13",
+              "body": "出发前一晚再核对一次。",
+              "ts": 1759800360000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            }
+          ],
+          "has_more": false
+        }
+      },
+      {
+        "data": {
+          "messages": [
+            {
+              "sender": "xiaolin",
+              "sender_id": "@xiaolin:example.org",
+              "event_id": "$e1",
+              "body": "国庆找一天去杭州？",
+              "ts": 1759800000000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "ayou",
+              "sender_id": "@ayou:example.org",
+              "event_id": "$e2",
+              "body": "我中午 12 点以后才能走。",
+              "ts": 1759800060000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "qixi",
+              "sender_id": "@qixi:example.org",
+              "event_id": "$e3",
+              "body": "我想当天回来，预算 300 左右。",
+              "ts": 1759800120000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "me",
+              "sender_id": "@me:example.org",
+              "event_id": "$e9",
+              "body": "预算 300 左右包括车票吗？",
+              "ts": 1759800400000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "ayou",
+              "sender_id": "@ayou:example.org",
+              "event_id": "$e10",
+              "body": "车票包在里面，没问题。",
+              "ts": 1759800460000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": true
+            },
+            {
+              "sender": "qixi",
+              "sender_id": "@qixi:example.org",
+              "event_id": "$e11",
+              "body": "我都可以，听你们安排。",
+              "ts": 1759800520000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": true
+            },
+            {
+              "sender": "我",
+              "sender_id": "@me:example.org",
+              "event_id": "$e12",
+              "body": "车票我来买，时间你们定。",
+              "ts": 1759800300000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            },
+            {
+              "sender": "ayou",
+              "sender_id": "@ayou:example.org",
+              "event_id": "$e13",
+              "body": "出发前一晚再核对一次。",
+              "ts": 1759800360000,
+              "msgtype": "m.text",
+              "room_id": "!trip:example.org",
+              "unread": false
+            }
+          ],
+          "has_more": false
+        }
+      }
+    ],
+    "octos.turn.start": [
+      {
+        "delay": 4,
+        "data": {
+          "turn_id": "turn-old",
+          "text": "【对照】\n预想里大家会纠结预算，实际直接答应了，比预想顺。\n【下一句】\n那中午以后出发，车票信息我发群里。"
+        }
+      },
+      {
+        "delay": 8,
+        "data": {
+          "turn_id": "turn-new",
+          "text": "【对照】\n回复与预想一致，没有人反对。\n【下一句】\n周六中午出发，车票我来买。"
+        }
+      },
+      {
+        "data": {
+          "turn_id": "turn-stray",
+          "text": "【对照】\n重复对照。\n【下一句】\n照旧。"
+        }
+      }
+    ]
+  },
+  "steps": [
+    {
+      "wait": {
+        "text": [
+          "原消息已载入，共 3 条。"
+        ]
+      },
+      "timeout": 5
+    },
+    {
+      "scroll_to": {
+        "id": "cue_draft"
+      }
+    },
+    {
+      "type": {
+        "into": {
+          "id": "cue_draft"
+        },
+        "text": "预算 300 左右包括车票吗？"
+      }
+    },
+    {
+      "scroll_to": "发到群里"
+    },
+    {
+      "click": "发到群里"
+    },
+    {
+      "wait": {
+        "text": [
+          "请核对完整正文后点「确认发送」"
+        ]
+      },
+      "timeout": 5
+    },
+    {
+      "scroll_to": "确认发送"
+    },
+    {
+      "click": "确认发送"
+    },
+    {
+      "wait": {
+        "text": [
+          "已发到 周末出游群。刚才读回时看到了这条。"
+        ]
+      },
+      "timeout": 5
+    },
+    {
+      "scroll_to": "看反响"
+    },
+    {
+      "click": "看反响"
+    },
+    {
+      "wait": {
+        "text": [
+          "发出那条之后的回复"
+        ]
+      },
+      "timeout": 5
+    },
+    {
+      "scroll_to": "ayou：车票包在里面，没问题。"
+    },
+    {
+      "expect": {
+        "text": [
+          "ayou：车票包在里面，没问题。",
+          "允许并对照",
+          "会把你发出的那句话、试映时的三种预想和这 2 条回复发给宿主助手"
+        ],
+        "absent": [
+          "放进确认区",
+          "对照好了"
+        ],
+        "calls": [
+          {
+            "service": "octos.session.open",
+            "count": 0
+          },
+          {
+            "service": "octos.turn.start",
+            "count": 0
+          }
+        ]
+      }
+    },
+    {
+      "click": "允许并对照"
+    },
+    {
+      "scroll_to": {
+        "id": "cue_draft"
+      }
+    },
+    {
+      "type": {
+        "into": {
+          "id": "cue_draft"
+        },
+        "text": "车票我来买，时间你们定。",
+        "clear": true
+      }
+    },
+    {
+      "scroll_to": "发到群里"
+    },
+    {
+      "click": "发到群里"
+    },
+    {
+      "wait": {
+        "text": [
+          "请核对完整正文后点「确认发送」"
+        ]
+      },
+      "timeout": 5
+    },
+    {
+      "scroll_to": "确认发送"
+    },
+    {
+      "click": "确认发送"
+    },
+    {
+      "wait": {
+        "text": [
+          "已发到 周末出游群。刚才读回时看到了这条。"
+        ]
+      },
+      "timeout": 5
+    },
+    {
+      "scroll_to": "看反响"
+    },
+    {
+      "click": "看反响"
+    },
+    {
+      "sleep": 3.5
+    },
+    {
+      "scroll_to": "看反响"
+    },
+    {
+      "click": "看反响"
+    },
+    {
+      "expect": {
+        "text": [
+          "请先结束当前核对或等待。"
+        ]
+      }
+    },
+    {
+      "wait": {
+        "text": [
+          "对照好了",
+          "周六中午出发，车票我来买。"
+        ]
+      },
+      "timeout": 12
+    },
+    {
+      "expect": {
+        "calls": [
+          {
+            "service": "octos.turn.start",
+            "count": 2
+          },
+          {
+            "service": "matrix.send_message",
+            "count": 2
+          }
+        ]
+      }
+    }
+  ]
+}

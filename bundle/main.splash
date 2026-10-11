@@ -1120,9 +1120,9 @@ fn cue_reaction_turn(hint, request_revision, try_no){
             return
         }
         host.request("octos.turn.start", {text: prompt_text}, fn(reply){
+            if my_token != cue_reaction_token { return }
             if !cue_request_current(request_revision) { return }
             cue_set_busy(false)
-            if my_token != cue_reaction_token { return }
             if !reply.is_ok {
                 cue_reaction_busy = false
                 cue_reaction_state = ""
