@@ -234,9 +234,9 @@ class InfrastructureTests(unittest.TestCase):
         self.assertEqual(generate_probe.CORE_SUITES,
                          ("parser", "pagination", "retry", "deadline", "playback", "storage", "grounding", "envelope"))
         self.assertEqual(generate_probe.SUITES, (*generate_probe.CORE_SUITES, "send", "send2", "send3", "send4"))
-        # 0.5.3 复审：承诺句式扩至 38 项 + 同行推荐 7 项 + 反响对照格式 7 项（reaction_parse）。
+        # 0.5.3 复审：承诺句式扩至 38 项 + 条件小句细化 5 项 + 同行推荐 7 项 + 反响对照格式 7 项（reaction_parse）。
         self.assertEqual(sum(len(self.fixtures["assertion_ids"][suite])
-                             for suite in generate_probe.CORE_SUITES), 346)
+                             for suite in generate_probe.CORE_SUITES), 351)
         self.assertEqual(len(self.fixtures["assertion_ids"]["send"]), 44)
         self.assertEqual(len(self.fixtures["assertion_ids"]["send2"]), 21)
         self.assertEqual(len(self.fixtures["assertion_ids"]["send3"]), 7)
