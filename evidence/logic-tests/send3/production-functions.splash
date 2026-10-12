@@ -71,6 +71,7 @@ fn cue_sync_workspace(){
     }
     cue_stage_confirm_label = cue_stage_confirm_text()
     ui.cue_stage_bar.render()
+    ui.cue_goal_chips.render()
     ui.cue_stage_action.render()
     ui.cue_overview.render()
     ui.cue_comparison.render()
@@ -401,6 +402,7 @@ fn cue_sync_reader(){
 fn cue_clear_routes(){
     cue_pause_playback()
     cue_routes = []
+    cue_rec_pick = -1
     cue_play_lines = []
     cue_play_count = 0
     cue_rebuild_ws()
@@ -1587,6 +1589,7 @@ fn cue_demo_routes(){
         first_body = "虚构回应 1：可以玩，中午后再开始。\n虚构回应 2：终点别太远，想当天回家。\n虚构回应 3：每人给附近线索，预算 300。\n虚构回应 4：找齐线索交集再定。\n依据：#4 弹性；这项提议未获同意。"
         first_draft = "旅行盲盒：12 点后集合、当天回。"
     }
+    cue_rec_pick = -1
     cue_routes = [
         {title: "顺着这句", body: first_body, draft: first_draft},
         {title: "换个问法", body: "虚构回应 1：给两个方向更容易选。\n虚构回应 2：中午去杭州当天回，或半日游。\n虚构回应 3：都先核实费用再挑。\n依据：#2、#3；结果未知。", draft: "两方向：A 中午去杭州当天回；B 附近半日游。"},
@@ -2179,6 +2182,7 @@ fn cue_accept_reply(reply, request_revision, attempt){
         let markers = cue_protocol_markers()
         for i in blocks.len() { blocks[i] = blocks[i].strip_prefix(markers[i]).trim() }
         cue_set_busy(false)
+        cue_rec_pick = rec.index
         cue_routes = [
             {title: "顺着这句", body: blocks[1], draft: blocks[2]},
             {title: "换个问法", body: blocks[3], draft: blocks[4]},

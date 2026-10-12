@@ -1,5 +1,6 @@
 let cue_sources = []
 let cue_routes = []
+let cue_rec_pick = -1
 let cue_demo = true
 let cue_busy = false
 let cue_revision = 0
@@ -184,6 +185,7 @@ fn cue_sync_workspace(){
     }
     cue_stage_confirm_label = cue_stage_confirm_text()
     ui.cue_stage_bar.render()
+    ui.cue_goal_chips.render()
     ui.cue_stage_action.render()
     ui.cue_overview.render()
     ui.cue_comparison.render()
@@ -506,6 +508,7 @@ fn cue_sync_reader(){
 fn cue_clear_routes(){
     cue_pause_playback()
     cue_routes = []
+    cue_rec_pick = -1
     cue_play_lines = []
     cue_play_count = 0
     cue_rebuild_ws()
@@ -1647,6 +1650,7 @@ fn cue_demo_routes(){
         first_body = "虚构回应 1：可以玩，中午后再开始。\n虚构回应 2：终点别太远，想当天回家。\n虚构回应 3：每人给附近线索，预算 300。\n虚构回应 4：找齐线索交集再定。\n依据：#4 弹性；这项提议未获同意。"
         first_draft = "旅行盲盒：12 点后集合、当天回。"
     }
+    cue_rec_pick = -1
     cue_routes = [
         {title: "顺着这句", body: first_body, draft: first_draft},
         {title: "换个问法", body: "虚构回应 1：给两个方向更容易选。\n虚构回应 2：中午去杭州当天回，或半日游。\n虚构回应 3：都先核实费用再挑。\n依据：#2、#3；结果未知。", draft: "两方向：A 中午去杭州当天回；B 附近半日游。"},
@@ -2241,6 +2245,7 @@ fn cue_accept_reply(reply, request_revision, attempt){
         let markers = cue_protocol_markers()
         for i in blocks.len() { blocks[i] = blocks[i].strip_prefix(markers[i]).trim() }
         cue_set_busy(false)
+        cue_rec_pick = rec.index
         cue_routes = [
             {title: "顺着这句", body: blocks[1], draft: blocks[2]},
             {title: "换个问法", body: blocks[3], draft: blocks[4]},
@@ -2931,13 +2936,16 @@ let CueBold = theme.font_bold{font_family: FontFamily{
     cjk := FontMember{res: crate_resource("makepad_widgets:resources/LXGWWenKaiBold.ttf") asc: 0.0 desc: 0.0}
     emoji := FontMember{res: crate_resource("makepad_widgets:resources/NotoColorEmoji.ttf") asc: 0.0 desc: 0.0}
 } line_spacing: 1.2}
-let cue_ink = #x203644
-let cue_muted = #x637683
+let cue_ink = #x1b2b39
+let cue_muted = #x526271
 let cue_green = #x236bc0
-let cue_canvas = #xeff5f6
+let cue_canvas = #xedf2f6
 let cue_surface = #xffffff
-let cue_soft = #xf4f8fa
-let cue_border = #xdce6eb
+let cue_soft = #xf4f7fa
+let cue_border = #xd9e3ea
+let cue_teal = #x1d6b66
+let cue_teal_soft = #xdcefea
+let cue_blue_soft = #xe2ecf9
 let CueButton = ButtonFlat{
     height: 30 padding: Inset{left: 11 right: 11}
     draw_bg +: {border_radius: 8.0 color: #xeaf1f6 color_hover: #xdce9f3 color_down: #xcbddec color_focus: #xdce9f3 border_size: 0.0}
@@ -2951,6 +2959,10 @@ let CueDisabled = CueButton{
     draw_bg +: {color: #xeef2f5 color_hover: #xeef2f5 color_down: #xeef2f5 color_focus: #xeef2f5}
     draw_text +: {color: #x8796a1 color_hover: #x8796a1 color_down: #x8796a1 color_focus: #x8796a1}
 }
+let CueChipOn = CueButton{
+    draw_bg +: {color: cue_blue_soft color_hover: #xd3e3f6 color_down: #xc4d9f2 color_focus: #xd3e3f6}
+    draw_text +: {color: cue_green color_hover: cue_green color_down: cue_green color_focus: cue_green text_style: CueBold{font_size: 11}}
+}
 let CueLink = CueButton{
     padding: Inset{left: 6 right: 6}
     draw_bg +: {color: #xffffff color_hover: #xeaf1f6 color_down: #xdce9f3 color_focus: #xeaf1f6}
@@ -2961,37 +2973,57 @@ let CueText = P{
     draw_text.text_style: CueRegular{font_size: 12 line_spacing: 1.25}
 }
 let CueCard = RoundedView{
-    width: Fill height: Fit flow: Down padding: Inset{left: 12 right: 12 top: 10 bottom: 10} spacing: 5 new_batch: true
+    width: Fill height: Fit flow: Down padding: Inset{left: 14 right: 14 top: 12 bottom: 12} spacing: 6 new_batch: true
     draw_bg +: {color: cue_surface border_radius: 12.0 border_size: 1.0 border_color: cue_border}
 }
 let CueCap = Label{draw_text.color: cue_green draw_text.text_style: CueBold{font_size: 11}}
-let CueSection = Label{draw_text.color: cue_ink draw_text.text_style: CueBold{font_size: 13}}
+let CueSection = Label{draw_text.color: cue_ink draw_text.text_style: CueBold{font_size: 14}}
 let CueMeta = P{width: Fill height: Fit draw_text.color: cue_muted draw_text.text_style: CueRegular{font_size: 10}}
-let CueStep = RoundedView{width: Fill height: 28 align: Align{x: 0.5 y: 0.5} new_batch: true draw_bg.color: #xe4edf2 draw_bg.border_radius: 8.0}
-let CueStepDone = CueStep{draw_bg.color: #xdcecef}
+let CueStep = RoundedView{width: Fill height: 28 align: Align{x: 0.5 y: 0.5} new_batch: true draw_bg.color: #xe6ecf1 draw_bg.border_radius: 8.0}
+let CueStepDone = CueStep{draw_bg.color: cue_teal_soft}
+let CueStepNow = CueStep{draw_bg.color: cue_green}
 SolidView{width: Fill height: Fill flow: Down padding: 10 spacing: 8 new_batch: true draw_bg.color: cue_canvas
     // Compact brand/status header; no hero artwork competes with the task.
     View{width: Fill height: Fit flow: Right{wrap: true} spacing: 10 align: Align{y: 0.5}
         View{width: 250 height: Fit flow: Down spacing: 2
             Label{text: "OnCue · 群聊试映室" draw_text.color: cue_ink draw_text.text_style: CueBold{font_size: 17}}
-            Label{text: "先试着说，再决定要不要发" draw_text.color: cue_muted draw_text.text_style: CueRegular{font_size: 10}}
+            Label{text: "先试着说，再决定要不要发" draw_text.color: cue_muted draw_text.text_style: CueRegular{font_size: 11}}
         }
         RoundedView{width: "min(100%, max(392px, 100% - 260px))" height: Fit padding: Inset{left: 10 right: 10 top: 7 bottom: 7} new_batch: true
-            draw_bg +: {color: #xe3eef2 border_radius: 9.0}
+            draw_bg +: {color: cue_blue_soft border_radius: 9.0}
             cue_status := CueText{text: "样例消息与对白均为虚构。" draw_text.text_style.font_size: 11}
         }
     }
     View{width: Fill height: Fit flow: Right{wrap: true} spacing: 10 align: Align{y: 0.5}
         cue_stage_bar := View{width: "min(100%, 406px)" height: Fit flow: Down spacing: 3 on_render: || {
+            let d1 = cue_stage_display.search("读群 ✓") >= 0
+            let d2 = cue_stage_display.search("试映 ✓") >= 0
+            let d3 = cue_stage_display.search("上映 ✓") >= 0
+            let d4 = cue_stage_display.search("反响 ✓") >= 0
+            // The current stage is where the person is acting, not the first box left
+            // unticked: a draft typed by hand (no rehearsal) is already 上映.
+            let now = 0
+            if !d1 { now = 1 }
+            else {
+                if cue_send_current_observed() { if !d4 { now = 4 } }
+                else {
+                    if cue_send_confirmation != nil || (!cue_demo && cue_editor_text.trim() != "") { now = 3 }
+                    else { if !d2 { now = 2 } }
+                }
+            }
             View{width: Fill height: Fit flow: Right spacing: 5
-                if cue_stage_display.search("读群 ✓") >= 0 { CueStepDone{Label{text: "01  读群 ✓" draw_text.color: #x246874 draw_text.text_style: CueBold{font_size: 10}}} }
-                else { CueStep{Label{text: "01  读群" draw_text.color: cue_muted draw_text.text_style: CueRegular{font_size: 10}}} }
-                if cue_stage_display.search("试映 ✓") >= 0 { CueStepDone{Label{text: "02  试映 ✓" draw_text.color: #x246874 draw_text.text_style: CueBold{font_size: 10}}} }
-                else { CueStep{Label{text: "02  试映" draw_text.color: cue_muted draw_text.text_style: CueRegular{font_size: 10}}} }
-                if cue_stage_display.search("上映 ✓") >= 0 { CueStepDone{Label{text: "03  上映 ✓" draw_text.color: #x246874 draw_text.text_style: CueBold{font_size: 10}}} }
-                else { CueStep{Label{text: "03  上映" draw_text.color: cue_muted draw_text.text_style: CueRegular{font_size: 10}}} }
-                if cue_stage_display.search("反响 ✓") >= 0 { CueStepDone{Label{text: "04  反响 ✓" draw_text.color: #x246874 draw_text.text_style: CueBold{font_size: 10}}} }
-                else { CueStep{Label{text: "04  反响" draw_text.color: cue_muted draw_text.text_style: CueRegular{font_size: 10}}} }
+                if d1 { CueStepDone{Label{text: "01  读群 ✓" draw_text.color: cue_teal draw_text.text_style: CueBold{font_size: 10}}} }
+                else { if now == 1 { CueStepNow{Label{text: "01  读群" draw_text.color: #xffffff draw_text.text_style: CueBold{font_size: 10}}} }
+                else { CueStep{Label{text: "01  读群" draw_text.color: cue_muted draw_text.text_style: CueRegular{font_size: 10}}} } }
+                if d2 { CueStepDone{Label{text: "02  试映 ✓" draw_text.color: cue_teal draw_text.text_style: CueBold{font_size: 10}}} }
+                else { if now == 2 { CueStepNow{Label{text: "02  试映" draw_text.color: #xffffff draw_text.text_style: CueBold{font_size: 10}}} }
+                else { CueStep{Label{text: "02  试映" draw_text.color: cue_muted draw_text.text_style: CueRegular{font_size: 10}}} } }
+                if d3 { CueStepDone{Label{text: "03  上映 ✓" draw_text.color: cue_teal draw_text.text_style: CueBold{font_size: 10}}} }
+                else { if now == 3 { CueStepNow{Label{text: "03  上映" draw_text.color: #xffffff draw_text.text_style: CueBold{font_size: 10}}} }
+                else { CueStep{Label{text: "03  上映" draw_text.color: cue_muted draw_text.text_style: CueRegular{font_size: 10}}} } }
+                if d4 { CueStepDone{Label{text: "04  反响 ✓" draw_text.color: cue_teal draw_text.text_style: CueBold{font_size: 10}}} }
+                else { if now == 4 { CueStepNow{Label{text: "04  反响" draw_text.color: #xffffff draw_text.text_style: CueBold{font_size: 10}}} }
+                else { CueStep{Label{text: "04  反响" draw_text.color: cue_muted draw_text.text_style: CueRegular{font_size: 10}}} } }
             }
             if cue_stage_log != "" { CueMeta{text: cue_stage_log} }
         }}
@@ -3029,8 +3061,8 @@ SolidView{width: Fill height: Fill flow: Down padding: 10 spacing: 8 new_batch: 
             let confirmation = cue_send_confirmation
             CueCard{
                 CueText{text: "确认视图：只留核对内容；点「返回编辑」恢复。" draw_text.color: cue_muted draw_text.text_style.font_size: 10}
-                CueText{text: "将发到：" + cue_scene draw_text.text_style: CueRegular{font_size: 12}}
-                ScrollYView{width: Fill height: 160 draw_bg.color: cue_soft
+                CueText{text: "将发到：" + cue_scene draw_text.color: cue_ink draw_text.text_style: CueRegular{font_size: 13}}
+                ScrollYView{width: Fill height: 160 draw_bg.color: cue_soft draw_bg.border_radius: 8.0 draw_bg.border_size: 1.0 draw_bg.border_color: cue_border
                     View{width: Fill height: Fit flow: Down padding: 4 spacing: 3
                         for row in confirmation.rows { CueText{text: "新增/变化：" + row.sender + "：" + row.body draw_text.color: #xa34c24 draw_text.text_style.font_size: 11} }
                         CueText{text: "完整发送正文（" + confirmation.body.to_chars().len() + " / 4096 码点，框内可滚动逐字核对）："}
@@ -3064,11 +3096,14 @@ SolidView{width: Fill height: Fill flow: Down padding: 10 spacing: 8 new_batch: 
                             draw_text +: {color: cue_ink color_hover: cue_ink color_focus: cue_ink color_empty: cue_muted color_empty_hover: cue_muted text_style: CueRegular{font_size: 12}}
                         }
                     }
-                    View{width: Fill height: Fit flow: Right{wrap: true} spacing: 2
-                        CueButton{text: "澄清条件" on_click: || cue_select_goal("先澄清条件")}
-                        CueButton{text: "礼貌拒绝" on_click: || cue_select_goal("礼貌拒绝")}
-                        CueButton{text: "推动下一步" on_click: || cue_select_goal("推动下一步")}
-                    }
+                    cue_goal_chips := View{width: Fill height: Fit flow: Right{wrap: true} spacing: 4 on_render: || {
+                        if cue_goal == "先澄清条件" { CueChipOn{text: "澄清条件" on_click: || cue_select_goal("先澄清条件")} }
+                        else { CueButton{text: "澄清条件" on_click: || cue_select_goal("先澄清条件")} }
+                        if cue_goal == "礼貌拒绝" { CueChipOn{text: "礼貌拒绝" on_click: || cue_select_goal("礼貌拒绝")} }
+                        else { CueButton{text: "礼貌拒绝" on_click: || cue_select_goal("礼貌拒绝")} }
+                        if cue_goal == "推动下一步" { CueChipOn{text: "推动下一步" on_click: || cue_select_goal("推动下一步")} }
+                        else { CueButton{text: "推动下一步" on_click: || cue_select_goal("推动下一步")} }
+                    }}
                     cue_goal_note := TextInput{width: Fill height: 48 is_multiline: true empty_text: "补充边界（可选，240字内）" on_change: |text| cue_edit_goal(text)
                         draw_bg +: {color: #xf4f8fa color_hover: #xeef4f8 color_focus: #xeaf2f8 color_empty: #xf4f8fa border_radius: 9.0}
                         draw_text +: {color: cue_ink color_empty: cue_muted text_style: CueRegular{font_size: 12}}
@@ -3097,7 +3132,7 @@ SolidView{width: Fill height: Fill flow: Down padding: 10 spacing: 8 new_batch: 
                         }
                         if !cue_demo {
                             if cue_consent_key == cue_model_consent_key() {
-                                CueButton{text: "已允许 · 点这里撤回" on_click: || cue_revoke_model()}
+                                CueChipOn{text: "已允许 · 点这里撤回" on_click: || cue_revoke_model()}
                             } else {
                                 CueButton{text: "允许当前范围内的试映与修订" on_click: || cue_grant_model()}
                             }
@@ -3116,10 +3151,27 @@ SolidView{width: Fill height: Fill flow: Down padding: 10 spacing: 8 new_batch: 
                         if cue_routes.len() == 0 { CueText{text: "点「试映下一幕」后，三种说法会出现在这里。" draw_text.color: cue_muted draw_text.text_style.font_size: 11} }
                         for i in cue_routes.len() {
                             let route = cue_routes[i]
-                            RoundedView{width: Fill height: Fit flow: Down padding: 10 spacing: 4 new_batch: true draw_bg.color: cue_soft draw_bg.border_radius: 9.0
-                                CueText{text: route.title + "：" + route.draft draw_text.text_style: CueBold{font_size: 12}}
+                            let letter = "A"
+                            if i == 1 { letter = "B" }
+                            if i == 2 { letter = "C" }
+                            let card_bg = cue_soft
+                            let card_line = 0.0
+                            if i == cue_rec_pick { card_bg = cue_surface card_line = 1.5 }
+                            // Same height as before: the A/B/C and 推荐 badges ride in the existing button
+                            // row, so a take and its buttons stay on screen together in a 448px window.
+                            // The take is model text: regular face, which covers every character.
+                            RoundedView{width: Fill height: Fit flow: Down padding: 10 spacing: 4 new_batch: true draw_bg.color: card_bg draw_bg.border_radius: 10.0 draw_bg.border_size: card_line draw_bg.border_color: cue_green
+                                CueText{text: route.title + "：" + route.draft draw_text.color: cue_ink draw_text.text_style: CueRegular{font_size: 12}}
                                 CueText{text: "相关原文片段：\n" + cue_refs_excerpt(cue_route_refs(route.body)) draw_text.color: cue_muted draw_text.text_style.font_size: 10}
-                                View{width: Fill height: Fit flow: Right spacing: 3
+                                View{width: Fill height: Fit flow: Right spacing: 4 align: Align{y: 0.5}
+                                    RoundedView{width: Fit height: Fit padding: Inset{left: 8 right: 8 top: 2 bottom: 2} new_batch: true draw_bg.color: cue_blue_soft draw_bg.border_radius: 6.0
+                                        Label{text: letter draw_text.color: cue_green draw_text.text_style: CueBold{font_size: 10}}
+                                    }
+                                    if i == cue_rec_pick {
+                                        RoundedView{width: Fit height: Fit padding: Inset{left: 8 right: 8 top: 2 bottom: 2} new_batch: true draw_bg.color: cue_green draw_bg.border_radius: 6.0
+                                            Label{text: "推荐" draw_text.color: #xffffff draw_text.text_style: CueBold{font_size: 10}}
+                                        }
+                                    }
                                     if cue_fresh_state == "stale" || cue_io_busy || cue_send_latch || cue_send_phase == "confirm" { CueDisabled{text: "选用这句"} }
                                     else { CueButton{text: "选用这句" on_click: || cue_choose_route(i)} }
                                     CueLink{text: "查看假设对白" on_click: || cue_select_preview(i)}
@@ -3137,20 +3189,26 @@ SolidView{width: Fill height: Fill flow: Down padding: 10 spacing: 8 new_batch: 
                             draw_text +: {color: cue_ink color_hover: cue_ink color_focus: cue_ink color_empty: cue_muted color_empty_hover: cue_muted text_style: CueRegular{font_size: 12}}
                         }
                     }
-                    View{width: Fill height: Fit flow: Right{wrap: true} spacing: 2
+                    View{width: Fill height: Fit flow: Right{wrap: true} spacing: 8
                         cue_send_actions := View{width: Fit height: Fit flow: Right spacing: 4 on_render: || {
                             if !cue_demo && cue_send_current_observed() {
                                 CueDisabled{text: "已发送"}
                             }
                         }}
-                        CueButton{text: "保留这句" on_click: || cue_keep_draft()}
-                        CueLink{text: "取回草稿" padding: Inset{left: 4 right: 4} on_click: || cue_restore_draft()}
-                        CueButton{text: "存 A" on_click: || cue_keep_take(0)}
-                        CueLink{text: "取 A" padding: Inset{left: 4 right: 4} on_click: || cue_restore_take(0)}
-                        CueLink{text: "显示 A" padding: Inset{left: 4 right: 4} on_click: || cue_read_take(0)}
-                        CueButton{text: "存 B" on_click: || cue_keep_take(1)}
-                        CueLink{text: "取 B" padding: Inset{left: 4 right: 4} on_click: || cue_restore_take(1)}
-                        CueLink{text: "显示 B" padding: Inset{left: 4 right: 4} on_click: || cue_read_take(1)}
+                        RoundedView{width: Fit height: Fit flow: Right spacing: 2 padding: 3 new_batch: true draw_bg.color: cue_soft draw_bg.border_radius: 10.0
+                            CueButton{text: "保留这句" on_click: || cue_keep_draft()}
+                            CueLink{text: "取回草稿" padding: Inset{left: 4 right: 4} on_click: || cue_restore_draft()}
+                        }
+                        RoundedView{width: Fit height: Fit flow: Right spacing: 2 padding: 3 new_batch: true draw_bg.color: cue_soft draw_bg.border_radius: 10.0
+                            CueButton{text: "存 A" on_click: || cue_keep_take(0)}
+                            CueLink{text: "取 A" padding: Inset{left: 4 right: 4} on_click: || cue_restore_take(0)}
+                            CueLink{text: "显示 A" padding: Inset{left: 4 right: 4} on_click: || cue_read_take(0)}
+                        }
+                        RoundedView{width: Fit height: Fit flow: Right spacing: 2 padding: 3 new_batch: true draw_bg.color: cue_soft draw_bg.border_radius: 10.0
+                            CueButton{text: "存 B" on_click: || cue_keep_take(1)}
+                            CueLink{text: "取 B" padding: Inset{left: 4 right: 4} on_click: || cue_restore_take(1)}
+                            CueLink{text: "显示 B" padding: Inset{left: 4 right: 4} on_click: || cue_read_take(1)}
+                        }
                     }
                     View{width: Fill height: Fit flow: Right{wrap: true} spacing: 2
                         CueLink{text: "原句/当前对照" on_click: || cue_compare(0)}
@@ -3238,15 +3296,19 @@ SolidView{width: Fill height: Fill flow: Down padding: 10 spacing: 8 new_batch: 
                         if cue_confirm_view && cue_send_confirmation != nil { View{width: Fill height: 0} } else {
                         if cue_reaction_rows.len() > 0 && cue_reaction_state != "" {
                             Label{width: Fill height: Fit text: "发出那条之后的回复（应用按原话列出，未经过助手）：" draw_text.color: cue_muted draw_text.text_style: CueRegular{font_size: 10}}
-                            for row in cue_reaction_rows { CueText{text: row.sender + "：" + row.body draw_text.text_style.font_size: 11} }
+                            RoundedView{width: Fill height: Fit flow: Down spacing: 4 padding: Inset{left: 12 right: 10 top: 8 bottom: 8} new_batch: true draw_bg.color: cue_soft draw_bg.border_radius: 8.0
+                                for row in cue_reaction_rows { CueText{text: row.sender + "：" + row.body draw_text.text_style.font_size: 12} }
+                            }
                         }
                         if cue_reaction_state == "listed" && cue_consent_key != cue_model_consent_key() {
                             CueText{text: cue_react_caption draw_text.color: cue_muted draw_text.text_style.font_size: 10}
                             CuePrimary{text: "允许并对照" on_click: || cue_react_consent_compare()}
                         }
                         if cue_reaction_state == "ready" {
-                            CueText{text: "对照：" + cue_reaction_compare}
-                            CueText{text: "下一句：" + cue_reaction_next}
+                            RoundedView{width: Fill height: Fit flow: Down spacing: 6 padding: Inset{left: 12 right: 12 top: 10 bottom: 10} new_batch: true draw_bg.color: cue_blue_soft draw_bg.border_radius: 10.0
+                                CueText{text: "对照：" + cue_reaction_compare draw_text.color: cue_muted}
+                                CueText{text: "下一句：" + cue_reaction_next draw_text.color: cue_ink draw_text.text_style: CueRegular{font_size: 13}}
+                            }
                             if cue_io_busy || cue_send_latch { CueDisabled{text: "放进确认区"} }
                             else { CuePrimary{text: "放进确认区" on_click: || cue_react_adopt()} }
                         }
@@ -3318,7 +3380,7 @@ SolidView{width: Fill height: Fill flow: Down padding: 10 spacing: 8 new_batch: 
                     if shown > total { shown = total }
                     Label{text: "第 " + shown + " 页 / 共 " + total + " 页" width: Fill draw_text.color: cue_muted draw_text.text_style.font_size: 11}
                 }}
-                    RoundedView{width: Fill height: Fit min_height: 257 flow: Down padding: 6 new_batch: true draw_bg.color: cue_soft
+                    RoundedView{width: Fill height: Fit min_height: 180 flow: Down padding: 10 new_batch: true draw_bg.color: cue_soft draw_bg.border_radius: 10.0
                         readout := View{width: Fill height: Fit flow: Down spacing: 4 on_render: || {
                         let idx = cue_ws_page
                         if idx >= cue_ws_pages.len() { idx = 0 }
@@ -3351,20 +3413,26 @@ SolidView{width: Fill height: Fill flow: Down padding: 10 spacing: 8 new_batch: 
                         }
                     }}
                     }
-                    View{width: Fill height: Fit flow: Right{wrap: true} spacing: 2 align: Align{y: 0.5}
-                        cue_play_button := CueLink{text: "播放" on_click: || cue_toggle_playback()}
-                        CueLink{text: "下一句" on_click: || cue_next_line()}
-                        CueLink{text: "重播" on_click: || cue_restart_playback()}
-                        CueLink{text: "上一页" on_click: || cue_page_prev()}
-                        CueLink{text: "下一页" on_click: || cue_page_next()}
-                        CueLink{text: "对白" on_click: || cue_show_dialogue()}
-                        CueLink{text: "相关原文" on_click: || cue_show_summary()}
+                    View{width: Fill height: Fit flow: Right{wrap: true} spacing: 8 align: Align{y: 0.5}
+                        RoundedView{width: Fit height: Fit flow: Right spacing: 2 padding: 3 new_batch: true draw_bg.color: cue_soft draw_bg.border_radius: 10.0
+                            cue_play_button := CueLink{text: "播放" on_click: || cue_toggle_playback()}
+                            CueLink{text: "下一句" on_click: || cue_next_line()}
+                            CueLink{text: "重播" on_click: || cue_restart_playback()}
+                        }
+                        RoundedView{width: Fit height: Fit flow: Right spacing: 2 padding: 3 new_batch: true draw_bg.color: cue_soft draw_bg.border_radius: 10.0
+                            CueLink{text: "上一页" on_click: || cue_page_prev()}
+                            CueLink{text: "下一页" on_click: || cue_page_next()}
+                        }
+                        RoundedView{width: Fit height: Fit flow: Right spacing: 2 padding: 3 new_batch: true draw_bg.color: cue_soft draw_bg.border_radius: 10.0
+                            CueLink{text: "对白" on_click: || cue_show_dialogue()}
+                            CueLink{text: "相关原文" on_click: || cue_show_summary()}
+                        }
                     }
                 }
             }
                 CueCard{
                     View{width: Fill height: Fit flow: Right spacing: 6 align: Align{y: 0.5}
-                        cue_scene_label := Label{text: "样例舞台 · 国庆搭子局" width: Fill draw_text.color: cue_ink draw_text.text_style: CueBold{font_size: 12}}
+                        cue_scene_label := Label{text: "样例舞台 · 国庆搭子局" width: Fill draw_text.color: cue_ink draw_text.text_style: CueRegular{font_size: 13}}
                         CueButton{text: "展开/收起参考消息" on_click: || cue_toggle_sources()}
                     }
                     cue_msg_list := View{width: Fill height: Fit flow: Down spacing: 2 on_render: || {

@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "suite": "send",
-  "source_sha256": "9c7a7b293c610bca4d4b7c1687062af376ccbe42b693b47727efe7076ce09130",
+  "source_sha256": "53f272345f22db595d0f3e03daef3241aae06b0816664885914dd5a18076d4fa",
   "fixtures_sha256": "7f0a4045b981e54c0bb76862a98dab9f0afb2789091566e877ae8d5c6e11fe23",
   "harness_sha256": "9a20b8ad6b3f528577e12b30ded6c1670283ec51f16604f8ce84227af63f7a3d",
   "expected_assertion_ids": [
@@ -61,932 +61,932 @@
   "filesystem": "real card-host jail; fs is not shadowed",
   "semantic_fact_verification": false,
   "storage_expectation": {},
-  "generated_sha256_before_stamp": "2e9e3480b037ae2332eecaaeaa5f9e580c2e398fa7f74094bc34de746fabd30c",
+  "generated_sha256_before_stamp": "bb6c51b55019e5f8aeca8df58042551f16da0050a722d8a92ac9424bb6c00af3",
   "initializer_original": "start_timeout(0.05, fn(){ cue_show_demo() cue_boot_state() cue_boot_autoload() })\n",
-  "initializer_source_line": 2917,
+  "initializer_source_line": 2922,
   "functions": {
     "cue_set_status": {
-      "start_line": 121,
-      "end_line": 132,
+      "start_line": 122,
+      "end_line": 133,
       "sha256": "5195efaf2a052728f96a553b8623e5bba560c1257f5ca13a224abd2ca7103ecd"
     },
     "cue_set_busy": {
-      "start_line": 133,
-      "end_line": 135,
+      "start_line": 134,
+      "end_line": 136,
       "sha256": "ab0a7b1e78b458f2cea5dca3ff423cdacbb6003b177053d1a9e5f5d71b98b3f1"
     },
     "cue_pause_playback": {
-      "start_line": 136,
-      "end_line": 140,
+      "start_line": 137,
+      "end_line": 141,
       "sha256": "d1892b4af1b2c090c304ddeca32a55b3e38ba8df8819b86e80c9aec768104436"
     },
     "cue_source_enabled": {
-      "start_line": 143,
-      "end_line": 147,
+      "start_line": 144,
+      "end_line": 148,
       "sha256": "6f048d9e04feab2c2b93d9b877857fa0cf896029275b4b46c903e7bc95a30b29"
     },
     "cue_selected_count": {
-      "start_line": 148,
-      "end_line": 152,
+      "start_line": 149,
+      "end_line": 153,
       "sha256": "bbc86f236cf3a3ab66213f9ae51f04cdd48d481b6d2968d01d668a5695982a35"
     },
     "cue_source_payload": {
-      "start_line": 153,
-      "end_line": 162,
+      "start_line": 154,
+      "end_line": 163,
       "sha256": "37642a66498c3c74849f673abec11390b6c0c4d7c41ab325f89aa05ab87ed3e0"
     },
     "cue_context_key": {
-      "start_line": 163,
-      "end_line": 165,
+      "start_line": 164,
+      "end_line": 166,
       "sha256": "2b282249894a597ca343e5ddfec7d1a2ec97d8f0d4f37f423796d17b7d9a2853"
     },
     "cue_snapshot_id": {
-      "start_line": 166,
-      "end_line": 166,
+      "start_line": 167,
+      "end_line": 167,
       "sha256": "980acb005dcf1e236cf84ca98728a6c3d718af414b866509d8ffc477ce0325d8"
     },
     "cue_stage_confirm_text": {
-      "start_line": 167,
-      "end_line": 170,
+      "start_line": 168,
+      "end_line": 171,
       "sha256": "31bc93ae20d328368a4b1401fa085b6912bae513eaad425044565f799e8e9d57"
     },
     "cue_sync_workspace": {
-      "start_line": 171,
-      "end_line": 199,
-      "sha256": "1b5725004af91071f7d8ec6add8abad3357bb867eb65b63ab84855a34ac2ce2b"
+      "start_line": 172,
+      "end_line": 201,
+      "sha256": "d3221037deb8a161ae2bb659a71bc4c9b103dc218f78a62252eaf33dc10de03b"
     },
     "cue_cancel_candidate": {
-      "start_line": 200,
-      "end_line": 204,
+      "start_line": 202,
+      "end_line": 206,
       "sha256": "77ae96d8047b9d797867519ce61a51bee13b52f72f9fad889ab12d533b1f267f"
     },
     "cue_edit_goal": {
-      "start_line": 205,
-      "end_line": 210,
+      "start_line": 207,
+      "end_line": 212,
       "sha256": "faa0a23001c6d4d1311e2593e663fd3249cc4e85f65e75e10d107e1584c01334"
     },
     "cue_select_goal": {
-      "start_line": 211,
-      "end_line": 216,
+      "start_line": 213,
+      "end_line": 218,
       "sha256": "6b9d9e3546e5e35eb870004c3f670c880100db801a19cd984575be46f1c82341"
     },
     "cue_toggle_source": {
-      "start_line": 217,
-      "end_line": 228,
+      "start_line": 219,
+      "end_line": 230,
       "sha256": "8aa4595fdf8d28efcacb7811b7f7c4212ea3f3baf13949fe0c39e502181928d0"
     },
     "cue_consent_note": {
-      "start_line": 229,
-      "end_line": 232,
+      "start_line": 231,
+      "end_line": 234,
       "sha256": "07c48e9d01c79ba4804a149b248c3c3cc8a3ce4d4bbd21cb51724f0ac8f90c78"
     },
     "cue_prefix": {
-      "start_line": 233,
-      "end_line": 240,
+      "start_line": 235,
+      "end_line": 242,
       "sha256": "54781bfc124cd52b8e0723d568213653de73f4ea6d90b45b3dfd32972e11ceed"
     },
     "cue_model_consent_key": {
-      "start_line": 241,
-      "end_line": 243,
+      "start_line": 243,
+      "end_line": 245,
       "sha256": "84b941b774925b1360df785f38ed8e37473ae305b759a735463d3d2a68bd482a"
     },
     "cue_grant_model": {
-      "start_line": 244,
-      "end_line": 248,
+      "start_line": 246,
+      "end_line": 250,
       "sha256": "87d5a737a7d8a2a40fe45dd164e134f4059563584b8f9ad6048c3b88d42555b2"
     },
     "cue_revoke_model": {
-      "start_line": 249,
-      "end_line": 256,
+      "start_line": 251,
+      "end_line": 258,
       "sha256": "70aa74aa8bf2c35edd0b731d99e0e8dd1bbacf3fed35bf62291e1494a245ebf5"
     },
     "cue_set_editor": {
-      "start_line": 257,
-      "end_line": 272,
+      "start_line": 259,
+      "end_line": 274,
       "sha256": "283a1ef8e24a5a40f11636dce8146ae779cff26ff1489ea4c5d01472a237298c"
     },
     "cue_edit_draft": {
-      "start_line": 273,
-      "end_line": 286,
+      "start_line": 275,
+      "end_line": 288,
       "sha256": "ca987c5914ba02e9061ef2b8f334e7d7dc84b85e1d2c5cbb668949890e2cf8cd"
     },
     "cue_editor_current": {
-      "start_line": 287,
-      "end_line": 295,
+      "start_line": 289,
+      "end_line": 297,
       "sha256": "8a28816428099b6597a1c34bf52a60937c654b70d3fcb8b5deed3b0f290da82e"
     },
     "cue_refine_identity": {
-      "start_line": 296,
-      "end_line": 298,
+      "start_line": 298,
+      "end_line": 300,
       "sha256": "f5ffa12ed7fab845ad6c1846e6b8e2809c6d020d3c12992453eb444e31ca0764"
     },
     "cue_is_wide": {
-      "start_line": 311,
-      "end_line": 315,
+      "start_line": 313,
+      "end_line": 317,
       "sha256": "76515aca670a46a5874b69608f225c6131c1cbb18aefe3c66980b2eab82dcdc3"
     },
     "cue_gcb_extend": {
-      "start_line": 319,
-      "end_line": 369,
+      "start_line": 321,
+      "end_line": 371,
       "sha256": "58717b232f753a44d161173b79a86e2a8d012168bd0945e43f2724f289ab8518"
     },
     "cue_gcb_prepend": {
-      "start_line": 370,
-      "end_line": 387,
+      "start_line": 372,
+      "end_line": 389,
       "sha256": "3ff1f47b3baeec38f63f5ecc84a00a773833a3d9dea7038556182729f9a0a877"
     },
     "cue_gcb_l": {
-      "start_line": 388,
-      "end_line": 391,
+      "start_line": 390,
+      "end_line": 393,
       "sha256": "6d5d93b01d3e14ee589ce0bf0d01e3d8ec21b88ca5b5444e9b8b4d03d23c02f0"
     },
     "cue_gcb_v": {
-      "start_line": 392,
-      "end_line": 395,
+      "start_line": 394,
+      "end_line": 397,
       "sha256": "e9193f99c1a5f49bb2cacb2cd5d9191e541fa9872a1cb54651c8193735f591a6"
     },
     "cue_gcb_t": {
-      "start_line": 396,
-      "end_line": 399,
+      "start_line": 398,
+      "end_line": 401,
       "sha256": "356de1e776003aed7cd4f40f059719bdd1cc9484e085a5c78e95aa11c69571c8"
     },
     "cue_gcb_lv": {
-      "start_line": 400,
-      "end_line": 403,
+      "start_line": 402,
+      "end_line": 405,
       "sha256": "5ed679eeba178e1d69fcf75f683315ceea2417583bd8c38fc5cab8b52723c301"
     },
     "cue_gcb_nobreak": {
-      "start_line": 405,
-      "end_line": 419,
+      "start_line": 407,
+      "end_line": 421,
       "sha256": "ba399523b0b8e7a224a832e8b91012241355be466c5bea2633107ded1e82dc0c"
     },
     "cue_paginate": {
-      "start_line": 420,
-      "end_line": 494,
+      "start_line": 422,
+      "end_line": 496,
       "sha256": "2be21abc0070cc930d8491e651c5ef1dc69389fbc7e2853971d90bbfa5aad935"
     },
     "cue_is_selected": {
-      "start_line": 497,
-      "end_line": 499,
+      "start_line": 499,
+      "end_line": 501,
       "sha256": "45cf360c35718330655bbfc2ae37145db8faadec1516aadc51f7dddb5faacc32"
     },
     "cue_sync_message": {
-      "start_line": 500,
-      "end_line": 500,
+      "start_line": 502,
+      "end_line": 502,
       "sha256": "b4a055272968e7885fd672a0c4842bd096a1f6645de67eb6c0ae79873375a80f"
     },
     "cue_sync_reader": {
-      "start_line": 501,
-      "end_line": 505,
+      "start_line": 503,
+      "end_line": 507,
       "sha256": "5242c98713924cf07185d5467652cec7a11bae3877395639c96d57dfff66507d"
     },
     "cue_clear_routes": {
-      "start_line": 506,
-      "end_line": 513,
-      "sha256": "7ca2c39190c2c98780b232762c3efb14f13a1b45680f1bbabafd7741599f70e5"
+      "start_line": 508,
+      "end_line": 516,
+      "sha256": "f267d48f3f1e3d5f20c26d3406f8922095a47e25808f3eddb3eb4d1e4acc2ba9"
     },
     "cue_invalidate": {
-      "start_line": 514,
-      "end_line": 530,
+      "start_line": 517,
+      "end_line": 533,
       "sha256": "14ebb9ca182fb9d9e6d83e5ce595950394ef56cc29aa5883e1be3bc33470632a"
     },
     "cue_stop_wait": {
-      "start_line": 531,
-      "end_line": 536,
+      "start_line": 534,
+      "end_line": 539,
       "sha256": "4467f3224c5a22c4858728d7489e0e2b87a3fe012a8fe080276e741c615ee84e"
     },
     "cue_deadline": {
-      "start_line": 537,
-      "end_line": 548,
+      "start_line": 540,
+      "end_line": 551,
       "sha256": "9089abf488bf880112a74fdcb120962d162bdcd9de24ed3d5c8300317f98238b"
     },
     "cue_request_current": {
-      "start_line": 549,
-      "end_line": 560,
+      "start_line": 552,
+      "end_line": 563,
       "sha256": "7e0f9b44815c9695013886039b12a1c5ca5f4b9619364f1523202b7b89dda808"
     },
     "cue_boot_state": {
-      "start_line": 563,
-      "end_line": 570,
+      "start_line": 566,
+      "end_line": 573,
       "sha256": "76224ef410fc9cca6661c2f2dba9fe4e1045f39f7b5c41bb2dffea81be3a44a7"
     },
     "cue_edit_trial": {
-      "start_line": 571,
-      "end_line": 575,
+      "start_line": 574,
+      "end_line": 578,
       "sha256": "a6ace2a8903453f66917f26b5376f9d515d6b9f07a99f9acc16ed50684e5ecb8"
     },
     "cue_dirty": {
-      "start_line": 576,
-      "end_line": 583,
+      "start_line": 579,
+      "end_line": 586,
       "sha256": "9e1c4ad327e6ecfe6c41e6170ba9c5f1e95442874564223e2f5b97248c4bb5fe"
     },
     "cue_guard_switch": {
-      "start_line": 584,
-      "end_line": 596,
+      "start_line": 587,
+      "end_line": 599,
       "sha256": "8220ab159950faf5880cf72a5a434e0a8fc606eff5ff14cdb895fc59e55bd66a"
     },
     "cue_confirm_switch": {
-      "start_line": 597,
-      "end_line": 611,
+      "start_line": 600,
+      "end_line": 614,
       "sha256": "1517ea62d8760bb43f9c859f5f39902469bc4fa0beb375cc1fd26dbea9bd2036"
     },
     "cue_show_demo": {
-      "start_line": 612,
-      "end_line": 640,
+      "start_line": 615,
+      "end_line": 643,
       "sha256": "d0c4d6146ed27555953c52084051fea8bca976a887453aa05152a79e7394e9fb"
     },
     "cue_scene_idle": {
-      "start_line": 641,
-      "end_line": 645,
+      "start_line": 644,
+      "end_line": 648,
       "sha256": "603a34344b2585c62002d587bf3f5b3cc5ea6ed0e054b4fa5a7ca6023e0079bd"
     },
     "cue_messages_valid": {
-      "start_line": 646,
-      "end_line": 655,
+      "start_line": 649,
+      "end_line": 658,
       "sha256": "2478ad0866e560c177ed4822586abc1fa39094e645d845c75117e9afe31cfe93"
     },
     "cue_window_valid": {
-      "start_line": 657,
-      "end_line": 675,
+      "start_line": 660,
+      "end_line": 678,
       "sha256": "e0933fb3801bffe724d8274d8c7c3997c8913b90dfe11e88ff9187dd42ff60f6"
     },
     "cue_window_copy": {
-      "start_line": 676,
-      "end_line": 678,
+      "start_line": 679,
+      "end_line": 681,
       "sha256": "23cce04538c071232ac7a06bde4fce1479aea639f4d8e97e0f1ed8f103755f19"
     },
     "cue_window_snapshot": {
-      "start_line": 679,
-      "end_line": 682,
+      "start_line": 682,
+      "end_line": 685,
       "sha256": "29dc98466e173461148303ee868310e81696f936095630864ad6a8933cf9cf69"
     },
     "cue_row_key": {
-      "start_line": 683,
-      "end_line": 683,
+      "start_line": 686,
+      "end_line": 686,
       "sha256": "8944c1a5276730502c61618c1ab8a4f248fb569428c37ec24fe084b30d51b0fd"
     },
     "cue_known_sent": {
-      "start_line": 684,
-      "end_line": 691,
+      "start_line": 687,
+      "end_line": 694,
       "sha256": "e72f6be6594ca2f1594e46728539e6819e142d79038c59f7289592daad61751d"
     },
     "cue_window_diff": {
-      "start_line": 692,
-      "end_line": 725,
+      "start_line": 695,
+      "end_line": 728,
       "sha256": "09344cc719480f112b93f08237c4f66e56fb611713063264d0d0103515c2f026"
     },
     "cue_fresh_expired": {
-      "start_line": 726,
-      "end_line": 730,
+      "start_line": 729,
+      "end_line": 733,
       "sha256": "aeef500027a1f824b4ebeba40db11f3bb653a92acd4d209d04b65a168e9475a6"
     },
     "cue_binding": {
-      "start_line": 731,
-      "end_line": 733,
+      "start_line": 734,
+      "end_line": 736,
       "sha256": "4bbda58eb6f9995bfd4819432a0cbb8b0ee4281d4d98fe1a9f8b2b36e9590cf4"
     },
     "cue_binding_current": {
-      "start_line": 734,
-      "end_line": 738,
+      "start_line": 737,
+      "end_line": 741,
       "sha256": "7c0c9283359e2d01aa41fad710bcd4ba4f13a6c30e000f2322f7089f42d1828d"
     },
     "cue_io_current": {
-      "start_line": 739,
-      "end_line": 741,
+      "start_line": 742,
+      "end_line": 744,
       "sha256": "977e364bbb1293eb3e5c7461aecdf64111484f5c68d6aa11802e95200ccc035f"
     },
     "cue_checked_window": {
-      "start_line": 742,
-      "end_line": 793,
+      "start_line": 745,
+      "end_line": 796,
       "sha256": "4f0d85ba9cdaf6131823b8055c8911e0efa2b36c552550f25a715858f60b65e0"
     },
     "cue_checked_messages": {
-      "start_line": 794,
-      "end_line": 805,
+      "start_line": 797,
+      "end_line": 808,
       "sha256": "98e284567d642798ecf68d65d9ad9025cb803310c637ec74b43a440a469b72fc"
     },
     "cue_fresh_reset": {
-      "start_line": 806,
-      "end_line": 810,
+      "start_line": 809,
+      "end_line": 813,
       "sha256": "3050316f199b3dd9ace6519059916df2e8ca88c50fa49fa012ef35629c77c5f5"
     },
     "cue_fresh_check": {
-      "start_line": 811,
-      "end_line": 843,
+      "start_line": 814,
+      "end_line": 846,
       "sha256": "e0bc4cd7a767b89cc421296e16120d290d8cf86a6ba18e6c0345a78b66fdbf69"
     },
     "cue_stage_text": {
-      "start_line": 846,
-      "end_line": 856,
+      "start_line": 849,
+      "end_line": 859,
       "sha256": "69358fdea7e8dc27c9c1d6812961069cc5627e719b6797a211dc44702208b1d0"
     },
     "cue_allow_and_rehearse": {
-      "start_line": 857,
-      "end_line": 861,
+      "start_line": 860,
+      "end_line": 864,
       "sha256": "e1a1b9d3d15928eb4221a773f578e33bdc4c94e7aea1d4c3606ea35bf1216dc5"
     },
     "cue_boot_autoload": {
-      "start_line": 864,
-      "end_line": 905,
+      "start_line": 867,
+      "end_line": 908,
       "sha256": "6066f64f54ed25d0221abaaedd0247b99fc14e7a9fbde986ee2e760864bcd39b"
     },
     "cue_extract_recommendation": {
-      "start_line": 908,
-      "end_line": 965,
+      "start_line": 911,
+      "end_line": 968,
       "sha256": "bce92b032ecae04ab25c9376c2093ea7c2b03f0de24a7487987e5a21ad140234"
     },
     "cue_reaction_reset": {
-      "start_line": 966,
-      "end_line": 981,
+      "start_line": 969,
+      "end_line": 984,
       "sha256": "8eef884e3e2fc16c206f8955787d3870a68d88eed01600b5240c7d4226c9678d"
     },
     "cue_react": {
-      "start_line": 983,
-      "end_line": 1049,
+      "start_line": 986,
+      "end_line": 1052,
       "sha256": "0e25b5b1f17c517415c6d6ba65ea0a5adfcc9ecfe365da4c4c8d1d6727f30121"
     },
     "cue_react_consent_compare": {
-      "start_line": 1050,
-      "end_line": 1058,
+      "start_line": 1053,
+      "end_line": 1061,
       "sha256": "4dba506a9108b55f1c282188ea6b1b04d262bf2c56ff1256f101d6ad53be9173"
     },
     "cue_reaction_build_prompt": {
-      "start_line": 1059,
-      "end_line": 1072,
+      "start_line": 1062,
+      "end_line": 1075,
       "sha256": "323a5c9eb700829523724a44a78c0b482ae15f80a515bb79a78da6f025ddb5bb"
     },
     "cue_parse_reaction": {
-      "start_line": 1073,
-      "end_line": 1123,
+      "start_line": 1076,
+      "end_line": 1126,
       "sha256": "5b5123ba9638fdf3826f32f126e128a3899efa4ce50104ea4a659d2ff912e294"
     },
     "cue_reaction_turn": {
-      "start_line": 1124,
-      "end_line": 1183,
+      "start_line": 1127,
+      "end_line": 1186,
       "sha256": "0809dbbb8550cb83be1a49f8f8f9d66e25a78eba30bd776a98727f7cf2b92b13"
     },
     "cue_react_adopt": {
-      "start_line": 1184,
-      "end_line": 1189,
+      "start_line": 1187,
+      "end_line": 1192,
       "sha256": "64c0d5609d347f95fac293ec35acc48209ce41167c63eed8173743dbf93693e9"
     },
     "cue_send_body_error": {
-      "start_line": 1192,
-      "end_line": 1199,
+      "start_line": 1195,
+      "end_line": 1202,
       "sha256": "1e113b637719a170b95934ca3f9fc99966232208338c31f85acf25bc9e7eb4f0"
     },
     "cue_send_prefix": {
-      "start_line": 1200,
-      "end_line": 1205,
+      "start_line": 1203,
+      "end_line": 1208,
       "sha256": "798a9fa9ad7dc195dcb5ea27231729cc98c2fc5f7320030a8f2ad318a4638e84"
     },
     "cue_send_matches": {
-      "start_line": 1206,
-      "end_line": 1217,
+      "start_line": 1209,
+      "end_line": 1220,
       "sha256": "f08e92738d5764662afb76101f2f0ea0f9e24cebe33d77b29645bb7de2bccebb"
     },
     "cue_send_notice": {
-      "start_line": 1218,
-      "end_line": 1218,
+      "start_line": 1221,
+      "end_line": 1221,
       "sha256": "184ff50a38355c78fe7a60d1f28ab465968beac858ac2db66886d9c2aeea644a"
     },
     "cue_send_idle": {
-      "start_line": 1219,
-      "end_line": 1222,
+      "start_line": 1222,
+      "end_line": 1225,
       "sha256": "a7ee4fbd975a71c0d2f9fc9687fa567e5e8b43961a83d598effd7fd53d16c77c"
     },
     "cue_send_editor_changed": {
-      "start_line": 1223,
-      "end_line": 1237,
+      "start_line": 1226,
+      "end_line": 1240,
       "sha256": "a83ec5994233d9c26e309b6e7491ee11dfb2da1aac0882261cee34e89f255757"
     },
     "cue_send_current_observed": {
-      "start_line": 1238,
-      "end_line": 1240,
+      "start_line": 1241,
+      "end_line": 1243,
       "sha256": "2384ad1bc7a0ce489e526935c526771bdc35fa8d9ef6631eb57ca240777dd9c5"
     },
     "cue_send_prepare": {
-      "start_line": 1241,
-      "end_line": 1279,
+      "start_line": 1244,
+      "end_line": 1282,
       "sha256": "701f0771511fecb0a62fe2f906b7041afe29fdec2b4160444e27e26066a02602"
     },
     "cue_send_show_confirmation": {
-      "start_line": 1280,
-      "end_line": 1295,
+      "start_line": 1283,
+      "end_line": 1298,
       "sha256": "a7aaba32f220efe15b1578f557574e637d6d55944b77504cfed58b192ad9876f"
     },
     "cue_send_cancel": {
-      "start_line": 1296,
-      "end_line": 1306,
+      "start_line": 1299,
+      "end_line": 1309,
       "sha256": "4c6b9c38b031d848d2012dd23887d6d7c1879f6afb9146e2789797c72fb2bf28"
     },
     "cue_send_confirm_now": {
-      "start_line": 1307,
-      "end_line": 1339,
+      "start_line": 1310,
+      "end_line": 1342,
       "sha256": "10a148d79d4b16d3eca2fc55c9d7468c619cc1b607f2f971ab85457b87232049"
     },
     "cue_send_dispatch": {
-      "start_line": 1340,
-      "end_line": 1381,
+      "start_line": 1343,
+      "end_line": 1384,
       "sha256": "8b479665c7e8638e406d6f5b25feb85eaca7e95fd41fa1bdc5b9b62202dcd2b4"
     },
     "cue_send_unknown": {
-      "start_line": 1382,
-      "end_line": 1389,
+      "start_line": 1385,
+      "end_line": 1392,
       "sha256": "63213d5b7ea0998c2fa6d89326d880210e4f23df186a994745caed1c5d663a90"
     },
     "cue_send_readback": {
-      "start_line": 1390,
-      "end_line": 1433,
+      "start_line": 1393,
+      "end_line": 1436,
       "sha256": "9a816df55adae12129166a26740030f5108095aba9d67a9b3968fa1506548597"
     },
     "cue_send_restored_unknown": {
-      "start_line": 1436,
-      "end_line": 1443,
+      "start_line": 1439,
+      "end_line": 1446,
       "sha256": "beebb20efae286b21813b2f6a789378f7add589a92c6b674ea9c70a5c97a57d5"
     },
     "cue_send_reread": {
-      "start_line": 1444,
-      "end_line": 1499,
+      "start_line": 1447,
+      "end_line": 1502,
       "sha256": "418b22d6980d43d28237e199b0016312362bee52aa15fd3254237cfc5da5bc31"
     },
     "cue_send_resend": {
-      "start_line": 1500,
-      "end_line": 1505,
+      "start_line": 1503,
+      "end_line": 1508,
       "sha256": "15b8f7b560de9687d6c04c9af342db3965558955ef35006481e86cabbf04ca59"
     },
     "cue_lower": {
-      "start_line": 1506,
-      "end_line": 1510,
+      "start_line": 1509,
+      "end_line": 1513,
       "sha256": "7d94c10c0dd27571d35ac47171911cfc778762c5ae19a8596759df1da11eafb5"
     },
     "cue_error_ends_grant": {
-      "start_line": 1511,
-      "end_line": 1514,
+      "start_line": 1514,
+      "end_line": 1517,
       "sha256": "5e8d74ee77acd53b3c9b00904485081bd295f0b1c6aa093eac007b05a2777dcd"
     },
     "cue_error_text": {
-      "start_line": 1516,
-      "end_line": 1538,
+      "start_line": 1519,
+      "end_line": 1541,
       "sha256": "052afc418d8db12159e4fcaa6c5e232c39716d540fc199287c2dd2a8f19c2dcf"
     },
     "cue_host_error": {
-      "start_line": 1540,
-      "end_line": 1546,
+      "start_line": 1543,
+      "end_line": 1549,
       "sha256": "01dc483fc4cf901bd5e8f1a37f5c9c9fa94dc9d6daec59ce66a45d3b158c65f2"
     },
     "cue_room_error": {
-      "start_line": 1547,
-      "end_line": 1547,
+      "start_line": 1550,
+      "end_line": 1550,
       "sha256": "8de6040621f355d59804cd621d4adb6ad0b0ebb57712459e4bda4c305687da67"
     },
     "cue_import_room": {
-      "start_line": 1548,
-      "end_line": 1592,
+      "start_line": 1551,
+      "end_line": 1595,
       "sha256": "319576a0c09de502ede7b4139555d7795d00c235c7351d30c8fd820a0b17d5af"
     },
     "cue_import_room_messages": {
-      "start_line": 1594,
-      "end_line": 1630,
+      "start_line": 1597,
+      "end_line": 1633,
       "sha256": "80f4ba4e43436af738ba79ad4eb4033a1e4bb6d25504007ff238c38d81825499"
     },
     "cue_demo_routes": {
-      "start_line": 1631,
-      "end_line": 1673,
-      "sha256": "911fc40963aeb2859da2680bd187706c942bed8bc1b269eea19bb2f233ac2389"
+      "start_line": 1634,
+      "end_line": 1677,
+      "sha256": "90a2971baefa7afc86dfb1a4fc09f7c9455ade2e24a09c093df98271b4bfc0a3"
     },
     "cue_prompt": {
-      "start_line": 1674,
-      "end_line": 1683,
+      "start_line": 1678,
+      "end_line": 1687,
       "sha256": "002c6742708bfa190ae1366b131c1e0a78cb8fdfce51f55c614380ee80698360"
     },
     "cue_split_blocks": {
-      "start_line": 1689,
-      "end_line": 1734,
+      "start_line": 1693,
+      "end_line": 1738,
       "sha256": "e4fb54fa0f3f63123b616f362a6a96cc3a2ce3a9069b3c8a6b16794108a9c089"
     },
     "cue_split_marked": {
-      "start_line": 1735,
-      "end_line": 1761,
+      "start_line": 1739,
+      "end_line": 1765,
       "sha256": "ba9353536ca3eba874cc3c78a8a38f61b296a2cfe67e41149a1074c0fbc2aa7b"
     },
     "cue_validate_blocks": {
-      "start_line": 1763,
-      "end_line": 1769,
+      "start_line": 1767,
+      "end_line": 1773,
       "sha256": "4920c47098b6084ea3932a3e267333fae98d26186484b4f4628905c538b2ad9e"
     },
     "cue_source_excerpt": {
-      "start_line": 1772,
-      "end_line": 1792,
+      "start_line": 1776,
+      "end_line": 1796,
       "sha256": "3aad1398caa67b6005594cf3f3554ba20b54ced8b89bc1e2882fbf28b24165a0"
     },
     "cue_strip_refs": {
-      "start_line": 1794,
-      "end_line": 1812,
+      "start_line": 1798,
+      "end_line": 1816,
       "sha256": "b15302dddd7a6f3628380fc035e2ed79a4b8d0acaac99e609a4261041e6f7f77"
     },
     "cue_decimal": {
-      "start_line": 1813,
-      "end_line": 1813,
+      "start_line": 1817,
+      "end_line": 1817,
       "sha256": "006cdf5b9af9c98c8ac0cfe49d67d0a25e299aa583547fbc805d35fb08d64fe5"
     },
     "cue_han_number": {
-      "start_line": 1814,
-      "end_line": 1817,
+      "start_line": 1818,
+      "end_line": 1821,
       "sha256": "beb67686e587e94419ba0c591250672bb0bd8e15407b12326fac20b00b8226de"
     },
     "cue_at_chars": {
-      "start_line": 1818,
-      "end_line": 1823,
+      "start_line": 1822,
+      "end_line": 1827,
       "sha256": "a9376ea3b61696e7906208b68d2b34a830283d1f605fc54b229eb64b550373d8"
     },
     "cue_numeric_tokens": {
-      "start_line": 1824,
-      "end_line": 1882,
+      "start_line": 1828,
+      "end_line": 1886,
       "sha256": "73b6e7f886b5a2658df73bbbbe4f0c402fe1696db3622f80c20c394bc29f8941"
     },
     "cue_ref_ids": {
-      "start_line": 1883,
-      "end_line": 1896,
+      "start_line": 1887,
+      "end_line": 1900,
       "sha256": "d6d115cc468d2bb5924be0bc210a308ceacf87374e1b2453ac136041da50e627"
     },
     "cue_route_refs": {
-      "start_line": 1897,
-      "end_line": 1912,
+      "start_line": 1901,
+      "end_line": 1916,
       "sha256": "8705fb9d2864c32093b8c10bc6a06234aec621edf58206172f3a8e198969f1e2"
     },
     "cue_refs_excerpt": {
-      "start_line": 1913,
-      "end_line": 1921,
+      "start_line": 1917,
+      "end_line": 1925,
       "sha256": "88d66a8cf4fc8e94b63ce026cfe6cacae15f002e1adb21b3aa0e3768642e4c11"
     },
     "cue_numbers_in": {
-      "start_line": 1922,
-      "end_line": 1934,
+      "start_line": 1926,
+      "end_line": 1938,
       "sha256": "238277744757a7e1b8f60812704e1b941ba1a3e9757595ed6f9e1a2838ec30db"
     },
     "cue_numbers_grounded": {
-      "start_line": 1935,
-      "end_line": 1939,
+      "start_line": 1939,
+      "end_line": 1943,
       "sha256": "92cf738b302ccd9c1ac33345599005ce19a26a908bc591205f0f42b6cc525f15"
     },
     "cue_references_valid": {
-      "start_line": 1940,
-      "end_line": 1951,
+      "start_line": 1944,
+      "end_line": 1955,
       "sha256": "d43ff3a5e09ed884d01f0537863702a6ce6da8e06482a26fee317f57633d726f"
     },
     "cue_protocol_markers": {
-      "start_line": 1952,
-      "end_line": 1954,
+      "start_line": 1956,
+      "end_line": 1958,
       "sha256": "1d4c17fa0ce45fc0c3c4364d8b78f5fb63d3d5471924721f2438c3e6f8c111cd"
     },
     "cue_commitment_words": {
-      "start_line": 1955,
-      "end_line": 1957,
+      "start_line": 1959,
+      "end_line": 1961,
       "sha256": "0102e1def1f244bac157892451b8cf7ca939ae8a3aefedc2ea957e36e63cbc8e"
     },
     "cue_chars_at": {
-      "start_line": 1958,
-      "end_line": 1962,
+      "start_line": 1962,
+      "end_line": 1966,
       "sha256": "4fc6fd958226d301594daa37ff77ba78eb891edde0cde49bfe7a628a8d089576"
     },
     "cue_neg_char": {
-      "start_line": 1963,
-      "end_line": 1965,
+      "start_line": 1967,
+      "end_line": 1969,
       "sha256": "08116d4f18f268360a2eb747aa55a8439406278b0f3608657dfff9b1a1c262c6"
     },
     "cue_commit_question_tail": {
-      "start_line": 1967,
-      "end_line": 1972,
+      "start_line": 1971,
+      "end_line": 1976,
       "sha256": "e634ccd1cabf012e1c21205ec5e46462362a97180ce23d806a5172d73aa81caf"
     },
     "cue_chars_find": {
-      "start_line": 1974,
-      "end_line": 1981,
+      "start_line": 1978,
+      "end_line": 1985,
       "sha256": "7c60125b3ac35c3078515aac2b9c923063917a661089d356035c644001794401"
     },
     "cue_commit_lazy": {
-      "start_line": 1991,
-      "end_line": 2002,
+      "start_line": 1995,
+      "end_line": 2006,
       "sha256": "c52c015fa56be3fa5986e84192d4fddb133eff6d72c82d10020ec90a382f2da5"
     },
     "cue_commit_sentences": {
-      "start_line": 2004,
-      "end_line": 2015,
+      "start_line": 2008,
+      "end_line": 2019,
       "sha256": "511e75bcb521bb5129614a5347fad7d0954391507b2311adf32f628fe93a6ba4"
     },
     "cue_has_conditional_marker": {
-      "start_line": 2016,
-      "end_line": 2018,
+      "start_line": 2020,
+      "end_line": 2022,
       "sha256": "de5139f808db5cf0305dc542152656ac5f05faf369ddec11fe68f33df4d23e20"
     },
     "cue_cut_conditional": {
-      "start_line": 2025,
-      "end_line": 2062,
+      "start_line": 2029,
+      "end_line": 2066,
       "sha256": "c4c2c48bb6dceadbc9131375b35e10cfefa1ff0c727c0733cb17eae996e61827"
     },
     "cue_commitment_spans": {
-      "start_line": 2063,
-      "end_line": 2137,
+      "start_line": 2067,
+      "end_line": 2141,
       "sha256": "0cc8f32837ff1d211ede7a1ebd9449b510679fa36307911fd38d4a5fed82db42"
     },
     "cue_commitments_grounded": {
-      "start_line": 2140,
-      "end_line": 2149,
+      "start_line": 2144,
+      "end_line": 2153,
       "sha256": "c5b9108677a9505255629464e25585c6d88e957a86a523f92f048f196e683a5f"
     },
     "cue_grounding_allowed": {
-      "start_line": 2150,
-      "end_line": 2154,
+      "start_line": 2154,
+      "end_line": 2158,
       "sha256": "1106602bca476e0d3bf8ab385583a29d5e9c75bdcb72780c53b231a23e004499"
     },
     "cue_has_commitment_claim": {
-      "start_line": 2158,
-      "end_line": 2160,
+      "start_line": 2162,
+      "end_line": 2164,
       "sha256": "14a9c75fc969f14928cd8c1ad420d82618a4413a0c929cb63e9551d0241b4e6e"
     },
     "cue_validate_route": {
-      "start_line": 2161,
-      "end_line": 2182,
+      "start_line": 2165,
+      "end_line": 2186,
       "sha256": "b6de28746bc7caf6a40075b7bac20150e088a357cc46d4506329fd93d32f17fb"
     },
     "cue_validate_protocol": {
-      "start_line": 2183,
-      "end_line": 2202,
+      "start_line": 2187,
+      "end_line": 2206,
       "sha256": "fa862bd38391d793ee2912dcf7c24683252ea407958333b0e56a93a168400038"
     },
     "cue_start_turn": {
-      "start_line": 2207,
-      "end_line": 2219,
+      "start_line": 2211,
+      "end_line": 2223,
       "sha256": "a9810df63d6d3e0f305c14df75029b50f65cb30c58d8d6819edc32d765f20a37"
     },
     "cue_accept_reply": {
-      "start_line": 2220,
-      "end_line": 2289,
-      "sha256": "e9a22c313f875bc231c9bba2b157fc5ca2ae6dbdfa7e0477e87098e3c2711214"
+      "start_line": 2224,
+      "end_line": 2294,
+      "sha256": "d26cf6e30199722aa603323e7c52c6042e63768ab92936080a0db63939210226"
     },
     "cue_rehearse": {
-      "start_line": 2290,
-      "end_line": 2318,
+      "start_line": 2295,
+      "end_line": 2323,
       "sha256": "5a0482ea0195be4e3a2375b5b9402410f1a932f3aae0e171928634bd12175c33"
     },
     "cue_choose_route": {
-      "start_line": 2319,
-      "end_line": 2326,
+      "start_line": 2324,
+      "end_line": 2331,
       "sha256": "e5d41ce8cc7749fd7b89e3dadd1c00d5f52b947917ef134c6c019ee6fba575ff"
     },
     "cue_choose_route_ready": {
-      "start_line": 2327,
-      "end_line": 2340,
+      "start_line": 2332,
+      "end_line": 2345,
       "sha256": "e300aee471573a453cc6e985e95dca04fdfa060d40a63152ab2d44e92e8caaaa"
     },
     "cue_edit_refine": {
-      "start_line": 2343,
-      "end_line": 2351,
+      "start_line": 2348,
+      "end_line": 2356,
       "sha256": "64e31435bee26bb9ea9789d9f7bbfe75f694055ac68c3ec5a550a44920e19a94"
     },
     "cue_refine_prompt": {
-      "start_line": 2352,
-      "end_line": 2357,
+      "start_line": 2357,
+      "end_line": 2362,
       "sha256": "fc8a8773d0dd9ac901be2c20fa99a8c9412d317831dead977051a529644b6e77"
     },
     "cue_refine": {
-      "start_line": 2358,
-      "end_line": 2397,
+      "start_line": 2363,
+      "end_line": 2402,
       "sha256": "74e4f3cdc8331d798ab86d96f4421d7e51e73893a7fb75ce2b273baf6267f0de"
     },
     "cue_decode_refinement": {
-      "start_line": 2398,
-      "end_line": 2421,
+      "start_line": 2403,
+      "end_line": 2426,
       "sha256": "6e961cdf00d322f2c9cbbbed5c8563b66d339ccba2de5d4bf083455d8a83f8a4"
     },
     "cue_accept_refinement": {
-      "start_line": 2422,
-      "end_line": 2449,
+      "start_line": 2427,
+      "end_line": 2454,
       "sha256": "1f2ed772c977abb50132865a7e16767765055fafb629b6d34d62fceb97167efa"
     },
     "cue_apply_refinement": {
-      "start_line": 2450,
-      "end_line": 2459,
+      "start_line": 2455,
+      "end_line": 2464,
       "sha256": "9eae22d9f3087d67b74034637ce4a0c859a829fd6b854bdad00c56dbf932bfe0"
     },
     "cue_apply_refinement_ready": {
-      "start_line": 2460,
-      "end_line": 2474,
+      "start_line": 2465,
+      "end_line": 2479,
       "sha256": "3c45fe43b9c52a819c7f065de6da38ef8152ae7adb885c35a43235c56cbde927"
     },
     "cue_compare": {
-      "start_line": 2475,
-      "end_line": 2475,
+      "start_line": 2480,
+      "end_line": 2480,
       "sha256": "d72eee49eca23f9f1a162d4c554a9368884c4e087027bf511e18afa3404b0ffc"
     },
     "cue_ws_text": {
-      "start_line": 2478,
-      "end_line": 2497,
+      "start_line": 2483,
+      "end_line": 2502,
       "sha256": "bb1ba4ac2e7108d83ef5c64c7ba6f4ce96d9df1e0e8d90be9dc30ccbdfa83a71"
     },
     "cue_rebuild_ws": {
-      "start_line": 2498,
-      "end_line": 2502,
+      "start_line": 2503,
+      "end_line": 2507,
       "sha256": "70ec5120e4c123271c70493376bacf42d1a9f9b3674849a6d3e887bcce91de7f"
     },
     "cue_set_mode": {
-      "start_line": 2503,
-      "end_line": 2509,
+      "start_line": 2508,
+      "end_line": 2514,
       "sha256": "afeff69debac8d626ae54917ea630ad59b76eec5c9170615a2abd4504b992960"
     },
     "cue_show_dialogue": {
-      "start_line": 2510,
-      "end_line": 2512,
+      "start_line": 2515,
+      "end_line": 2517,
       "sha256": "c1bf5a77174a6ff01def59bdb2b28e5e46d45a445e71c415ed22baebdb6f1971"
     },
     "cue_show_summary": {
-      "start_line": 2513,
-      "end_line": 2517,
+      "start_line": 2518,
+      "end_line": 2522,
       "sha256": "729f180a91dc6f07a183ffaee52c0e71ef071be7cecc3ce7d7b69f88b8489388"
     },
     "cue_select_preview": {
-      "start_line": 2518,
-      "end_line": 2532,
+      "start_line": 2523,
+      "end_line": 2537,
       "sha256": "731bb841cd1c0e667736a33c785ea8b6acdf5d169b94e78736c6510d1c5cc5ac"
     },
     "cue_advance_playback": {
-      "start_line": 2533,
-      "end_line": 2539,
+      "start_line": 2538,
+      "end_line": 2544,
       "sha256": "56d2e74937c600f0c3dc94886386c715246d5a1f937c658327b83a9cb95497c6"
     },
     "cue_play_pulse": {
-      "start_line": 2540,
-      "end_line": 2549,
+      "start_line": 2545,
+      "end_line": 2554,
       "sha256": "20c4453ad6d593e397255c97e40a3274b551552ed5ee45decf92216f7306a47b"
     },
     "cue_toggle_playback": {
-      "start_line": 2550,
-      "end_line": 2564,
+      "start_line": 2555,
+      "end_line": 2569,
       "sha256": "a25ee9c08df1701c28195b20397fb85695c3a8d864fa8ff62924de78fd1bc081"
     },
     "cue_next_line": {
-      "start_line": 2565,
-      "end_line": 2575,
+      "start_line": 2570,
+      "end_line": 2580,
       "sha256": "ee4dd071c64c7782b89526f678b35af12037634fcf10b9ccf884d7b0bd3e3d88"
     },
     "cue_page_prev": {
-      "start_line": 2576,
-      "end_line": 2585,
+      "start_line": 2581,
+      "end_line": 2590,
       "sha256": "4e46e8dc0c029f196df0a1f4d66eca7b33faeb6a2cacd385f5a4bbbc71ca9c66"
     },
     "cue_page_next": {
-      "start_line": 2586,
-      "end_line": 2599,
+      "start_line": 2591,
+      "end_line": 2604,
       "sha256": "21f4d8e80d978732828442dd740381ddc2e0e3dc66fea34b3f0757784e7ddc84"
     },
     "cue_restart_playback": {
-      "start_line": 2600,
-      "end_line": 2607,
+      "start_line": 2605,
+      "end_line": 2612,
       "sha256": "464a3a6cdbc3b035d1fc5906169d70a7bc70cf9ff3d4e42de417ec3668744bfd"
     },
     "cue_sent_meta_valid": {
-      "start_line": 2616,
-      "end_line": 2628,
+      "start_line": 2621,
+      "end_line": 2633,
       "sha256": "9c39c87e37d86d25e5a82c77045fcb844e12249ccbded089ee0e71f234443c1b"
     },
     "cue_slot_valid": {
-      "start_line": 2629,
-      "end_line": 2639,
+      "start_line": 2634,
+      "end_line": 2644,
       "sha256": "5eb6c91b490ff5802515d97588233932357e04fe3d8c6195f4b93fa2f59e783f"
     },
     "cue_store_valid": {
-      "start_line": 2640,
-      "end_line": 2654,
+      "start_line": 2645,
+      "end_line": 2659,
       "sha256": "c7d09b9c6c47efb905457fff37cf99af7d595937a18a2cfe44bab96c570ae1d1"
     },
     "cue_decode_store": {
-      "start_line": 2655,
-      "end_line": 2662,
+      "start_line": 2660,
+      "end_line": 2667,
       "sha256": "d074b850cfb4bc2842a714c416bb7b4738cbff25875474d589bb5b3f3f9192fd"
     },
     "cue_load_store": {
-      "start_line": 2663,
-      "end_line": 2688,
+      "start_line": 2668,
+      "end_line": 2693,
       "sha256": "48c186d9e157b6a6518040d28848998d9ff8c3a1be8a744cd81706d2e73cf747"
     },
     "cue_store_write": {
-      "start_line": 2689,
-      "end_line": 2720,
+      "start_line": 2694,
+      "end_line": 2725,
       "sha256": "f0691a86b358123ce3d541c866c19e9a39b82d0fbc7f83ba2c2a79956262d6f2"
     },
     "cue_room_record": {
-      "start_line": 2721,
-      "end_line": 2726,
+      "start_line": 2726,
+      "end_line": 2731,
       "sha256": "4ec6939634130a8fc0bdbba267f6c32622fdb915d8730c8f2739d0a89254d24e"
     },
     "cue_capture_slot": {
-      "start_line": 2727,
-      "end_line": 2732,
+      "start_line": 2732,
+      "end_line": 2737,
       "sha256": "808ace71c50c6b719919e0f55f5036e3ab7c8da7ed2c25c8e535c484444c0dbf"
     },
     "cue_save_slot": {
-      "start_line": 2733,
-      "end_line": 2750,
+      "start_line": 2738,
+      "end_line": 2755,
       "sha256": "641735da62b35b9b00e2aa0a8d2280e794c58ca56c57f119deb173ab6afc4130"
     },
     "cue_restore_slot": {
-      "start_line": 2751,
-      "end_line": 2763,
+      "start_line": 2756,
+      "end_line": 2768,
       "sha256": "b2c1c35f8eefe3073b63901f7febb6e3bbe70a8c155b728f2bb3f75a632ef931"
     },
     "cue_activate_room": {
-      "start_line": 2764,
-      "end_line": 2780,
+      "start_line": 2769,
+      "end_line": 2785,
       "sha256": "7b53bdcfbbf313c5c4ada95ee8e0eb383f5c69d1352c5200f953e38fb26ee863"
     },
     "cue_reload_store": {
-      "start_line": 2781,
-      "end_line": 2786,
+      "start_line": 2786,
+      "end_line": 2791,
       "sha256": "ff2ebfb74607effb2d4c35b9a46c70a74d7bdc3a0ed00508ffb8d8ddec8c5ed2"
     },
     "cue_legacy_text": {
-      "start_line": 2787,
-      "end_line": 2796,
+      "start_line": 2792,
+      "end_line": 2801,
       "sha256": "6beaca3dd9201f673ac386ac24bcb00b022124576822e6f2bbffdf0d6385c701"
     },
     "cue_toggle_sources": {
-      "start_line": 2797,
-      "end_line": 2797,
+      "start_line": 2802,
+      "end_line": 2802,
       "sha256": "62d128c2bfff260a0db8e2717133200ca9ad2eb00652a36b3e0cd0a693e44a52"
     },
     "cue_toggle_storage": {
-      "start_line": 2798,
-      "end_line": 2798,
+      "start_line": 2803,
+      "end_line": 2803,
       "sha256": "2c3cf073f8dd18ba19ea000ecb11c952f22487ea64cdd3dc9cd813ad5d40f6dd"
     },
     "cue_toggle_privacy": {
-      "start_line": 2799,
-      "end_line": 2799,
+      "start_line": 2804,
+      "end_line": 2804,
       "sha256": "ee5bc9e39fa1b168f85dfa4177a382491ab4dc8619b80aba17c8dfd6ba02d992"
     },
     "cue_toggle_legacy": {
-      "start_line": 2800,
-      "end_line": 2800,
+      "start_line": 2805,
+      "end_line": 2805,
       "sha256": "5145cc7abf7b30a3734529d20df9a1f9de96fa63d538c9ef15e1357ebfad17a3"
     },
     "cue_import_legacy": {
-      "start_line": 2801,
-      "end_line": 2807,
+      "start_line": 2806,
+      "end_line": 2812,
       "sha256": "2bd4713bd7a5a5541ee5859ac0a6dfcc2e2d98d9f5805d2e22ff5fd600ac186c"
     },
     "cue_request_delete": {
-      "start_line": 2808,
-      "end_line": 2816,
+      "start_line": 2813,
+      "end_line": 2821,
       "sha256": "00e54e84ce8562e639d632a8edad3dba999a9a25386ae9b925168feeee80f2c4"
     },
     "cue_cancel_delete": {
-      "start_line": 2817,
-      "end_line": 2817,
+      "start_line": 2822,
+      "end_line": 2822,
       "sha256": "d949c1d5b78dd09559c2ff30feda917a0607ac6f46211f0708ea27382e26d6e6"
     },
     "cue_confirm_delete": {
-      "start_line": 2818,
-      "end_line": 2870,
+      "start_line": 2823,
+      "end_line": 2875,
       "sha256": "a269453d76fc3332c881216cc46a0bd65a15f5d00f96c4d1c378e47560392593"
     },
     "cue_save_text": {
-      "start_line": 2871,
-      "end_line": 2875,
+      "start_line": 2876,
+      "end_line": 2880,
       "sha256": "89a58dd55334324d028b275fb3b8fc96ea338ba069dda2b4769d6045f3170fab"
     },
     "cue_keep_draft": {
-      "start_line": 2876,
-      "end_line": 2876,
+      "start_line": 2881,
+      "end_line": 2881,
       "sha256": "418ad93b5411f34ae6f6ef5655b29cea9b8c0a1695d279d450a444347853079d"
     },
     "cue_restore_draft": {
-      "start_line": 2877,
-      "end_line": 2877,
+      "start_line": 2882,
+      "end_line": 2882,
       "sha256": "dc1f9b9f9be787bea17ba01d0b1fe2b2c26d52ebd9143641a1c8158dba4d3038"
     },
     "cue_refresh_takes": {
-      "start_line": 2878,
-      "end_line": 2886,
+      "start_line": 2883,
+      "end_line": 2891,
       "sha256": "09b1b9327556ed2aa00d6299c58c607b102a04b76a2d2b09d426f82cd04b0583"
     },
     "cue_keep_take": {
-      "start_line": 2887,
-      "end_line": 2896,
+      "start_line": 2892,
+      "end_line": 2901,
       "sha256": "2beadf1edf069e4f503cbe9679ede14a9a011c80cf4ec92ee90dcd20e9264d6b"
     },
     "cue_restore_take": {
-      "start_line": 2897,
-      "end_line": 2897,
+      "start_line": 2902,
+      "end_line": 2902,
       "sha256": "2c40463a2b3ddc18a3a931aba62c5c1872776a5ab4c98c5fbdd88e7bbba88ada"
     },
     "cue_read_take": {
-      "start_line": 2898,
-      "end_line": 2915,
+      "start_line": 2903,
+      "end_line": 2920,
       "sha256": "b4e228e0643901eb59616fa17660266a2177c9731b7aa776968163f486160298"
     }
   },
-  "source_path": "/workspace/oncue-agent/snapshots/release-candidate-20261012/source/bundle/main.splash",
+  "source_path": "/home/agentuser/oncue/OnCue/bundle/main.splash",
   "app_id": "oncue-probe-send",
   "result_relative_to_run": "app-data/oncue-probe-send/probe-result.json",
   "asset_note": "Existing production artwork/screenshots copied only for bundle admission, not probe evidence"

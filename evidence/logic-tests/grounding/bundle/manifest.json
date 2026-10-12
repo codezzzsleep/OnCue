@@ -9,7 +9,7 @@
   },
   "id": "oncue-probe-grounding",
   "integrity": {
-    "bundle_blake3": "0cd6d64909f5335d92bb544eb8d3eb7e15abf375db4e7f33d5bfce69ce5e5112"
+    "bundle_blake3": "01576c945325ae2f3776f48625231689f1e3b059e7e56870a92bc5f18138ddfb"
   },
   "name": "OnCue controlled grounding probe",
   "network": {

@@ -9,7 +9,7 @@
   },
   "id": "oncue-probe-send",
   "integrity": {
-    "bundle_blake3": "ffd77e855a76af7fcac559f62115a2b05969ead75f5a74fd92c713f5b342f36d"
+    "bundle_blake3": "151e285c5ee0262939dbcd4c2946a51f0dbdc96fa891470e6cf84588cfcc894e"
   },
   "name": "OnCue controlled send probe",
   "network": {
