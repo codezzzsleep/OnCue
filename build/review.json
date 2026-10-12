@@ -61,8 +61,7 @@
     },
     "id": "oncue-screening-room",
     "integrity": {
-      "bundle_blake3": "0e56b13c50c95862321565858ec2261158bff53df8095100410138df8e7c0cb7",
-      "signature": null
+      "bundle_blake3": "50270a74d540965de7cf45250a60a2373b134f9d6948d47efdd988662295e6f8"
     },
     "name": "OnCue · 群聊试映室",
     "network": {

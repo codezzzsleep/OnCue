@@ -4,16 +4,16 @@
 
 | 测试 | 测什么 | 怎么跑 | 数量 |
 | --- | --- | --- | --- |
-| 逻辑测试 | `main.splash` 里的函数 | card-host 的脚本虚拟机，本地运行 | 12 套 384 项 |
-| 界面场景 | 屏幕上用户实际看到的内容 | splash-app-verify 在 card-host 里跑真应用、宿主注入 | 38 场景 43 次 |
-| 工具单元测试 | 测试包生成器、结果检查器、实机验收脚本 | Python，CI 在相关路径变更时运行 | 109 项 |
+| 逻辑测试 | `main.splash` 里的函数 | card-host 的脚本虚拟机，本地运行 | 12 套 435 项 |
+| 界面场景 | 屏幕上用户实际看到的内容 | splash-app-verify 在 card-host 里跑真应用、宿主注入 | 71 场景 81 次 |
+| 工具单元测试 | 测试包生成器、结果检查器、实机验收脚本 | Python，CI 在相关路径变更时运行 | 114 项 |
 | 实机验收 | 应用在 Rinx 里的完整流程 | 脚本驱动一个正在运行的 Rinx | 4 种模式 |
 
 CI 只跑第三种，不运行应用的代码。
 
 ## 逻辑测试
 
-`generate_probe.py` 把 `main.splash` 的 154 个函数原样复制进一个测试包，加上测试脚本 `probe_harness.splash` 和测试数据 `fixtures.json`。测试包在 card-host 里运行，宿主服务的返回值由测试脚本模拟。超时和播放用的是真实计时，deadline 一套要等 90 多秒。
+`generate_probe.py` 把 `main.splash` 的 184 个函数原样复制进一个测试包，加上测试脚本 `probe_harness.splash` 和测试数据 `fixtures.json`。测试包在 card-host 里运行，宿主服务的返回值由测试脚本模拟。超时和播放用的是真实计时，deadline 一套要等 90 多秒。
 
 各套的内容见[验证记录](../VERIFICATION.md)。最近一次的结果在 [evidence/logic-tests](../../evidence/logic-tests/README.md)。
 
@@ -50,7 +50,7 @@ curl --fail --silent --show-error "http://127.0.0.1:$PORT/quit"
 python3 -m unittest discover -s oncue/tests -p 'selftest_*.py' -v
 ```
 
-109 项：生成器和检查器 12 项，实机验收脚本 37 项，底层工具 60 项。不需要宿主和网络。
+114 项：生成器/检查器、实机验收脚本、审核包一致性、底层工具。不需要宿主和网络。
 
 ## 界面场景
 
@@ -60,7 +60,7 @@ python3 -m unittest discover -s oncue/tests -p 'selftest_*.py' -v
 python3 <splash-app-verify>/scripts/uitest.py run bundle oncue/tests/ui --keep-going
 ```
 
-43 次运行（5 个场景跑 412×892 与 954×448 两个尺寸），约 170 秒。宿主回复由场景注入，失败时到 `build/uitest/<场景>@<尺寸>/FEEDBACK.md` 看修复请求。
+81 次运行（场景分布在 412×892、954×448、1000×800 三种尺寸），约 310 秒。宿主回复由场景注入，失败时到 `build/uitest/<场景>@<尺寸>/FEEDBACK.md` 看修复请求。
 
 ## 实机验收
 

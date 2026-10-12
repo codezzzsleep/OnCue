@@ -1,0 +1,35 @@
+[I] /workspace/octosense-ws/makepad/platform/src/web_socket.rs:330:13 - studio websocket disabled: empty studio_http
+[makepad-remote] listening on 127.0.0.1:46001 pid=258479 app=card-host grabs=/tmp/makepad-remote/card-host-258479
+[I] /workspace/octosense-ws/makepad/platform/src/remote.rs:550:9 - [makepad-remote] listening on 127.0.0.1:46001 pid=258479 app=card-host grabs=/tmp/makepad-remote/card-host-258479
+WAYLAND_DISPLAY: Not set
+DISPLAY: :90
+Selected: X11 backend
+Reason: DISPLAY environment variable is set
+[I] /workspace/octosense-ws/makepad/platform/src/cx.rs:684:9 - memory budget: 8192 MiB (/proc/meminfo MemTotal)
+[I] /workspace/octosense-ws/makepad/platform/src/thread.rs:928:9 - UI thread priority UserInteractive: Applied
+[I] crates/card-host/src/host.rs:108:9 - card-host: stamped /workspace/oncue-agent/runs/release-official-20261012-logic/probes/send/bundle/manifest.json with digest ffd77e855a76af7fcac559f62115a2b05969ead75f5a74fd92c713f5b342f36d
+[I] crates/card-host/src/host.rs:364:9 - card-host: oncue-probe-send 0.5.3 admitted — capabilities {"storage"}, hosts {}, storage 4194304 bytes, agent none
+[I] crates/card-host/src/host.rs:396:9 - card-host: isolate jailed at /workspace/oncue-agent/runs/release-official-20261012-logic/probes/send/app-data/oncue-probe-send with 4194304 bytes, 1 capability(ies), 1 host(s), 20000000 instructions, 33554432 bytes of heap, prompts true — all enforced
+[I] /workspace/octosense-ws/makepad/widgets/src/splash.rs:416:9 - [SPLASH] eval: 349443 bytes preserve=false view=true animating=false tick=false epoch=0
+[I] /workspace/octosense-ws/makepad/platform/src/os/linux/opengl.rs:2139:13 - Makepad GL: vendor="Mesa" renderer="llvmpipe (LLVM 19.1.7, 256 bits)" version="OpenGL ES 3.2 Mesa 25.0.7-2+deb13u1" glsl="OpenGL ES GLSL ES 3.20" sampler_objects=true
+[I] /workspace/octosense-ws/makepad/platform/src/os/linux/opengl.rs:502:13 - retained-upload budgets: adapter_bytes=0 process_allowance=8589934592 allocation_limit=2147483648 source=process_allowance_fallback
+[E] /workspace/octosense-ws/makepad/platform/src/os/linux/pulse_audio.rs:749:17 - PulseAudio: pa_context_connect failed (Connection refused), using ALSA only
+[I] /workspace/octosense-ws/makepad/libs/zune/zune-png/src/headers/readers.rs:110:9 - Width: 136
+[I] /workspace/octosense-ws/makepad/libs/zune/zune-png/src/headers/readers.rs:111:9 - Height: 128
+[I] /workspace/octosense-ws/makepad/libs/zune/zune-png/src/headers/readers.rs:112:9 - Filter type:None
+[I] /workspace/octosense-ws/makepad/libs/zune/zune-png/src/headers/readers.rs:113:9 - Depth: 8
+[I] /workspace/octosense-ws/makepad/libs/zune/zune-png/src/headers/readers.rs:114:9 - Interlace :Standard
+[I] /workspace/octosense-ws/makepad/libs/zune/zune-png/src/headers/readers.rs:110:9 - Width: 136
+[I] /workspace/octosense-ws/makepad/libs/zune/zune-png/src/headers/readers.rs:111:9 - Height: 128
+[I] /workspace/octosense-ws/makepad/libs/zune/zune-png/src/headers/readers.rs:112:9 - Filter type:None
+[I] /workspace/octosense-ws/makepad/libs/zune/zune-png/src/headers/readers.rs:113:9 - Depth: 8
+[I] /workspace/octosense-ws/makepad/libs/zune/zune-png/src/headers/readers.rs:114:9 - Interlace :Standard
+[I] /workspace/octosense-ws/makepad/libs/zune/zune-png/src/decoder.rs:625:9 - Input Colorspace: Palette 
+[I] /workspace/octosense-ws/makepad/libs/zune/zune-png/src/decoder.rs:626:9 - Output Colorspace: RGBA 
+[I] /workspace/octosense-ws/makepad/libs/zune/zune-png/src/headers/readers.rs:110:9 - Width: 136
+[I] /workspace/octosense-ws/makepad/libs/zune/zune-png/src/headers/readers.rs:111:9 - Height: 128
+[I] /workspace/octosense-ws/makepad/libs/zune/zune-png/src/headers/readers.rs:112:9 - Filter type:None
+[I] /workspace/octosense-ws/makepad/libs/zune/zune-png/src/headers/readers.rs:113:9 - Depth: 8
+[I] /workspace/octosense-ws/makepad/libs/zune/zune-png/src/headers/readers.rs:114:9 - Interlace :Standard
+[makepad-remote] remote quit
+[I] /workspace/octosense-ws/makepad/platform/src/thread.rs:942:13 - pool: 3 workers (1 light-only, 3 started), 20 jobs, peak queue light 0 / heavy 3; light 0: wait avg 0.00 ms max 0.00 ms, run avg 0.0 ms max 0.0 ms; heavy 20: wait avg 0.02 ms max 0.04 ms, run avg 0.0 ms max 0.0 ms; priority applied 3/3 (light UserInitiated / heavy Utility); light >2ms 0 offenders=[] overflow=0; heavy >250ms offenders=[]

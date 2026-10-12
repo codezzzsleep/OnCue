@@ -1,0 +1,18 @@
+[I] /workspace/octosense-ws/makepad/platform/src/web_socket.rs:330:13 - studio websocket disabled: empty studio_http
+[makepad-remote] listening on 127.0.0.1:53555 pid=258577 app=card-host grabs=/tmp/makepad-remote/card-host-258577
+[I] /workspace/octosense-ws/makepad/platform/src/remote.rs:550:9 - [makepad-remote] listening on 127.0.0.1:53555 pid=258577 app=card-host grabs=/tmp/makepad-remote/card-host-258577
+WAYLAND_DISPLAY: Not set
+DISPLAY: :90
+Selected: X11 backend
+Reason: DISPLAY environment variable is set
+[I] /workspace/octosense-ws/makepad/platform/src/cx.rs:684:9 - memory budget: 8192 MiB (/proc/meminfo MemTotal)
+[I] /workspace/octosense-ws/makepad/platform/src/thread.rs:928:9 - UI thread priority UserInteractive: Applied
+[I] crates/card-host/src/host.rs:108:9 - card-host: stamped /workspace/oncue-agent/runs/release-official-20261012-logic/probes/send3/bundle/manifest.json with digest e92b8c3c19c64dfb7df7bf3ae4467d1186777bc6de482ee403910ec3c4902790
+[I] crates/card-host/src/host.rs:364:9 - card-host: oncue-probe-send3 0.5.3 admitted — capabilities {"storage"}, hosts {}, storage 4194304 bytes, agent none
+[I] crates/card-host/src/host.rs:396:9 - card-host: isolate jailed at /workspace/oncue-agent/runs/release-official-20261012-logic/probes/send3/app-data/oncue-probe-send3 with 4194304 bytes, 1 capability(ies), 1 host(s), 20000000 instructions, 33554432 bytes of heap, prompts true — all enforced
+[I] /workspace/octosense-ws/makepad/widgets/src/splash.rs:416:9 - [SPLASH] eval: 347922 bytes preserve=false view=true animating=false tick=false epoch=0
+[I] /workspace/octosense-ws/makepad/platform/src/os/linux/opengl.rs:2139:13 - Makepad GL: vendor="Mesa" renderer="llvmpipe (LLVM 19.1.7, 256 bits)" version="OpenGL ES 3.2 Mesa 25.0.7-2+deb13u1" glsl="OpenGL ES GLSL ES 3.20" sampler_objects=true
+[I] /workspace/octosense-ws/makepad/platform/src/os/linux/opengl.rs:502:13 - retained-upload budgets: adapter_bytes=0 process_allowance=8589934592 allocation_limit=2147483648 source=process_allowance_fallback
+[E] /workspace/octosense-ws/makepad/platform/src/os/linux/pulse_audio.rs:749:17 - PulseAudio: pa_context_connect failed (Connection refused), using ALSA only
+[makepad-remote] remote quit
+[I] /workspace/octosense-ws/makepad/platform/src/thread.rs:942:13 - pool: 3 workers (1 light-only, 3 started), 9 jobs, peak queue light 0 / heavy 2; light 0: wait avg 0.00 ms max 0.00 ms, run avg 0.0 ms max 0.0 ms; heavy 9: wait avg 0.04 ms max 0.12 ms, run avg 0.0 ms max 0.0 ms; priority applied 3/3 (light UserInitiated / heavy Utility); light >2ms 0 offenders=[] overflow=0; heavy >250ms offenders=[]
