@@ -5,7 +5,7 @@
 | 测试 | 测什么 | 怎么跑 | 数量 |
 | --- | --- | --- | --- |
 | 逻辑测试 | `main.splash` 里的函数 | card-host 的脚本虚拟机，本地运行 | 12 套 437 项 |
-| 界面场景 | 屏幕上用户实际看到的内容 | splash-app-verify 在 card-host 里跑真应用、宿主注入 | 71 场景 85 次 |
+| 界面场景 | 屏幕上用户实际看到的内容 | splash-app-verify 在 card-host 里跑真应用、宿主注入 | 75 场景 85 次 |
 | 工具单元测试 | 测试包生成器、结果检查器、实机验收脚本 | Python，CI 在相关路径变更时运行 | 114 项 |
 | 实机验收 | 应用在 Rinx 里的完整流程 | 脚本驱动一个正在运行的 Rinx | 4 种模式 |
 
@@ -13,7 +13,7 @@ CI 只跑第三种，不运行应用的代码。
 
 ## 逻辑测试
 
-`generate_probe.py` 把 `main.splash` 的 184 个函数原样复制进一个测试包，加上测试脚本 `probe_harness.splash` 和测试数据 `fixtures.json`。测试包在 card-host 里运行，宿主服务的返回值由测试脚本模拟。超时和播放用的是真实计时，deadline 一套要等 90 多秒。
+`generate_probe.py` 把 `main.splash` 的 194 个函数原样复制进一个测试包，加上测试脚本 `probe_harness.splash` 和测试数据 `fixtures.json`。测试包在 card-host 里运行，宿主服务的返回值由测试脚本模拟。超时和播放用的是真实计时，deadline 一套要等 150 多秒。
 
 各套的内容见[验证记录](../VERIFICATION.md)。最近一次的结果在 [evidence/logic-tests](../../evidence/logic-tests/README.md)。
 
@@ -33,7 +33,7 @@ done
 
 ```bash
 SUITE=parser; PORT=8197; RUN="$WORK/$SUITE"; WAIT=15
-[ "$SUITE" = deadline ] && WAIT=105
+[ "$SUITE" = deadline ] && WAIT=165
 [ "$SUITE" = playback ] && WAIT=25
 python3 "$OCTO" run "$RUN/bundle" --port "$PORT" --hidden --detach --timeout 20 --app-data "$RUN/app-data" \
 && python3 oncue/tests/check_result.py --run-dir "$RUN" --wait-seconds "$WAIT" \

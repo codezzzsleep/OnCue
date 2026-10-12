@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "suite": "storage",
-  "source_sha256": "e36c6ed6d9774f0bb6ac3e89dabe31db5babada39e64b85a1d0e9d60fb6a929e",
+  "source_sha256": "2de9daef4c4780c6e20ab08bab31a23f637c96f9a83d43b765f50832347bfe4b",
   "fixtures_sha256": "6b60d540a58f107f2bc9e1e03d0df41d9c01078bdd48fc7ec3bbf375c9d72a98",
   "harness_sha256": "7a3527f3f61cf95c54eb0140ee5f9939c8fd87a5b06ad8a8fca99fe9c908acb5",
   "expected_assertion_ids": [
@@ -118,7 +118,7 @@
     ],
     "revision_note": "Only monotonic runtime editor/store revisions are variable; all other fields are literal fixtures"
   },
-  "generated_sha256_before_stamp": "4eadb8f4f2f715a3c755b79cd73a0864a91b66b35c34697531377270c4857acf",
+  "generated_sha256_before_stamp": "301bc55d5db33bc6480ee5c64dfab3003e9951ceb438eff32cd8abe2e4cfa916",
   "initializer_original": "start_timeout(0.05, fn(){ cue_show_demo() cue_boot_state() cue_boot_autoload() })\n",
   "initializer_source_line": 3144,
   "functions": {

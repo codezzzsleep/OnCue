@@ -3399,7 +3399,7 @@ SolidView{width: Fill height: Fill flow: Down padding: 10 spacing: 8 new_batch: 
                                     }
                                     if i == cue_rec_pick {
                                         RoundedView{width: Fit height: Fit padding: Inset{left: 8 right: 8 top: 2 bottom: 2} new_batch: true draw_bg.color: cue_green draw_bg.border_radius: 6.0
-                                            Label{text: "推荐" draw_text.color: #ffffff draw_text.text_style: CueBold{font_size: 10}}
+                                            Label{text: "推荐" draw_text.color: #xffffff draw_text.text_style: CueBold{font_size: 10}}
                                         }
                                     }
                                     if !route.failed {

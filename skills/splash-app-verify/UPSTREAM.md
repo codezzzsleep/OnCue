@@ -6,8 +6,8 @@
 | --- | --- |
 | 作者 | OnCue 团队。为开发 OnCue 而写，本身是通用的，可以测试任何 Splash 脚本应用 |
 | 去向 | 已作为 [PR #192](https://github.com/OctoSense-org/OctoSense-App-Flow/pull/192) 提交给 [OctoSense App Flow](https://github.com/OctoSense-org/OctoSense-App-Flow)，目标目录为 `skills/splash-app-verify/` |
-| 版本 | 第 3.3.1 版：PR 的第一个提交 `ead131180e19b6e0baac355ea1d3888a9cac0d90`，加上第二个提交「run on Windows: UTF-8 results, portable tests」。运行器协议版本仍是 `scripts/uitest.py` 中的 `RUNNER_VERSION = 3` |
+| 版本 | 第 3.3.1 版：PR 的第一个提交 `204007f3cdaafe4befdc15e5b5ddadf93fe9bcd2`，加上第二个提交「run on Windows: UTF-8 results, portable tests」。运行器协议版本仍是 `scripts/uitest.py` 中的 `RUNNER_VERSION = 3` |
 | 对应提交 | 基于 App Flow `main` 的 `15b1da01a769a770aaf12bd3012d17c6ff267b6c`。本目录与 PR 分支最新提交里的 `skills/splash-app-verify/` 逐字相同（本文件除外），可以用 `diff -r` 核对 |
 | 验证环境 | card-host 用 App Hub `main` 的 `8d3853c9f9b6604fa1d095e7aff20911093e273a` 编译，Splash 运行时是 Octoscript-Makepad `6cf2d90aa33ff4ae603f49c7557f3ecf986207f0` |
 
-文中的相对链接（如 `../../docs/SCRIPT-API.md`）是按 App Flow 仓库的目录结构写的，在本仓库里打不开。请到 PR 对应提交阅读：[Skill](https://github.com/codezzzsleep/OctoSense-App-Flow/tree/ead131180e19b6e0baac355ea1d3888a9cac0d90/skills/splash-app-verify) · [开发文档](https://github.com/codezzzsleep/OctoSense-App-Flow/tree/ead131180e19b6e0baac355ea1d3888a9cac0d90/docs)。
+文中的相对链接（如 `../../docs/SCRIPT-API.md`）是按 App Flow 仓库的目录结构写的，在本仓库里打不开。请到 PR 对应提交阅读：[Skill](https://github.com/codezzzsleep/OctoSense-App-Flow/tree/204007f3cdaafe4befdc15e5b5ddadf93fe9bcd2/skills/splash-app-verify) · [开发文档](https://github.com/codezzzsleep/OctoSense-App-Flow/tree/204007f3cdaafe4befdc15e5b5ddadf93fe9bcd2/docs)。

@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "suite": "send2",
-  "source_sha256": "e36c6ed6d9774f0bb6ac3e89dabe31db5babada39e64b85a1d0e9d60fb6a929e",
+  "source_sha256": "2de9daef4c4780c6e20ab08bab31a23f637c96f9a83d43b765f50832347bfe4b",
   "fixtures_sha256": "6b60d540a58f107f2bc9e1e03d0df41d9c01078bdd48fc7ec3bbf375c9d72a98",
   "harness_sha256": "7a3527f3f61cf95c54eb0140ee5f9939c8fd87a5b06ad8a8fca99fe9c908acb5",
   "expected_assertion_ids": [
@@ -38,7 +38,7 @@
   "filesystem": "real card-host jail; fs is not shadowed",
   "semantic_fact_verification": false,
   "storage_expectation": {},
-  "generated_sha256_before_stamp": "73950649810f8a64939caea866b502f635ef18ac017ee63782d18b3fe1c05faf",
+  "generated_sha256_before_stamp": "c0233a49944450b541a82cc06050ffc0348e31335ab1c0a57dcedf7ce4c89e0d",
   "initializer_original": "start_timeout(0.05, fn(){ cue_show_demo() cue_boot_state() cue_boot_autoload() })\n",
   "initializer_source_line": 3144,
   "functions": {
