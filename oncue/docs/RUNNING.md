@@ -15,7 +15,7 @@ card-host 可以打开应用并看内置样例，但它不提供 Matrix 和助�
 
 | 组件 | 仓库 | 提交 |
 | --- | --- | --- |
-| Rinx（真实闭环宿主） | `hagency-org/Rinx` | `c515e5fc9b6dc22e67f7d551b09fdd793ec685a1`（v1.1.0-3，零本地补丁） |
+| Rinx（真实闭环宿主） | `hagency-org/Rinx` | 官方 [1.3.0 发布包](https://github.com/hagency-org/Rinx/releases/tag/v1.3.0)（`rinx_1.3.0_x86_64.tar.gz`，零本地补丁；早期实测为官方源码 `c515e5fc`，对应界面升级前源码） |
 | App Hub（card-host 与 hub 的来源） | `OctoSense-org/OctoSense-App-Hub` | `386359153ed6377b5f047bd9ed2767a6a2ac2bc7` |
 | Makepad | `OctoSense-org/makepad` | `d653bc4493619ab979ccff165cf48c0c63b77d19` |
 | OctoScript | `octos-org/octoscript` | `2e37d9e657a246f16718d9a475e167ccd2d5b5fa` |
@@ -26,7 +26,7 @@ card-host 可以打开应用并看内置样例，但它不提供 Matrix 和助�
 
 ## Rinx 房间绑定修复（官方已含；v1.1.0 需回移植）
 
-**0.5.3 的验证宿主是官方 Rinx `c515e5fc9b6dc22e67f7d551b09fdd793ec685a1`（零本地补丁）**，2026-10-11 完整跑通主流程（打开即读群 → 允许并试映 → 两步确认发送 → 读回核实 → 看反响）。官方自 v1.2.0 起已修复房间绑定（`src/miniapps/ui.rs` 用 `ids!(import_form.room)` 限定导入表单，c515e5f 亦含此修复），评委使用官方新版 Rinx 不需要任何补丁。
+**0.5.3 最终源码的验证宿主是官方 Rinx [1.3.0 发布包](https://github.com/hagency-org/Rinx/releases/tag/v1.3.0)（零本地补丁）**，2026-10-13 完整跑通主流程与第二账号反响、确认期间新消息 N16（实测记录见 [evidence/native-130/](../evidence/native-130/)；早期实测用官方源码 `c515e5fc`，对应界面升级前源码）。官方自 v1.2.0 起已修复房间绑定（`src/miniapps/ui.rs` 用 `ids!(import_form.room)` 限定导入表单），评委使用官方新版 Rinx 不需要任何补丁。
 
 **只有仍钉在 v1.1.0（`4b89097d`）的构建需要下面的回移植**。OctoSense 的 `Cargo.toml` 用 `[patch."https://github.com/hagency-org/Rinx.git"] rinx = { path = "../rinx" }` 指向本地检出即可带上它（补丁全文见下文，上游 PR 素材 `build/RINX-PR-room-binding.md`）。
 
@@ -89,7 +89,7 @@ card-host 可以打开应用并看内置样例，但它不提供 Matrix 和助�
    python3 oncue/tools/prepare_dev_bundle.py "${DEV_ROOT}/bundle" --hub "$OCTO_HUB"
    ```
 
-2. 在 Rinx 里打开 **Discover → Mini apps → Import an app**。包路径填上一步打印出的目录，房间填你的 Matrix 房间 ID。
+2. 在 Rinx 里打开 **Discover → Mini apps → Import an app**。包路径填上一步打印出的目录，房间填你的 Matrix 房间 ID。小程序将在独立的「Rinx · Mini apps」窗口（1000×800）中打开。
 3. 点 **Review bundle**。面板会列出应用名、版本、八项服务和 Allowed room。
 4. 点 **Run**。每次打开都要重新授权，点 Back 关闭后授权失效。
 
@@ -108,7 +108,7 @@ card-host 可以打开应用并看内置样例，但它不提供 Matrix 和助�
 ## 常见问题
 
 - **点 Review 之后房间号被清空**：Rinx 早于 `bb2a4d4` 的版本有这个问题，升级 Rinx。
-- **状态行显示“助手暂时不可用”**：宿主的助手没有启动或没有配置模型，在 OctoSense Settings → Accounts → AI providers 里检查。
+- **状态行显示“助手暂时不可用”**：宿主的助手没有启动或没有配置模型。独立 Rinx 1.3.0 在导入表单内直接填写（Assistant on this device: provider / Model / Base URL / API key，密钥留在 Rinx 运行时，配置位于 `RINX_DATA_DIR` 下）；OctoSense 桌面壳在 Settings → Accounts → AI providers 里检查。
 - **同一台机器上开两个宿主实例时，第二个实例的助手启动失败**：每个实例要用不同的 `OCTOS_APP_CORE_DIR`。
 - **状态行显示“这次打开没有选房间”**：导入时没有填房间。关闭应用，填上房间后重新导入。
 

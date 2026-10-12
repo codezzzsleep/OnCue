@@ -1,0 +1,302 @@
+[
+ {
+  "at": 1791840088.0,
+  "kind": "stage",
+  "stage": "preflight"
+ },
+ {
+  "at": 1791840089.0,
+  "kind": "stage",
+  "stage": "launch"
+ },
+ {
+  "at": 1791840094.0,
+  "kind": "click",
+  "stage": "launch",
+  "text": null,
+  "id": "discover_tab",
+  "window": 0
+ },
+ {
+  "at": 1791840094.0,
+  "kind": "click",
+  "stage": "launch",
+  "text": null,
+  "id": "discover_mini_apps",
+  "window": 0
+ },
+ {
+  "at": 1791840096.0,
+  "kind": "stage",
+  "stage": "import"
+ },
+ {
+  "at": 1791840097.0,
+  "kind": "click",
+  "stage": "import",
+  "text": null,
+  "id": "import_app",
+  "window": 1
+ },
+ {
+  "at": 1791840097.0,
+  "kind": "click",
+  "stage": "import",
+  "text": null,
+  "id": "path",
+  "window": 1
+ },
+ {
+  "at": 1791840098.0,
+  "kind": "fill",
+  "stage": "import",
+  "id": "path",
+  "chars": 29,
+  "window": 1
+ },
+ {
+  "at": 1791840098.0,
+  "kind": "click",
+  "stage": "import",
+  "text": null,
+  "id": "room",
+  "window": 1
+ },
+ {
+  "at": 1791840098.0,
+  "kind": "fill",
+  "stage": "import",
+  "id": "room",
+  "chars": 36,
+  "window": 1
+ },
+ {
+  "at": 1791840099.0,
+  "kind": "click",
+  "stage": "import",
+  "text": "Review bundle",
+  "id": null,
+  "window": 1
+ },
+ {
+  "at": 1791840101.0,
+  "kind": "capture",
+  "stage": "import",
+  "path": "01-review.png"
+ },
+ {
+  "at": 1791840106.0,
+  "kind": "click",
+  "stage": "import",
+  "text": "Run",
+  "id": null,
+  "window": 1
+ },
+ {
+  "at": 1791840106.0,
+  "kind": "stage",
+  "stage": "auto-read"
+ },
+ {
+  "at": 1791840108.0,
+  "kind": "capture",
+  "stage": "auto-read",
+  "path": "02-auto-read.png"
+ },
+ {
+  "at": 1791840112.0,
+  "kind": "stage",
+  "stage": "rehearse"
+ },
+ {
+  "at": 1791840113.0,
+  "kind": "click",
+  "stage": "rehearse",
+  "text": null,
+  "id": "cue_trial",
+  "window": 1
+ },
+ {
+  "at": 1791840113.0,
+  "kind": "fill",
+  "stage": "rehearse",
+  "id": "cue_trial",
+  "chars": 19,
+  "window": 1
+ },
+ {
+  "at": 1791840116.0,
+  "kind": "click",
+  "stage": "rehearse",
+  "text": "允许并试映",
+  "id": null,
+  "window": 1
+ },
+ {
+  "at": 1791840133.0,
+  "kind": "capture",
+  "stage": "rehearse",
+  "path": "03-rehearsed.png"
+ },
+ {
+  "at": 1791840137.0,
+  "kind": "stage",
+  "stage": "takes"
+ },
+ {
+  "at": 1791840138.0,
+  "kind": "capture",
+  "stage": "takes",
+  "path": "03b-route-rejected.png"
+ },
+ {
+  "at": 1791840145.0,
+  "kind": "capture",
+  "stage": "takes",
+  "path": "03-takes.png"
+ },
+ {
+  "at": 1791840151.0,
+  "kind": "capture",
+  "stage": "takes",
+  "path": "04-draft.png"
+ },
+ {
+  "at": 1791840155.0,
+  "kind": "stage",
+  "stage": "send"
+ },
+ {
+  "at": 1791840156.0,
+  "kind": "click",
+  "stage": "send",
+  "text": "发到群里",
+  "id": null,
+  "window": 1
+ },
+ {
+  "at": 1791840158.0,
+  "kind": "click",
+  "stage": "send",
+  "text": "去核对",
+  "id": null,
+  "window": 1
+ },
+ {
+  "at": 1791840159.0,
+  "kind": "capture",
+  "stage": "send",
+  "path": "05-confirm.png"
+ },
+ {
+  "at": 1791840165.0,
+  "kind": "click",
+  "stage": "send",
+  "text": "确认发送",
+  "id": null,
+  "window": 1
+ },
+ {
+  "at": 1791840167.0,
+  "kind": "capture",
+  "stage": "send",
+  "path": "06-sent.png"
+ },
+ {
+  "at": 1791840171.0,
+  "kind": "stage",
+  "stage": "reaction"
+ },
+ {
+  "at": 1791840172.0,
+  "kind": "peer_send",
+  "stage": "reaction",
+  "text": "车票包在里面，没问题。",
+  "event_id": "$WJskgYln…",
+  "via": "Matrix API（第二账号现有会话，未启动第二个 Rinx 实例）"
+ },
+ {
+  "at": 1791840177.0,
+  "kind": "click",
+  "stage": "reaction",
+  "text": "看反响",
+  "id": null,
+  "window": 1
+ },
+ {
+  "at": 1791840199.0,
+  "kind": "click",
+  "stage": "reaction",
+  "text": "看反响",
+  "id": null,
+  "window": 1
+ },
+ {
+  "at": 1791840214.0,
+  "kind": "capture",
+  "stage": "reaction",
+  "path": "07-reaction.png"
+ },
+ {
+  "at": 1791840219.0,
+  "kind": "stage",
+  "stage": "n16"
+ },
+ {
+  "at": 1791840220.0,
+  "kind": "click",
+  "stage": "n16",
+  "text": "放进确认区",
+  "id": null,
+  "window": 1
+ },
+ {
+  "at": 1791840222.0,
+  "kind": "peer_send",
+  "stage": "n16",
+  "text": "我都可以，听你们安排。",
+  "event_id": "$uqxR_2bU…",
+  "via": "Matrix API（第二账号现有会话，未启动第二个 Rinx 实例）"
+ },
+ {
+  "at": 1791840228.0,
+  "kind": "click",
+  "stage": "n16",
+  "text": "去核对",
+  "id": null,
+  "window": 1
+ },
+ {
+  "at": 1791840229.0,
+  "kind": "click",
+  "stage": "n16",
+  "text": "确认发送",
+  "id": null,
+  "window": 1
+ },
+ {
+  "at": 1791840232.0,
+  "kind": "capture",
+  "stage": "n16",
+  "path": "08-n16-flagged.png"
+ },
+ {
+  "at": 1791840237.0,
+  "kind": "click",
+  "stage": "n16",
+  "text": "确认发送",
+  "id": null,
+  "window": 1
+ },
+ {
+  "at": 1791840240.0,
+  "kind": "capture",
+  "stage": "n16",
+  "path": "09-n16-sent.png"
+ },
+ {
+  "at": 1791840244.0,
+  "kind": "stage",
+  "stage": "done"
+ }
+]

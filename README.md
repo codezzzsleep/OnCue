@@ -34,7 +34,7 @@ OnCue 是运行在 Rinx 里的群聊排练工具：选一个表达目标，参�
 
 ## 宿主
 
-Rinx 需要 **v1.2.0 及以上**（更早版本的导入表单不能正确传递所选房间）；验证记录中的实测基于官方 `c515e5fc9b6dc22e67f7d551b09fdd793ec685a1`。Rinx 打开小程序一小时后或关闭应用后收回授权。
+Rinx 需要 **v1.2.0 及以上**（更早版本的导入表单不能正确传递所选房间）；0.5.3 最终源码的实测基于官方 [Rinx 1.3.0 发布包](https://github.com/hagency-org/Rinx/releases/tag/v1.3.0)（零本地补丁，记录见 [evidence/native-130/](evidence/native-130/)）。Rinx 打开小程序一小时后或关闭应用后收回授权。
 
 ## 验证（详见[验证记录](oncue/VERIFICATION.md)）
 
@@ -42,7 +42,7 @@ Rinx 需要 **v1.2.0 及以上**（更早版本的导入表单不能正确传递
 - 逻辑测试 12 套 437 项全部通过（真实 card-host 虚拟机，生产函数逐字节复核）
 - 工具单元测试 114 项全部通过
 - `hub check` 通过（仅未签名警告）
-- 真实 Rinx：6 次真实模型试映、授权状态 4 项实拍、完整流程含真实发送 1 条并读回确认
+- 真实 Rinx（官方 1.3.0 发布包）：最终源码完整闭环实拍——读群、试映（真实模型）、确认发送、读回、第二账号真实回复看反响、确认期间来新消息（N16）全过；授权状态 4 项实拍（[证据](evidence/native-130/)）
 
 ## 界面
 
@@ -51,9 +51,11 @@ Rinx 需要 **v1.2.0 及以上**（更早版本的导入表单不能正确传递
 </p>
 <p align="center"><sub>宽窗口和窄窗口下的界面</sub></p>
 
-真实 Rinx 中的发送确认区与结果（[更多实机证据](evidence/native-052/)）：
+官方 Rinx 1.3.0 中的发送确认与看反响（[完整真机证据](evidence/native-130/)）：
 
-![发送确认区](evidence/native-052/send-confirm.png)
+![发送确认视图](evidence/native-130/05-confirm.png)
+
+![看反响：真实回复与对照](evidence/native-130/07-reaction.png)
 
 ## 一分钟怎么玩
 
@@ -63,11 +65,11 @@ Rinx 需要 **v1.2.0 及以上**（更早版本的导入表单不能正确传递
 4. 点「发到群里」核对房间和全文，「去核对」后「确认发送」，程序读回核验；草稿始终在你手里，发送不自动保存也不清空。
 5. 发出后点「看反响」：对方的原话单独列出，对照你的目标给出下一句。样例内容是本地固定演示，不调用模型；真实房间要先允许模型请求。
 
-演示录影为 0.4.8 时期录制，界面以当前截图为准。
+0.5.3 演示视频见 [evidence/demo/](evidence/demo/)（官方 Rinx 1.3.0 实拍剪辑）；真机原始证据（逐张截图、时间轴、日志摘录）见 [evidence/native-130/](evidence/native-130/)。
 
 ## 在 Rinx 里运行
 
-**从 App Hub 安装**：Rinx 的 **Discover → Mini apps** 进入应用库，找到 OnCue 后 **Add**、**Open**；打开时宿主列出申请的八项服务和所选房间，确认后授权本次运行。
+**从 App Hub 安装**：Rinx 的 **Discover → Mini apps** 进入应用库，找到 OnCue 后 **Add**、**Open**；小程序在独立的「Rinx · Mini apps」窗口中打开，打开时宿主列出申请的八项服务和所选房间，确认后授权本次运行。
 
 **本地导入**（不接受已签名包，先生成未签名副本）：
 
@@ -77,7 +79,7 @@ DEV_ROOT="$(mktemp -d)"
 python3 oncue/tools/prepare_dev_bundle.py "${DEV_ROOT}/bundle" --hub "$OCTO_HUB"
 ```
 
-在 Rinx 里打开 **Discover → Mini apps → Import an app**，填入打印出的目录与你的房间 ID，**Review** 核对名称、版本、八项服务与 Allowed room 后 **Run**。每次打开都要重新授权。
+在 Rinx 里打开 **Discover → Mini apps → Import an app**，填入打印出的目录与你的房间 ID，**Review bundle** 核对名称、版本、「Local unsigned bundle」标记、八项服务与 Allowed room 后 **Run**；应用在独立的「Rinx · Mini apps」窗口中打开（实测界面见 [evidence/native-130/01-review.png](evidence/native-130/01-review.png)）。每次打开都要重新授权。
 
 ## 复赛版本改了什么
 
@@ -101,7 +103,7 @@ python3 oncue/tools/prepare_dev_bundle.py "${DEV_ROOT}/bundle" --hub "$OCTO_HUB"
 ## 尚未验证
 
 - ~~61 分钟授权过期实测~~ 已实测：Rinx 在授权到期后结束小程序会话（界面显示 Session ended）；应用内"授权已过期"提示由界面场景 04a 和 envelope 注入测试覆盖（[实测记录](evidence/native-052/expiry-record.json)）
-- 跨账号"群里有新消息"实机演示（已由界面场景注入覆盖）
+- ~~跨账号"群里有新消息"实机演示~~ 已实测：确认窗口内第二账号发来新消息，应用标出新增、未照原样发出，读后再次确认才发送（[真机记录](evidence/native-130/results.md)，截图 08/09）
 - macOS、Windows、移动端；商店安装；并发写入与断电一致性
 
 ## 文档
