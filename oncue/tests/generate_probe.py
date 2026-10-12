@@ -271,6 +271,13 @@ def generate(source_path: Path, workdir: Path, suite: str) -> Path:
         if asset.is_symlink() or not asset.is_file() or source_path.parent not in asset.resolve().parents:
             raise ValueError(f"Unsafe/missing source asset: {relative}")
         assets.append((relative, asset.read_bytes()))
+    # Splash fonts are external bundle assets and must also be present in
+    # disposable logic probe bundles; otherwise probes silently exercise host fallback.
+    for relative in sorted(str(p.relative_to(source_path.parent)) for p in (source_path.parent / "fonts").glob("*") if p.is_file()):
+        asset = source_path.parent / relative
+        if asset.is_symlink() or source_path.parent not in asset.resolve().parents:
+            raise ValueError(f"Unsafe font asset: {relative}")
+        assets.append((relative, asset.read_bytes()))
     # Detect concurrent source editing before publishing the snapshot.
     if source_path.read_bytes() != original:
         raise ValueError("Production source changed during generation; rerun after the edit finishes")
