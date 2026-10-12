@@ -1,6 +1,6 @@
 [I] /home/agentuser/oncue/makepad/platform/src/web_socket.rs:330:13 - studio websocket disabled: empty studio_http
-[makepad-remote] listening on 127.0.0.1:8268 pid=1217511 app=card-host grabs=/home/agentuser/.hermes/cache/scratch/makepad-remote/card-host-1217511
-[I] /home/agentuser/oncue/makepad/platform/src/remote.rs:550:9 - [makepad-remote] listening on 127.0.0.1:8268 pid=1217511 app=card-host grabs=/home/agentuser/.hermes/cache/scratch/makepad-remote/card-host-1217511
+[makepad-remote] listening on 127.0.0.1:8426 pid=1302497 app=card-host grabs=/home/agentuser/.hermes/cache/scratch/makepad-remote/card-host-1302497
+[I] /home/agentuser/oncue/makepad/platform/src/remote.rs:550:9 - [makepad-remote] listening on 127.0.0.1:8426 pid=1302497 app=card-host grabs=/home/agentuser/.hermes/cache/scratch/makepad-remote/card-host-1302497
 WAYLAND_DISPLAY: Not set
 DISPLAY: :99
 Selected: X11 backend
@@ -9,14 +9,14 @@ libEGL warning: DRI3 error: Could not get DRI3 device
 libEGL warning: Ensure your X server supports DRI3 to get accelerated rendering
 [I] /home/agentuser/oncue/makepad/platform/src/cx.rs:684:9 - memory budget: 3811 MiB (/proc/meminfo MemTotal)
 [I] /home/agentuser/oncue/makepad/platform/src/thread.rs:928:9 - UI thread priority UserInteractive: Applied
-[I] crates/card-host/src/host.rs:108:9 - card-host: stamped /tmp/oncue-logic-v2.bVr64W/send4/bundle/manifest.json with digest c510df782d4811774db140ca71755ba53d974744b43931317c6ce36280cc755b
+[I] crates/card-host/src/host.rs:108:9 - card-host: stamped /tmp/oncue-logic-final.fopg7p/send4/bundle/manifest.json with digest 3262224056defdefab3a1df80e22237c843e7205c80bdae63eb4708b81ec579b
 [I] crates/card-host/src/host.rs:364:9 - card-host: oncue-probe-send4 0.5.3 admitted — capabilities {"storage"}, hosts {}, storage 4194304 bytes, agent none
-[I] crates/card-host/src/host.rs:396:9 - card-host: isolate jailed at /tmp/oncue-logic-v2.bVr64W/send4/app-data/oncue-probe-send4 with 4194304 bytes, 1 capability(ies), 1 host(s), 20000000 instructions, 33554432 bytes of heap, prompts true — all enforced
-[I] /home/agentuser/oncue/makepad/widgets/src/splash.rs:416:9 - [SPLASH] eval: 353501 bytes preserve=false view=true animating=false tick=false epoch=0
+[I] crates/card-host/src/host.rs:396:9 - card-host: isolate jailed at /tmp/oncue-logic-final.fopg7p/send4/app-data/oncue-probe-send4 with 4194304 bytes, 1 capability(ies), 1 host(s), 20000000 instructions, 33554432 bytes of heap, prompts true — all enforced
+[I] /home/agentuser/oncue/makepad/widgets/src/splash.rs:416:9 - [SPLASH] eval: 361601 bytes preserve=false view=true animating=false tick=false epoch=0
 [I] /home/agentuser/oncue/makepad/platform/src/os/linux/opengl.rs:2139:13 - Makepad GL: vendor="Mesa" renderer="llvmpipe (LLVM 20.1.2, 256 bits)" version="OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.3" glsl="OpenGL ES GLSL ES 3.20" sampler_objects=true
 [I] /home/agentuser/oncue/makepad/platform/src/os/linux/opengl.rs:502:13 - retained-upload budgets: adapter_bytes=0 process_allowance=3997120512 allocation_limit=999280128 source=process_allowance_fallback
 [E] /home/agentuser/oncue/makepad/platform/src/os/linux/pulse_audio.rs:749:17 - PulseAudio: pa_context_connect failed (Connection refused), using ALSA only
-[I] /home/agentuser/oncue/makepad/platform/src/thread.rs:1363:13 - pool: 2 workers (1 light-only, 2 started), 10 jobs, peak queue light 0 / heavy 3; light 0: wait avg 0.00 ms max 0.00 ms, run avg 0.0 ms max 0.0 ms; heavy 10: wait avg 0.42 ms max 1.44 ms, run avg 0.0 ms max 0.0 ms; priority applied 2/2 (light UserInitiated / heavy Utility); light >2ms 0 offenders=[] overflow=0; heavy >250ms offenders=[]
-[I] /home/agentuser/oncue/makepad/platform/src/thread.rs:1363:13 - pool: 2 workers (1 light-only, 2 started), 11 jobs, peak queue light 0 / heavy 3; light 0: wait avg 0.00 ms max 0.00 ms, run avg 0.0 ms max 0.0 ms; heavy 11: wait avg 0.39 ms max 1.44 ms, run avg 0.0 ms max 0.0 ms; priority applied 2/2 (light UserInitiated / heavy Utility); light >2ms 0 offenders=[] overflow=0; heavy >250ms offenders=[]
+[I] /home/agentuser/oncue/makepad/platform/src/thread.rs:1363:13 - pool: 2 workers (1 light-only, 2 started), 10 jobs, peak queue light 0 / heavy 3; light 0: wait avg 0.00 ms max 0.00 ms, run avg 0.0 ms max 0.0 ms; heavy 10: wait avg 2.51 ms max 11.26 ms, run avg 0.0 ms max 0.0 ms; priority applied 2/2 (light UserInitiated / heavy Utility); light >2ms 0 offenders=[] overflow=0; heavy >250ms offenders=[]
+[I] /home/agentuser/oncue/makepad/platform/src/thread.rs:1363:13 - pool: 2 workers (1 light-only, 2 started), 11 jobs, peak queue light 0 / heavy 3; light 0: wait avg 0.00 ms max 0.00 ms, run avg 0.0 ms max 0.0 ms; heavy 11: wait avg 2.28 ms max 11.26 ms, run avg 0.0 ms max 0.0 ms; priority applied 2/2 (light UserInitiated / heavy Utility); light >2ms 0 offenders=[] overflow=0; heavy >250ms offenders=[]
 [makepad-remote] remote quit
-[I] /home/agentuser/oncue/makepad/platform/src/thread.rs:942:13 - pool: 2 workers (1 light-only, 2 started), 15 jobs, peak queue light 0 / heavy 3; light 0: wait avg 0.00 ms max 0.00 ms, run avg 0.0 ms max 0.0 ms; heavy 15: wait avg 0.28 ms max 1.44 ms, run avg 0.0 ms max 0.0 ms; priority applied 2/2 (light UserInitiated / heavy Utility); light >2ms 0 offenders=[] overflow=0; heavy >250ms offenders=[]
+[I] /home/agentuser/oncue/makepad/platform/src/thread.rs:942:13 - pool: 2 workers (1 light-only, 2 started), 15 jobs, peak queue light 0 / heavy 3; light 0: wait avg 0.00 ms max 0.00 ms, run avg 0.0 ms max 0.0 ms; heavy 15: wait avg 1.67 ms max 11.26 ms, run avg 0.0 ms max 0.0 ms; priority applied 2/2 (light UserInitiated / heavy Utility); light >2ms 0 offenders=[] overflow=0; heavy >250ms offenders=[]

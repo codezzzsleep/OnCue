@@ -415,6 +415,7 @@ fn cue_invalidate(){
     let keep_sent = cue_editor_sent
     cue_send_editor_changed()
     cue_editor_sent = keep_sent
+    cue_route_check = nil
     cue_revision += 1
     cue_summary = ""
     cue_result_key = ""
@@ -823,7 +824,7 @@ fn cue_boot_autoload(){
     })
 }
 
-fn cue_extract_recommendation(blocks){
+fn cue_extract_recommendation_raw(blocks){
     let result = {index: -1, reason: ""}
     if blocks.len() != 7 { return result }
     let tail = "" + blocks[6]
@@ -872,14 +873,18 @@ fn cue_extract_recommendation(blocks){
     if choice == "A" { result.index = 0 }
     if choice == "B" { result.index = 1 }
     if choice == "C" { result.index = 2 }
-    // A recommendation reason is displayed as product guidance, so apply the
-    // same numeric and commitment grounding gates as route content.
-    if reason.to_chars().len() > 40 || !cue_numbers_in(reason, cue_grounding_allowed()) || !cue_commitments_grounded(reason, cue_grounding_allowed()) {
-        result.index = -1
-        reason = ""
-    }
     if result.index >= 0 { result.reason = reason }
     result
+}
+
+fn cue_extract_recommendation(blocks){
+    let rec = cue_extract_recommendation_raw(blocks)
+    // 探针/同步调用路径：完整的内联核对保持不变。
+    if rec.reason.to_chars().len() > 40 || !cue_numbers_in(rec.reason, cue_grounding_allowed()) || !cue_commitments_grounded(rec.reason, cue_grounding_allowed()) {
+        rec.index = -1
+        rec.reason = ""
+    }
+    rec
 }
 
 fn cue_reaction_reset(){
@@ -1732,30 +1737,22 @@ fn cue_source_excerpt(selection){
 }
 
 fn cue_strip_refs(text){
-    let chars = text.to_chars()
-    let out = "".to_chars()
-    let in_ref = false
-    for i in chars.len() {
-        let c = chars[i]
-        if c == 35 {
-            in_ref = true
-        } else {
-            if in_ref && c >= 48 && c <= 57 {
-                in_ref = true
-            } else {
-                in_ref = false
-                out.push(c)
-            }
-        }
-    }
-    out.to_string()
+    // 原生正则切分删掉 # 及其后数字；等价于旧逐字扫描（裸 # 也一并去掉）。
+    // 注意不能用 #[0-9]*：空匹配会把整串拆成逐字碎片。
+    let parts = text.split(regex("#[0-9]+", ""))
+    let joined = ""
+    for p in parts { joined += p }
+    let bare = joined.split("#")
+    let out = ""
+    for p in bare { out += p }
+    out
 }
 
 fn cue_decimal(c){ c >= 48 && c <= 57 }
 
 fn cue_han_number(c){
-    for n in "零〇一二两三四五六七八九十百千万亿半".to_chars() { if c == n { return true } }
-    false
+    // 纯整数比较链：零〇一二两三四五六七八九十百千万亿半。不分配、不循环。
+    return c == 38646 || c == 12295 || c == 19968 || c == 20108 || c == 20004 || c == 19977 || c == 22235 || c == 20116 || c == 20845 || c == 19971 || c == 20843 || c == 20061 || c == 21313 || c == 30334 || c == 21315 || c == 19975 || c == 20159 || c == 21322
 }
 
 fn cue_at_chars(chars, offset, value){
@@ -1766,16 +1763,16 @@ fn cue_at_chars(chars, offset, value){
 }
 
 fn cue_numeric_tokens(text){
+    // 同一回复里三条路线会重复分词同一段允许文本；缓存最近一次结果。
+    if text == cue_tok_memo_in && cue_tok_memo_in != "" { return cue_tok_memo_out }
     // Character scanning avoids the old runtime's Unicode regex capture bug.
-    let chars = "".to_chars()
-    let original = text.to_chars()
-    for position in original.len() {
-        let c = original[position]
-        // Arithmetic yields the numeric representation accepted by the old
-        // U32 buffer; assigning an integer literal before push can emit NUL.
+    // 就地归一化，不再 push 重建整串（逐字累积在宿主上是平方级指令开销）。
+    let chars = text.to_chars()
+    for position in chars.len() {
+        let c = chars[position]
         if c >= 65281 && c <= 65374 { c = c - 65248 }
         if c == 8722 { c = c - 8677 }
-        chars.push(c)
+        if c != chars[position] { chars[position] = c }
     }
     let tokens = []
     let i = 0
@@ -1802,8 +1799,20 @@ fn cue_numeric_tokens(text){
             let unit_at = i
             while unit_at < chars.len() && chars[unit_at] == 32 { unit_at += 1 }
             let unit = ""
-            for candidate in ["小时", "分钟", "公里", "元", "块", "点", "时", "分", "天", "晚", "夜", "人", "个", "张", "次", "米", "%", "岁", "月", "日"] {
-                if unit == "" && cue_at_chars(chars, unit_at, candidate) { unit = candidate }
+            // 原生查表替代 20 次逐一比对：先看两字单位，再看单字单位，顺序与旧版一致。
+            if unit_at < chars.len() {
+                let pair = "".to_chars()
+                pair.push(chars[unit_at])
+                if unit_at + 1 < chars.len() { pair.push(chars[unit_at + 1]) }
+                let pair_s = pair.to_string()
+                if pair.len() == 2 && "小时|分钟|公里".search(pair_s) >= 0 {
+                    unit = pair_s
+                } else {
+                    let one = "".to_chars()
+                    one.push(chars[unit_at])
+                    let one_s = one.to_string()
+                    if "元块点时分天晚夜人个张次米%岁月日".search(one_s) >= 0 { unit = one_s }
+                }
             }
             let amount = token.to_string()
             let qualified = false
@@ -1822,7 +1831,9 @@ fn cue_numeric_tokens(text){
             if unit != "" { i = unit_at + unit.to_chars().len() }
         } else { i += 1 }
     }
-    tokens
+    cue_tok_memo_in = text
+    cue_tok_memo_out = tokens
+    cue_tok_memo_out
 }
 
 fn cue_ref_ids(text){
@@ -1947,16 +1958,27 @@ fn cue_commit_lazy(){
     cue_commit_cache.ready = true
 }
 
+fn cue_sent_split_re(){
+    if cue_sent_re == nil { cue_sent_re = regex("(。|！|？|；|\\?|!|;)", "") }
+    cue_sent_re
+}
+
 fn cue_commit_sentences(line){
+    // 原生带捕获切分：每个标点终结一句，问句标记照旧；等价于旧逐字扫描。
+    let parts = line.split(cue_sent_split_re())
     let out = []
-    let cur = "".to_chars()
-    for c in line.to_chars() {
-        if c == 12290 || c == 65281 || c == 65311 || c == 65307 || c == 63 || c == 33 || c == 59 {
-            out.push({text: cur.to_string(), q: c == 65311 || c == 63})
-            cur = "".to_chars()
-        } else { cur.push(c) }
+    let i = 0
+    while i < parts.len() {
+        let piece = parts[i]
+        if i + 1 < parts.len() {
+            let d = parts[i + 1]
+            out.push({text: piece, q: d == "？" || d == "?"})
+            i += 2
+        } else {
+            if piece != "" { out.push({text: piece, q: false}) }
+            i += 1
+        }
     }
-    if cur.len() > 0 { out.push({text: cur.to_string(), q: false}) }
     out
 }
 
@@ -2041,10 +2063,16 @@ fn cue_commitment_spans(text){
         }
         let trigger = degree_re.test(line) || fixed_re.test(line)
         if !trigger { continue }
-        for i in chars.len() {
-            if i > 0 && cue_neg_char(chars[i - 1]) { continue }
-            for di in degrees.len() {
-                if !cue_chars_at(chars, i, degrees[di]) { continue }
+        for di in degrees.len() {
+            // 原生 split 找出这个度数词的所有出现位置；逐字检查只发生在真出现的地方，
+            // 不再对整行每个字符做 度数×间隔×动词 的空扫。同一位置集合与旧逐字版一致。
+            let parts = line.split(degrees[di].to_string())
+            if parts.len() < 2 { continue }
+            let pos = parts[0].to_chars().len()
+            for pi in parts.len() - 1 {
+                let i = pos
+                pos = pos + degrees[di].len() + parts[pi + 1].to_chars().len()
+                if i > 0 && cue_neg_char(chars[i - 1]) { continue }
                 for gap in 4 {
                     let vpos = i + degrees[di].len() + gap
                     if vpos < chars.len() {
@@ -2090,9 +2118,34 @@ fn cue_commitments_grounded(text, allowed){
     true
 }
 
+fn cue_grounding_pieces(){
+    let pieces = []
+    for i in cue_sources.len() { if cue_source_enabled(i) { pieces.push(cue_sources[i].body) } }
+    pieces.push(ui.cue_trial.text() + "\n" + ui.cue_goal_note.text())
+    pieces
+}
+
+fn cue_numbers_in_pre(text, allowed_tokens){
+    let actual = cue_numeric_tokens(cue_strip_refs(text))
+    for token in actual {
+        let found = false
+        for known in allowed_tokens { if token == known { found = true } }
+        if !found {
+            cue_reject_reason = "数字：‘" + token + "’不在本路线依据或本人提议中；去掉对白里的编号（如【1】），真实数量保持原文写法，不改为中文数字，也不增加引用来拼凑事实"
+            return false
+        }
+    }
+    true
+}
+
 fn cue_grounding_allowed(){
+    // 校验期间界面输入与勾选不变；同一回复只拼一次允许文本。
+    let key = cue_context_key()
+    if key == cue_ground_memo_key && cue_ground_memo_key != "" { return cue_ground_memo_text }
     let allowed = ui.cue_trial.text() + "\n" + ui.cue_goal_note.text()
     for i in cue_sources.len() { if cue_source_enabled(i) { allowed += "\n" + cue_sources[i].body } }
+    cue_ground_memo_key = key
+    cue_ground_memo_text = allowed
     allowed
 }
 
@@ -2176,9 +2229,111 @@ fn cue_accept_reply(reply, request_revision, attempt){
     let reply_text = try { reply.data.text } catch { nil }
     let blocks = []
     if reply_text.is_string() && reply_text.len() <= 12000 { blocks = try { cue_split_blocks(reply_text) } catch { [] } }
-    let rec = cue_extract_recommendation(blocks)
-    let usable = cue_validate_protocol(blocks)
-    if usable {
+    let rec = cue_extract_recommendation_raw(blocks)
+    // 结构检查便宜，当场做；三条路线的逐条校验拆成独立计时器回调，
+    // 每个回调都有自己的宿主单次指令额度。各步之间用户可能改了输入，
+    // 所以每步开头都重新检查请求有效性。
+    if !cue_validate_structure(blocks) { cue_validation_failed(request_revision, attempt) return }
+    cue_reply_num_tokens = []
+    cue_route_check = {blocks: blocks, rec: rec, revision: request_revision, attempt: attempt, prep: cue_grounding_pieces()}
+    start_timeout(0.01, fn(){ cue_validate_step(-2, 0) })
+}
+
+fn cue_validate_structure(blocks){
+    cue_reject_reason = "没有按顺序写出完整的七节"
+    if !cue_validate_blocks(blocks) { return false }
+    let markers = cue_protocol_markers()
+    for i in blocks.len() {
+        let body = blocks[i].strip_prefix(markers[i])
+        if body == blocks[i] || body.trim() == "" { return false }
+        for j in markers.len() { if body.search(markers[j]) >= 0 { return false } }
+    }
+    let selected = blocks[0].strip_prefix(markers[0]).trim()
+    cue_reject_reason = "【摘要】一节只能写 1 到 4 个存在的消息编号，每行一个，例如 #2"
+    if cue_source_excerpt(selected) == "" { return false }
+    true
+}
+
+fn cue_validate_step(route_index, phase){
+    if cue_route_check == nil { return }
+    let check = cue_route_check
+    if !cue_request_current(check.revision) || check.attempt != cue_attempt { cue_route_check = nil return }
+    // 数字准备：每次回调只分词一条勾选来源，累积成允许集合。
+    if route_index == -2 {
+        if check.prep.len() > 0 {
+            let piece = check.prep[0]
+            let rest = []
+            for k in check.prep.len() { if k > 0 { rest.push(check.prep[k]) } }
+            check.prep = rest
+            let toks = cue_numeric_tokens(cue_strip_refs(piece))
+            for t in toks { cue_reply_num_tokens.push(t) }
+            start_timeout(0.01, fn(){ cue_validate_step(-2, 0) })
+            return
+        }
+        start_timeout(0.01, fn(){ cue_validate_step(-1, 0) })
+        return
+    }
+    // 推荐核对单独一步；允许数字集合此时已经就绪。
+    if route_index < 0 {
+        let rec = check.rec
+        if rec.reason.to_chars().len() > 40 || !cue_numbers_in_pre(rec.reason, cue_reply_num_tokens) || !cue_commitments_grounded(rec.reason, cue_grounding_allowed()) {
+            rec.index = -1
+            rec.reason = ""
+        }
+        check.rec = rec
+        start_timeout(0.01, fn(){ cue_validate_step(0, 0) })
+        return
+    }
+    let blocks = check.blocks
+    let markers = cue_protocol_markers()
+    let body = blocks[route_index * 2 + 1].strip_prefix(markers[route_index * 2 + 1]).trim()
+    let draft = blocks[route_index * 2 + 2].strip_prefix(markers[route_index * 2 + 2]).trim()
+    // 每条路线分三相：格式/引用、数字、承诺句；每相各占一个回调额度。
+    if phase == 0 {
+        if !cue_validate_route_core(body, draft) {
+            cue_route_check = nil
+            cue_validation_failed(check.revision, check.attempt)
+            return
+        }
+        start_timeout(0.01, fn(){ cue_validate_step(route_index, 1) })
+        return
+    }
+    if phase == 1 {
+        // 核对规则是「数值须逐字出现在勾选来源或用户输入里」：允许集合由链上准备。
+        cue_reject_reason = "数字：数值或单位不在本路线依据及用户明确提议中"
+        if !cue_numbers_in_pre(body + "\n" + draft, cue_reply_num_tokens) {
+            cue_route_check = nil
+            cue_validation_failed(check.revision, check.attempt)
+            return
+        }
+        start_timeout(0.01, fn(){ cue_validate_step(route_index, 2) })
+        return
+    }
+    if !cue_commitments_grounded(body + "\n" + draft, cue_grounding_allowed()) {
+        cue_route_check = nil
+        cue_validation_failed(check.revision, check.attempt)
+        return
+    }
+    if route_index < 2 {
+        start_timeout(0.01, fn(){ cue_validate_step(route_index + 1, 0) })
+        return
+    }
+    cue_route_check = nil
+    cue_routes_accepted(blocks, check.rec, check.revision)
+}
+
+fn cue_validation_failed(request_revision, attempt){
+    if attempt < 1 {
+        cue_set_status("助手的回答没通过检查，正在自动重试一次…")
+        let hint = "\n\n你上一次的回答没有通过检查：" + cue_reject_reason + "。请严格按上面的要求重新写出完整的七节。"
+        cue_start_turn(cue_last_prompt + hint, request_revision, attempt + 1)
+        return
+    }
+    cue_set_busy(false)
+    cue_set_status("助手候选未采用：" + cue_reject_reason + "。已用完一次修复，可改输入后重试或手工编辑。")
+}
+
+fn cue_routes_accepted(blocks, rec, request_revision){
         let markers = cue_protocol_markers()
         for i in blocks.len() { blocks[i] = blocks[i].strip_prefix(markers[i]).trim() }
         cue_set_busy(false)
@@ -2218,16 +2373,26 @@ fn cue_accept_reply(reply, request_revision, attempt){
                 cue_sync_workspace()
             }
         })
-        return
+}
+
+fn cue_validate_route_core(body, draft){
+    cue_reject_reason = "格式：建议须为一行150字以内，假设对白须完整且不过长"
+    if draft == "" || draft.to_chars().len() > 150 || draft.search("\n") >= 0 || body.len() > 4000 { return false }
+    // Reference IDs are evidence labels, never quantities in a ready-to-edit sentence.
+    cue_reject_reason = "引用：建议不写#编号，编号只放在对白依据行"
+    if draft.search("#") >= 0 { return false }
+    let refs = cue_route_refs(body)
+    cue_reject_reason = "格式：假设对白须含两个虚构回应和一个待确认点"
+    if body.search("虚构回应甲：") < 0 || body.search("虚构回应乙：") < 0 || body.search("待确认：") < 0 { return false }
+    cue_reject_reason = "引用：每路线须有且只有一行依据，引用1至4个已勾选消息ID"
+    if refs.len() == 0 || !cue_references_valid(body + "\n" + draft) { return false }
+    for token in cue_ref_ids(body + "\n" + draft) {
+        let found = false
+        for id in refs { if token == id { found = true } }
+        if !found { return false }
     }
-    if attempt < 1 {
-        cue_set_status("助手的回答没通过检查，正在自动重试一次…")
-        let hint = "\n\n你上一次的回答没有通过检查：" + cue_reject_reason + "。请严格按上面的要求重新写出完整的七节。"
-        cue_start_turn(cue_last_prompt + hint, request_revision, attempt + 1)
-        return
-    }
-    cue_set_busy(false)
-    cue_set_status("助手候选未采用：" + cue_reject_reason + "。已用完一次修复，可改输入后重试或手工编辑。")
+    // 数字检查单独一相（cue_validate_step phase 1），不在本回调里做。
+    true
 }
 
 fn cue_rehearse(){

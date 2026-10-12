@@ -2,7 +2,7 @@
 
 版本 **0.5.3，未签名**。验证日期：2026-10-12。
 
-生产入口SHA-256：`53f272345f22db595d0f3e03daef3241aae06b0816664885914dd5a18076d4fa`（`bundle/main.splash`）。
+生产入口SHA-256：`d8056ab810664c89f4b558a2ce070af698a96c2e233067177fe463c6da92f2ec`（`bundle/main.splash`）。
 
 ## 包检查
 
@@ -17,13 +17,13 @@ oncue-screening-room 0.5.3 — PASSED
 
 ## 界面场景测试
 
-用 [splash-app-verify](../skills/splash-app-verify/)（仓库内副本；上游提交见 App Flow [PR #192](https://github.com/OctoSense-org/OctoSense-App-Flow/pull/192)）在 card-host 里运行 `oncue/tests/ui/` 的界面契约与 71 个场景（三种尺寸：412×892、954×448、1000×800；共 **81 次运行，全部通过**，全量约 310 秒）。宿主回复全部注入，形状与错误原文取自 Rinx `fdcfed1` 源码；**不是真机运行**，不调用真实 Matrix 或模型服务。运行器像真宿主一样拒绝 manifest 未申请的服务。
+用 [splash-app-verify](../skills/splash-app-verify/)（仓库内副本；上游提交见 App Flow [PR #192](https://github.com/OctoSense-org/OctoSense-App-Flow/pull/192)）在 card-host 里运行 `oncue/tests/ui/` 的界面契约与 73 个场景（三种尺寸：412×892、954×448、1000×800；共 **83 次运行，全部通过**，全量约 310 秒）。宿主回复全部注入，形状与错误原文取自 Rinx `fdcfed1` 源码；**不是真机运行**，不调用真实 Matrix 或模型服务。运行器像真宿主一样拒绝 manifest 未申请的服务。
 
 | 项 | 结果 |
 |---|---|
-| 源码 SHA-256 | `53f27234…`（与本文一致） |
-| 通过 | 81 / 81 |
-| 运行 ID | `20261012T191911-tracked-ui` |
+| 源码 SHA-256 | `d8056ab8…`（与本文一致） |
+| 通过 | 83 / 83 |
+| 运行 ID | `ui-fix-final`（`run-tracked-ui.py`，含 63/64） |
 | 尺寸 | 412×892、954×448、1000×800 三种 |
 | 覆盖 | 首屏、样例试映、打开即读群、授权六态、一键试映与推荐、自动放进草稿、生成/选句/修订、发送确认/读回/限流/超时、新消息复核、看反响四态、阶段条、存储、重启恢复、三尺寸布局、审查修复回归 |
 

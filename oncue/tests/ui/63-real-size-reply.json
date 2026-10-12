@@ -1,0 +1,166 @@
+{
+ "name": "真实规模：12 条群消息、约 600 字回复时，试映回调不得撞上宿主单次 20 万条指令上限；三种说法照常出来",
+ "use": "_room.json",
+ "host": {
+  "matrix.read_messages": {
+   "data": {
+    "messages": [
+     {
+      "sender": "xiaolin",
+      "sender_id": "@xiaolin:example.org",
+      "event_id": "$h1",
+      "body": "国庆假期想找一天去杭州玩，大家哪天有空？",
+      "ts": 1759800000000,
+      "msgtype": "m.text",
+      "room_id": "!trip:example.org",
+      "unread": false
+     },
+     {
+      "sender": "ayou",
+      "sender_id": "@ayou:example.org",
+      "event_id": "$h2",
+      "body": "我中午 12 点以后才能走，上午要值班。",
+      "ts": 1759800060000,
+      "msgtype": "m.text",
+      "room_id": "!trip:example.org",
+      "unread": false
+     },
+     {
+      "sender": "qixi",
+      "sender_id": "@qixi:example.org",
+      "event_id": "$h3",
+      "body": "我想当天回来，预算 300 左右，再多就有点紧。",
+      "ts": 1759800120000,
+      "msgtype": "m.text",
+      "room_id": "!trip:example.org",
+      "unread": false
+     },
+     {
+      "sender": "mumu",
+      "sender_id": "@mumu:example.org",
+      "event_id": "$h4",
+      "body": "高铁二等座单程大概 73 元，往返 146。",
+      "ts": 1759800180000,
+      "msgtype": "m.text",
+      "room_id": "!trip:example.org",
+      "unread": false
+     },
+     {
+      "sender": "xiaolin",
+      "sender_id": "@xiaolin:example.org",
+      "event_id": "$h5",
+      "body": "那 10 月 3 号怎么样？人可能少一点。",
+      "ts": 1759800240000,
+      "msgtype": "m.text",
+      "room_id": "!trip:example.org",
+      "unread": false
+     },
+     {
+      "sender": "ayou",
+      "sender_id": "@ayou:example.org",
+      "event_id": "$h6",
+      "body": "3 号可以，不过我晚上 9 点前要到家。",
+      "ts": 1759800300000,
+      "msgtype": "m.text",
+      "room_id": "!trip:example.org",
+      "unread": false
+     },
+     {
+      "sender": "qixi",
+      "sender_id": "@qixi:example.org",
+      "event_id": "$h7",
+      "body": "西湖边人太多了，要不要去灵隐寺或者龙井村？",
+      "ts": 1759800360000,
+      "msgtype": "m.text",
+      "room_id": "!trip:example.org",
+      "unread": false
+     },
+     {
+      "sender": "mumu",
+      "sender_id": "@mumu:example.org",
+      "event_id": "$h8",
+      "body": "龙井村可以喝茶，人均 50 左右。",
+      "ts": 1759800420000,
+      "msgtype": "m.text",
+      "room_id": "!trip:example.org",
+      "unread": false
+     },
+     {
+      "sender": "xiaolin",
+      "sender_id": "@xiaolin:example.org",
+      "event_id": "$h9",
+      "body": "我先看看 3 号下午的车次，晚点发群里。",
+      "ts": 1759800480000,
+      "msgtype": "m.text",
+      "room_id": "!trip:example.org",
+      "unread": false
+     },
+     {
+      "sender": "ayou",
+      "sender_id": "@ayou:example.org",
+      "event_id": "$h10",
+      "body": "吃饭的话我想吃知味观，人均 80。",
+      "ts": 1759800540000,
+      "msgtype": "m.text",
+      "room_id": "!trip:example.org",
+      "unread": false
+     },
+     {
+      "sender": "qixi",
+      "sender_id": "@qixi:example.org",
+      "event_id": "$h11",
+      "body": "那加起来 146 加 50 加 80，差不多 276，在预算里。",
+      "ts": 1759800600000,
+      "msgtype": "m.text",
+      "room_id": "!trip:example.org",
+      "unread": false
+     },
+     {
+      "sender": "mumu",
+      "sender_id": "@mumu:example.org",
+      "event_id": "$h12",
+      "body": "我都行，主要看大家时间。",
+      "ts": 1759800660000,
+      "msgtype": "m.text",
+      "room_id": "!trip:example.org",
+      "unread": false
+     }
+    ],
+    "has_more": false
+   }
+  },
+  "octos.turn.start": {
+   "data": {
+    "turn_id": "turn-heavy",
+    "text": "【摘要】\n#2\n#3\n#5\n#6\n【A对白】\n虚构回应甲：3 号下午出发我没问题，中午 12 点以后正好赶得上。\n虚构回应乙：晚上 9 点前要到家的话，回程别拖太晚，傍晚就往回走。\n虚构回应甲：那就照 10 月 3 号来，出发和回家的时间先说清楚，其他再慢慢商量。\n依据：#2、#5、#6\n待确认：大家是否都能接受 3 号中午 12 点以后出发、晚上 9 点前到家？\n【A建议】\n那就 10 月 3 号中午 12 点以后出发、晚上 9 点前到家，大家看行吗？\n【B对白】\n虚构回应甲：往返车票 146，加上喝茶人均 50，吃饭人均 80，算下来 276。\n虚构回应乙：在 300 左右的预算里还有一点余量，路上买水够用。\n虚构回应甲：要是有人想多玩一个地方，预算可能就紧了，最好提前说。\n依据：#3、#11\n待确认：大家是否都认可按 276 左右来算，留一点余量？\n【B建议】\n按 146 加 50 加 80 算，人均 276 左右，在 300 的预算里，大家觉得可以吗？\n【C对白】\n虚构回应甲：西湖边人太多，龙井村清静一些，喝茶人均 50 左右也不贵。\n虚构回应乙：灵隐寺也想去看看，就是不知道要不要排很久的队。\n虚构回应甲：先定去哪儿，时间再一起看，这样大家比较好安排。\n依据：#7、#8、#12\n待确认：大家更想去龙井村，还是灵隐寺？\n【C建议】\n要不先定龙井村，喝茶人均 50 左右，时间再一起看？\n【推荐】\nA\n理由：先把出发和回家的时间定下来，其他再商量。"
+   }
+  }
+ },
+ "steps": [
+  {
+   "wait": {
+    "text": [
+     "原消息已载入，共 12 条。"
+    ]
+   },
+   "timeout": 8
+  },
+  {
+   "run": "_allow.json"
+  },
+  {
+   "scroll_to": "试映下一幕"
+  },
+  {
+   "click": "试映下一幕"
+  },
+  {
+   "wait": {
+    "text": [
+     "三种说法好了。"
+    ]
+   },
+   "timeout": 15
+  }
+ ]
+}

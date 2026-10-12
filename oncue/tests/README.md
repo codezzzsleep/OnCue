@@ -4,8 +4,8 @@
 
 | 测试 | 测什么 | 怎么跑 | 数量 |
 | --- | --- | --- | --- |
-| 逻辑测试 | `main.splash` 里的函数 | card-host 的脚本虚拟机，本地运行 | 12 套 435 项 |
-| 界面场景 | 屏幕上用户实际看到的内容 | splash-app-verify 在 card-host 里跑真应用、宿主注入 | 71 场景 81 次 |
+| 逻辑测试 | `main.splash` 里的函数 | card-host 的脚本虚拟机，本地运行 | 12 套 436 项 |
+| 界面场景 | 屏幕上用户实际看到的内容 | splash-app-verify 在 card-host 里跑真应用、宿主注入 | 71 场景 83 次 |
 | 工具单元测试 | 测试包生成器、结果检查器、实机验收脚本 | Python，CI 在相关路径变更时运行 | 114 项 |
 | 实机验收 | 应用在 Rinx 里的完整流程 | 脚本驱动一个正在运行的 Rinx | 4 种模式 |
 
@@ -60,7 +60,7 @@ python3 -m unittest discover -s oncue/tests -p 'selftest_*.py' -v
 python3 <splash-app-verify>/scripts/uitest.py run bundle oncue/tests/ui --keep-going
 ```
 
-81 次运行（场景分布在 412×892、954×448、1000×800 三种尺寸），约 310 秒。宿主回复由场景注入，失败时到 `build/uitest/<场景>@<尺寸>/FEEDBACK.md` 看修复请求。
+83 次运行（场景分布在 412×892、954×448、1000×800 三种尺寸），约 310 秒。宿主回复由场景注入，失败时到 `build/uitest/<场景>@<尺寸>/FEEDBACK.md` 看修复请求。
 
 ## 实机验收
 

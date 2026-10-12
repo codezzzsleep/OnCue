@@ -279,10 +279,11 @@ fn probe_send_adversarial(){
 }
 fn probe_send_freshness(){
     probe_begin("send.fresh_route")
-    probe_deliver(1, probe_good_reply())
+    probe_accept_async(1, fn(){ probe_send_freshness_placed() })
+}
+fn probe_send_freshness_placed(){
     // 0.5.3: a valid reply auto-checks freshness and places the default route;
-    // service that read, then clear the draft so the manual choose gate below is exercised as before.
-    probe_complete_freshness()
+    // the async pump serviced that read; clear the draft so the manual choose gate below is exercised as before.
     probe_manual("")
     let snapshot = cue_route_window.to_json()
     let start = probe_requests.len()
@@ -300,8 +301,9 @@ fn probe_send_freshness(){
 }
 fn probe_send_freshness_unselected(){
     probe_begin("send.new_unselected_blocks_use")
-    probe_deliver(1, probe_good_reply())
-    probe_complete_freshness()
+    probe_accept_async(1, fn(){ probe_send_freshness_unselected_placed() })
+}
+fn probe_send_freshness_unselected_placed(){
     probe_manual("手工稿保留")
     let start = probe_requests.len()
     cue_choose_route(0)
@@ -336,8 +338,9 @@ fn probe_send_freshness_changed(){
 }
 fn probe_send_freshness_anchor(){
     probe_begin("send.missing_anchor")
-    probe_deliver(1, probe_good_reply())
-    probe_complete_freshness()
+    probe_accept_async(1, fn(){ probe_send_freshness_anchor_placed() })
+}
+fn probe_send_freshness_anchor_placed(){
     probe_manual("")
     let start = probe_requests.len()
     cue_choose_route(0)
@@ -376,7 +379,9 @@ fn probe_send_known_own_use(){
     cue_rehearse()
     let so = probe_requests.len() - 1
     probe_deliver(so, {is_ok: true, data: {}, error: ""})
-    probe_deliver(so + 1, probe_good_reply())
+    probe_accept_async(so + 1, fn(){ probe_send_known_own_use_placed() })
+}
+fn probe_send_known_own_use_placed(){
     let start_use = probe_requests.len()
     cue_choose_route(0)
     probe_window_reply(start_use, probe_send_new_rows("本人消息"), false)
