@@ -2,7 +2,7 @@
 
 ## 需要什么
 
-- Rinx，随 OctoSense 一起构建。测试用的版本见下表。
+- Rinx v1.2.0 或更新版本；推荐独立运行的 v1.3.0。OctoSense 最新 main（`0209df1`）自带的构建仍钉在 Rinx v1.1.0，照它构建会碰到导入表单读错房间号的问题（症状见下文「Rinx 房间绑定修复」），需要先打下文印出的补丁。
 - 比赛服务器 `matrix.rinx.chat` 的账号，和一个有消息的房间。登录走浏览器单点登录。
 - 宿主里已经配置好助手。
 - 本地构建的 `hub`，用来生成未签名副本。构建方法见 OctoScript-App-Design-Flow 的 QUICKSTART。
@@ -11,24 +11,24 @@ card-host 可以打开应用并看内置样例，但它不提供 Matrix 和助�
 
 ## 宿主基线
 
-以下版本用于既有0.4.8运行记录；当前版本的实际验证范围以[验证记录](../VERIFICATION.md)为准。
+以下版本是 0.5.3 的实际验证范围；细节与证据见[验证记录](../VERIFICATION.md)。
 
 | 组件 | 仓库 | 提交 |
 | --- | --- | --- |
-| OctoSense | `OctoSense-org/OctoSense` | `6c4746f0854b74446f854fdcd32eeb87b5192a81` |
-| Rinx | `hagency-org/Rinx` | `c515e5fc9b6dc22e67f7d551b09fdd793ec685a1` |
-| octos | `octos-org/octos` | `fe08d8e6b3b32e672b0f956a2b692c3c8205b167` |
-| App Hub / card-host | `OctoSense-org/OctoSense-App-Hub` | `0f332112f0b5a379c5bb33790df74b21597190cf` |
+| Rinx（真实闭环宿主） | `hagency-org/Rinx` | `c515e5fc9b6dc22e67f7d551b09fdd793ec685a1`（v1.1.0-3，零本地补丁） |
+| App Hub（card-host 与 hub 的来源） | `OctoSense-org/OctoSense-App-Hub` | `386359153ed6377b5f047bd9ed2767a6a2ac2bc7` |
+| Makepad | `OctoSense-org/makepad` | `d653bc4493619ab979ccff165cf48c0c63b77d19` |
+| OctoScript | `octos-org/octoscript` | `2e37d9e657a246f16718d9a475e167ccd2d5b5fa` |
+| OctoScript-Makepad | `OctoSense-org/octoscript-makepad` | `6cf2d90aa33ff4ae603f49c7557f3ecf986207f0` |
+| App Flow（octo 工具） | `OctoSense-org/OctoSense-App-Flow` | `15b1da01a769a770aaf12bd3012d17c6ff267b6c` |
 
-平台是 Linux aarch64（X11，软件渲染）。macOS、Windows、Android、iOS 没有测过。
-
-0.4.8主流程也有 OctoSense `a3098486` + octos `056173e8` 的历史运行记录。
+平台是 Linux x86_64（X11，软件渲染）。macOS、Windows、Android、iOS 没有测过。
 
 ## Rinx 房间绑定修复（官方已含；v1.1.0 需回移植）
 
 **0.5.3 的验证宿主是官方 Rinx `c515e5fc9b6dc22e67f7d551b09fdd793ec685a1`（零本地补丁）**，2026-10-11 完整跑通主流程（打开即读群 → 允许并试映 → 两步确认发送 → 读回核实 → 看反响）。官方自 v1.2.0 起已修复房间绑定（`src/miniapps/ui.rs` 用 `ids!(import_form.room)` 限定导入表单，c515e5f 亦含此修复），评委使用官方新版 Rinx 不需要任何补丁。
 
-**只有仍钉在 v1.1.0（`4b89097d`）的构建需要下面的回移植**。OctoSense 的 `Cargo.toml` 用 `[patch."https://github.com/hagency-org/Rinx.git"] rinx = { path = "../rinx" }` 指向本地检出即可带上它（补丁存根 `.private/rinx-room-binding.patch`，上游 PR 素材 `build/RINX-PR-room-binding.md`）。
+**只有仍钉在 v1.1.0（`4b89097d`）的构建需要下面的回移植**。OctoSense 的 `Cargo.toml` 用 `[patch."https://github.com/hagency-org/Rinx.git"] rinx = { path = "../rinx" }` 指向本地检出即可带上它（补丁全文见下文，上游 PR 素材 `build/RINX-PR-room-binding.md`）。
 
 **症状**（未修复的 v1.1.0）：导入面板里填写的房间号在 Review/Run 路径上读到的是隐藏库组件里的同名输入框（`ids!(room)` 的深度优先匹配先命中库里的 DropDown，而不是导入表单里的 `import_form.room`），应用最终以无房间状态启动。
 

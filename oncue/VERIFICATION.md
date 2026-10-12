@@ -17,7 +17,7 @@ oncue-screening-room 0.5.3 — PASSED
 
 ## 界面场景测试
 
-用 [splash-app-verify](../skills/splash-app-verify/)（仓库内，PR #6 合并后可见；上游 App Flow 链接在 13 号提交 App Flow PR 后补充）在 card-host 里运行 `oncue/tests/ui/` 的界面契约与 71 个场景（三种尺寸：412×892、954×448、1000×800；共 **81 次运行，全部通过**，全量约 310 秒）。宿主回复全部注入，形状与错误原文取自 Rinx `fdcfed1` 源码；**不是真机运行**，不调用真实 Matrix 或模型服务。运行器像真宿主一样拒绝 manifest 未申请的服务。
+用 [splash-app-verify](../skills/splash-app-verify/)（仓库内副本；上游提交见 App Flow [PR #192](https://github.com/OctoSense-org/OctoSense-App-Flow/pull/192)）在 card-host 里运行 `oncue/tests/ui/` 的界面契约与 71 个场景（三种尺寸：412×892、954×448、1000×800；共 **81 次运行，全部通过**，全量约 310 秒）。宿主回复全部注入，形状与错误原文取自 Rinx `fdcfed1` 源码；**不是真机运行**，不调用真实 Matrix 或模型服务。运行器像真宿主一样拒绝 manifest 未申请的服务。
 
 | 项 | 结果 |
 |---|---|
