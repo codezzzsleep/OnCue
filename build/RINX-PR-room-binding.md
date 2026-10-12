@@ -55,4 +55,4 @@ Mini apps 导入面板（Discover → Mini apps → Import an app）里，房间
 
 ## 本地验证环境
 
-旧机器（2026-10-11 前）：Linux aarch64 / X11 / 软件渲染；OctoSense 工作区以 `[patch]` 指向本地 Rinx 检出。现在的验证机器是 Linux x86_64。OnCue 0.5.3 的真机证据：`evidence/native-053/` 的大部分在打过补丁的二进制上取得；其中 10-12 下午那次完整闭环在官方 `c515e5fc`、零补丁的二进制上复验通过。
+旧机器（2026-10-11 前）：Linux aarch64 / X11 / 软件渲染；OctoSense 工作区以 `[patch]` 指向本地 Rinx 检出。现在的验证机器是 Linux x86_64。OnCue 0.5.3 的真机证据：`evidence/native-053/` 的大部分在打过补丁的二进制上取得；其中 10-11 下午那次完整闭环在官方 `c515e5fc`、零补丁的二进制上复验通过。
