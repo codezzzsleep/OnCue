@@ -438,13 +438,13 @@ fn cue_stop_wait(){
 fn cue_deadline(revision, subject){
     cue_deadline_seq += 1
     let my_deadline = cue_deadline_seq
-    cue_expires_at = time_now() + 90.0
+    cue_expires_at = time_now() + 150.0
     cue_attempt = 0
-    start_timeout(90.0, fn(){
+    start_timeout(150.0, fn(){
         if my_deadline != cue_deadline_seq || revision != cue_revision || !cue_busy { return }
         cue_invalidate()
         if !cue_demo && cue_sources.len() == 0 { cue_scene_idle() }
-        cue_set_status(subject + "等待超过 90 秒，已结束等待。可以重新载入或改一句再试。")
+        cue_set_status(subject + "等待超过 150 秒，已结束等待。可以重新载入或改一句再试。")
     })
 }
 
@@ -455,7 +455,7 @@ fn cue_request_current(revision){
     if cue_expires_at > 0.0 && time_now() >= cue_expires_at {
         cue_invalidate()
         if !cue_demo && cue_sources.len() == 0 { cue_scene_idle() }
-        cue_set_status("等待超过 90 秒，已结束等待。可以重新载入或改一句再试。")
+        cue_set_status("等待超过 150 秒，已结束等待。可以重新载入或改一句再试。")
         return false
     }
     true

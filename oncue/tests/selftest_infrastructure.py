@@ -38,7 +38,7 @@ class InfrastructureTests(unittest.TestCase):
                 self.assertEqual(set(before), set(after))
                 for name in before:
                     self.assertEqual(before[name]["source"], after[name]["source"])
-                self.assertIn("start_timeout(90.0", after["cue_deadline"]["source"])
+                self.assertIn("start_timeout(150.0", after["cue_deadline"]["source"])
                 self.assertIn("start_timeout(1.4", after["cue_play_pulse"]["source"])
                 self.assertEqual(provenance["source_sha256"], generate_probe.digest(self.source.encode("utf-8")))
                 self.assertFalse(provenance["natural_model_test"])

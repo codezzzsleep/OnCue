@@ -112,7 +112,7 @@ class NativeAcceptanceTests(unittest.TestCase):
         self.assertEqual(native.turn_state("助手候选未采用：引用无效。已用完一次修复，可改输入后重试或手工编辑。"), "failure")
         self.assertEqual(native.turn_state("输入或来源已变化，旧回复未应用；原草稿保留。"), "failure")
         self.assertEqual(native.turn_state("这次试映没有完成：service error"), "failure")
-        self.assertEqual(native.turn_state("助手试映等待超过 90 秒，已结束等待。"), "failure")
+        self.assertEqual(native.turn_state("助手试映等待超过 150 秒，已结束等待。"), "failure")
         self.assertEqual(native.turn_state("三种说法好了。推荐 C（留余地）；已放进草稿框。"), "success")
         self.assertEqual(native.turn_state("unrecognized production contract"), "unknown")
 

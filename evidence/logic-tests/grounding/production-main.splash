@@ -106,7 +106,7 @@ let cue_react_caption = ""
 // 复审 P：「去核对」切换到只含完整正文与确认按钮的核对视图，不靠滚动碰运气。
 let cue_confirm_view = false
 let cue_layout_confirm = false
-// 外部审查 D：每次等待发自己的闹钟序号；同 revision 的下一次请求不共享上一次的 90 秒。
+// 外部审查 D：每次等待发自己的闹钟序号；同 revision 的下一次请求不共享上一次的 150 秒。
 let cue_deadline_seq = 0
 let cue_route_window = nil
 let cue_refine_window = nil
@@ -554,13 +554,13 @@ fn cue_stop_wait(){
 fn cue_deadline(revision, subject){
     cue_deadline_seq += 1
     let my_deadline = cue_deadline_seq
-    cue_expires_at = time_now() + 90.0
+    cue_expires_at = time_now() + 150.0
     cue_attempt = 0
-    start_timeout(90.0, fn(){
+    start_timeout(150.0, fn(){
         if my_deadline != cue_deadline_seq || revision != cue_revision || !cue_busy { return }
         cue_invalidate()
         if !cue_demo && cue_sources.len() == 0 { cue_scene_idle() }
-        cue_set_status(subject + "等待超过 90 秒，已结束等待。可以重新载入或改一句再试。")
+        cue_set_status(subject + "等待超过 150 秒，已结束等待。可以重新载入或改一句再试。")
     })
 }
 fn cue_request_current(revision){
@@ -570,7 +570,7 @@ fn cue_request_current(revision){
     if cue_expires_at > 0.0 && time_now() >= cue_expires_at {
         cue_invalidate()
         if !cue_demo && cue_sources.len() == 0 { cue_scene_idle() }
-        cue_set_status("等待超过 90 秒，已结束等待。可以重新载入或改一句再试。")
+        cue_set_status("等待超过 150 秒，已结束等待。可以重新载入或改一句再试。")
         return false
     }
     true
@@ -2271,7 +2271,7 @@ fn cue_validate_protocol(blocks){
 
 // 模型并非每次都严格给出七块。格式变体（首尾多包一层、分隔符在行末）
 // 已在 cue_split_blocks 里严格按语法兼容，且不误切正文；对真正不合协议的回复，自动重试一次再交给用户决定，
-// 沿用本次请求的 revision 与 90 秒期限，不给重试另开超时，也不让用户对着偶发的模型抖动反复手点。
+// 沿用本次请求的 revision 与 150 秒期限，不给重试另开超时，也不让用户对着偶发的模型抖动反复手点。
 fn cue_start_turn(prompt_text, request_revision, attempt){
     if !cue_request_current(request_revision) || attempt > 1 { return }
     if prompt_text.len() > 32768 {

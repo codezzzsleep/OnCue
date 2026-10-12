@@ -1156,7 +1156,7 @@
    "retry.refine_never_implicitly_saves"
   ],
   "deadline": [
-   "deadline.waiting_at_80",
+   "deadline.waiting_at_140",
    "deadline.same_revision_on_retry",
    "deadline.original_budget_expired",
    "deadline.timeout_elapsed",

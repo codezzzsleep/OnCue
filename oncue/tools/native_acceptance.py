@@ -150,7 +150,7 @@ def turn_state(status):
                           "授权已过期", "账号已经切换", "Rinx 没有登录", "没有读到群聊",
                           "当前宿主不提供", "宿主没有授权")):
         return "failure"
-    if "等待超过 90 秒" in status:
+    if "等待超过 150 秒" in status:
         return "failure"
     return "unknown"
 
@@ -163,7 +163,7 @@ def room_state(status):
     if status.startswith(("没有读到群聊", "这次打开没有选房间", "宿主没有授权读取这个房间",
                           "当前宿主不提供群聊服务", "宿主没有授权这项房间或账号服务", "消息读取失败", "这个群聊暂时没有", "已停止等待",
                           "宿主未提供稳定房间ID", "宿主消息格式或大小异常", "当前有未保存编辑",
-                          "读取期间草稿改变，未切换房间", "授权已过期", "账号已经切换", "Rinx 没有登录")) or "等待超过 90 秒" in status:
+                          "读取期间草稿改变，未切换房间", "授权已过期", "账号已经切换", "Rinx 没有登录")) or "等待超过 150 秒" in status:
         return "failure"
     return "unknown"
 

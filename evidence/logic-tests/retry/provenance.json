@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "suite": "retry",
-  "source_sha256": "72cb4e7d86438eee41e8fe1d7e9cb6da0196af08091ce73fad5263ac9a0e2e1b",
-  "fixtures_sha256": "c17fff681bf91c663c6ad3a8c0ee1502fb90641b6de32d180aac5a2896cbca79",
-  "harness_sha256": "3e3a3f27154f0cb7363d6728821591de80b2c8810cf36e15167f234f874a8045",
+  "source_sha256": "e36c6ed6d9774f0bb6ac3e89dabe31db5babada39e64b85a1d0e9d60fb6a929e",
+  "fixtures_sha256": "6b60d540a58f107f2bc9e1e03d0df41d9c01078bdd48fc7ec3bbf375c9d72a98",
+  "harness_sha256": "7a3527f3f61cf95c54eb0140ee5f9939c8fd87a5b06ad8a8fca99fe9c908acb5",
   "expected_assertion_ids": [
     "retry.first_malformed_second_valid",
     "retry.duplicate_after_success_ignored",
@@ -55,7 +55,7 @@
   "filesystem": "real card-host jail; fs is not shadowed",
   "semantic_fact_verification": false,
   "storage_expectation": {},
-  "generated_sha256_before_stamp": "1b98cad24927fb151abba9f8a06d694ce90ea3b51ca3ce80c8ce4160479312db",
+  "generated_sha256_before_stamp": "49437451644202f0cdbf773eea8acf4bb03199d93b3c86adda339ae8a8d3c452",
   "initializer_original": "start_timeout(0.05, fn(){ cue_show_demo() cue_boot_state() cue_boot_autoload() })\n",
   "initializer_source_line": 3144,
   "functions": {
@@ -252,12 +252,12 @@
     "cue_deadline": {
       "start_line": 554,
       "end_line": 565,
-      "sha256": "9089abf488bf880112a74fdcb120962d162bdcd9de24ed3d5c8300317f98238b"
+      "sha256": "fdec4566fd958960babbe54458a445200d2d43ad7964277938211619a4e35178"
     },
     "cue_request_current": {
       "start_line": 566,
       "end_line": 577,
-      "sha256": "7e0f9b44815c9695013886039b12a1c5ca5f4b9619364f1523202b7b89dda808"
+      "sha256": "3947c909c86518d8f232e75c61b67eaac9c4cb846c3428e8bd3a1ccebfbdc416"
     },
     "cue_boot_state": {
       "start_line": 580,

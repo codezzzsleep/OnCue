@@ -9,7 +9,7 @@
   },
   "id": "oncue-probe-storage",
   "integrity": {
-    "bundle_blake3": "21d68379da38182567e52483e029a1e87814b5798de9866ac1271ab7dfc9fb42"
+    "bundle_blake3": "a9aa50d9e04358ad532e9c596ca50f25f7fdc74d20518a5da24fddc5eba81cad"
   },
   "name": "OnCue controlled storage probe",
   "network": {

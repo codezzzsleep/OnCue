@@ -691,37 +691,37 @@ fn probe_deadline_observe(){
         probe_events.push({kind: "observed_not_busy", elapsed: elapsed, at: probe_timeout_at, state: probe_snapshot()})
         probe_checkpoint(false)
     }
-    if elapsed < 92.5 { start_timeout(0.10, fn(){ probe_deadline_observe() }) }
+    if elapsed < 152.5 { start_timeout(0.10, fn(){ probe_deadline_observe() }) }
 }
 fn probe_deadline(){
-    probe_reset("deadline_90_seconds_real_time")
+    probe_reset("deadline_150_seconds_real_time")
     probe_deadline_start = time_now()
     cue_rehearse()
     probe_deadline_revision = cue_revision
-    // Session-open is deliberately part of the same 90-second budget.
+    // Session-open is deliberately part of the same 150-second budget.
     start_timeout(5.0, fn(){
         probe_deliver(0, {is_ok: true, data: {}, error: ""})
         probe_checkpoint(false)
     })
-    start_timeout(80.0, fn(){
-        probe_assert("deadline.waiting_at_80", cue_busy && cue_revision == probe_deadline_revision && probe_count_service("octos.turn.start") == 1,
+    start_timeout(140.0, fn(){
+        probe_assert("deadline.waiting_at_140", cue_busy && cue_revision == probe_deadline_revision && probe_count_service("octos.turn.start") == 1,
             {elapsed: time_now() - probe_deadline_start, state: probe_snapshot()})
         probe_deliver(1, probe_bad_reply())
         probe_assert("deadline.same_revision_on_retry", cue_busy && cue_revision == probe_deadline_revision && probe_count_service("octos.turn.start") == 2,
             {elapsed: time_now() - probe_deadline_start, state: probe_snapshot()})
         probe_checkpoint(false)
     })
-    start_timeout(91.5, fn(){
-        probe_assert("deadline.original_budget_expired", !cue_busy && cue_revision > probe_deadline_revision && cue_summary == "" && cue_routes.len() == 0 && probe_count_service("octos.turn.interrupt") == 1 && ui.cue_status.text().search("90") >= 0,
+    start_timeout(151.5, fn(){
+        probe_assert("deadline.original_budget_expired", !cue_busy && cue_revision > probe_deadline_revision && cue_summary == "" && cue_routes.len() == 0 && probe_count_service("octos.turn.interrupt") == 1 && ui.cue_status.text().search("150") >= 0,
             {elapsed: time_now() - probe_deadline_start, state: probe_snapshot(), interrupts: probe_count_service("octos.turn.interrupt")})
         let observed_elapsed = probe_timeout_at - probe_deadline_start
-        probe_assert("deadline.timeout_elapsed", probe_timeout_at > 0.0 && observed_elapsed >= 89.5 && observed_elapsed <= 91.5,
+        probe_assert("deadline.timeout_elapsed", probe_timeout_at > 0.0 && observed_elapsed >= 149.5 && observed_elapsed <= 151.5,
             {observed_elapsed: observed_elapsed, tolerance_seconds: 1.5, clock: "time_now Unix seconds; external collector also uses monotonic time"})
         probe_before_late = probe_snapshot().to_json()
         probe_checkpoint(false)
     })
-    start_timeout(92.0, fn(){ probe_deliver(2, probe_good_reply()) })
-    start_timeout(93.0, fn(){
+    start_timeout(152.0, fn(){ probe_deliver(2, probe_good_reply()) })
+    start_timeout(153.0, fn(){
         probe_assert("deadline.late_callback_ignored", !cue_busy && probe_before_late == probe_snapshot().to_json(),
             {elapsed: time_now() - probe_deadline_start, state: probe_snapshot()})
         probe_assert("deadline.host_allowlist", probe_unexpected == 0, {unexpected: probe_unexpected})
