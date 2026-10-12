@@ -1299,6 +1299,7 @@
    "grounding.commitment_pending_line_rejected",
    "grounding.protocol_does_not_verify_semantics",
    "grounding.route_local_numeric_rejects_other_source",
+   "grounding.route_ref2_uses_uncited_number_rejected",
    "grounding.route_ordinal_not_numeric_source",
    "grounding.route_requires_one_basis_line",
    "grounding.route_requires_one_to_four_refs",

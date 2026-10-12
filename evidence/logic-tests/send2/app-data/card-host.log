@@ -1,6 +1,6 @@
 [I] /home/agentuser/oncue/makepad/platform/src/web_socket.rs:330:13 - studio websocket disabled: empty studio_http
-[makepad-remote] listening on 127.0.0.1:8424 pid=1302419 app=card-host grabs=/home/agentuser/.hermes/cache/scratch/makepad-remote/card-host-1302419
-[I] /home/agentuser/oncue/makepad/platform/src/remote.rs:550:9 - [makepad-remote] listening on 127.0.0.1:8424 pid=1302419 app=card-host grabs=/home/agentuser/.hermes/cache/scratch/makepad-remote/card-host-1302419
+[makepad-remote] listening on 127.0.0.1:8490 pid=1351239 app=card-host grabs=/home/agentuser/.hermes/cache/scratch/makepad-remote/card-host-1351239
+[I] /home/agentuser/oncue/makepad/platform/src/remote.rs:550:9 - [makepad-remote] listening on 127.0.0.1:8490 pid=1351239 app=card-host grabs=/home/agentuser/.hermes/cache/scratch/makepad-remote/card-host-1351239
 WAYLAND_DISPLAY: Not set
 DISPLAY: :99
 Selected: X11 backend
@@ -9,12 +9,12 @@ libEGL warning: DRI3 error: Could not get DRI3 device
 libEGL warning: Ensure your X server supports DRI3 to get accelerated rendering
 [I] /home/agentuser/oncue/makepad/platform/src/cx.rs:684:9 - memory budget: 3811 MiB (/proc/meminfo MemTotal)
 [I] /home/agentuser/oncue/makepad/platform/src/thread.rs:928:9 - UI thread priority UserInteractive: Applied
-[I] crates/card-host/src/host.rs:108:9 - card-host: stamped /tmp/oncue-logic-final.fopg7p/send2/bundle/manifest.json with digest 2013695e8fad68e5e40bcb82f4db4d715913005b523b8ff7486913e8dafdb0d8
+[I] crates/card-host/src/host.rs:108:9 - card-host: stamped /tmp/oncue-logic-p3.mPvO5E/send2/bundle/manifest.json with digest dcbd7b360238908a41acc07114b978a0be53a7c3ccc25be5baa9a75401facd34
 [I] crates/card-host/src/host.rs:364:9 - card-host: oncue-probe-send2 0.5.3 admitted — capabilities {"storage"}, hosts {}, storage 4194304 bytes, agent none
-[I] crates/card-host/src/host.rs:396:9 - card-host: isolate jailed at /tmp/oncue-logic-final.fopg7p/send2/app-data/oncue-probe-send2 with 4194304 bytes, 1 capability(ies), 1 host(s), 20000000 instructions, 33554432 bytes of heap, prompts true — all enforced
-[I] /home/agentuser/oncue/makepad/widgets/src/splash.rs:416:9 - [SPLASH] eval: 362425 bytes preserve=false view=true animating=false tick=false epoch=0
+[I] crates/card-host/src/host.rs:396:9 - card-host: isolate jailed at /tmp/oncue-logic-p3.mPvO5E/send2/app-data/oncue-probe-send2 with 4194304 bytes, 1 capability(ies), 1 host(s), 20000000 instructions, 33554432 bytes of heap, prompts true — all enforced
+[I] /home/agentuser/oncue/makepad/widgets/src/splash.rs:416:9 - [SPLASH] eval: 365986 bytes preserve=false view=true animating=false tick=false epoch=0
 [I] /home/agentuser/oncue/makepad/platform/src/os/linux/opengl.rs:2139:13 - Makepad GL: vendor="Mesa" renderer="llvmpipe (LLVM 20.1.2, 256 bits)" version="OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.3" glsl="OpenGL ES GLSL ES 3.20" sampler_objects=true
 [I] /home/agentuser/oncue/makepad/platform/src/os/linux/opengl.rs:502:13 - retained-upload budgets: adapter_bytes=0 process_allowance=3997120512 allocation_limit=999280128 source=process_allowance_fallback
 [E] /home/agentuser/oncue/makepad/platform/src/os/linux/pulse_audio.rs:749:17 - PulseAudio: pa_context_connect failed (Connection refused), using ALSA only
 [makepad-remote] remote quit
-[I] /home/agentuser/oncue/makepad/platform/src/thread.rs:942:13 - pool: 2 workers (1 light-only, 2 started), 110 jobs, peak queue light 0 / heavy 3; light 0: wait avg 0.00 ms max 0.00 ms, run avg 0.0 ms max 0.0 ms; heavy 110: wait avg 0.35 ms max 8.96 ms, run avg 0.0 ms max 0.0 ms; priority applied 2/2 (light UserInitiated / heavy Utility); light >2ms 0 offenders=[] overflow=0; heavy >250ms offenders=[]
+[I] /home/agentuser/oncue/makepad/platform/src/thread.rs:942:13 - pool: 2 workers (1 light-only, 2 started), 130 jobs, peak queue light 0 / heavy 3; light 0: wait avg 0.00 ms max 0.00 ms, run avg 0.0 ms max 0.0 ms; heavy 130: wait avg 0.06 ms max 0.45 ms, run avg 0.0 ms max 0.2 ms; priority applied 2/2 (light UserInitiated / heavy Utility); light >2ms 0 offenders=[] overflow=0; heavy >250ms offenders=[]

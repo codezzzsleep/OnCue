@@ -9,8 +9,11 @@ let cue_tok_memo_in = ""
 let cue_tok_memo_out = []
 let cue_ground_memo_key = ""
 let cue_ground_memo_text = ""
-// 本次回复的允许数字集合：分词沿计时器链逐条来源累积，单回调只做一小段。
+// 本次回复的数字分词缓存：每条勾选来源一次，沿计时器链逐条累积。
+// 路线核对用其依据消息的缓存并集加用户输入；推荐核对用全部勾选来源的并集。
 let cue_reply_num_tokens = nil
+let cue_prep_num_map = nil
+let cue_user_num_tokens = []
 let cue_demo = true
 let cue_busy = false
 let cue_revision = 0
@@ -1666,9 +1669,9 @@ fn cue_demo_routes(){
     }
     cue_rec_pick = -1
     cue_routes = [
-        {title: "顺着这句", body: first_body, draft: first_draft},
-        {title: "换个问法", body: "虚构回应 1：给两个方向更容易选。\n虚构回应 2：中午去杭州当天回，或半日游。\n虚构回应 3：都先核实费用再挑。\n依据：#2、#3；结果未知。", draft: "两方向：A 中午去杭州当天回；B 附近半日游。"},
-        {title: "换个玩法", body: "虚构回应 1：每人给一个想做的事找交集。\n虚构回应 2：可以玩，中午以后再开始。\n虚构回应 3：终点别太远，想当天回家。\n依据：#4 弹性；这项新提议未获同意。", draft: "半日旅行盲盒：每人给一件事，12 点后出发。"}
+        {title: "顺着这句", body: first_body, draft: first_draft, failed: false, reason: ""},
+        {title: "换个问法", body: "虚构回应 1：给两个方向更容易选。\n虚构回应 2：中午去杭州当天回，或半日游。\n虚构回应 3：都先核实费用再挑。\n依据：#2、#3；结果未知。", draft: "两方向：A 中午去杭州当天回；B 附近半日游。", failed: false, reason: ""},
+        {title: "换个玩法", body: "虚构回应 1：每人给一个想做的事找交集。\n虚构回应 2：可以玩，中午以后再开始。\n虚构回应 3：终点别太远，想当天回家。\n依据：#4 弹性；这项新提议未获同意。", draft: "半日旅行盲盒：每人给一件事，12 点后出发。", failed: false, reason: ""}
     ]
     if cue_goal == "礼貌拒绝" {
         cue_routes[0].draft = "谢谢邀请，这次我先不参加，不替大家决定安排。"
@@ -1695,7 +1698,7 @@ fn cue_prompt(trial){
     rules += "完整输出七节，按顺序且各一次：【摘要】【A对白】【A建议】【B对白】【B建议】【C对白】【C建议】。各标记独占一行，不写任何@@@分隔符。摘要最多4个消息编号，每行一个。每段对白四行：虚构回应甲：…、虚构回应乙：…、依据：#编号（最多4个）、待确认：…？。依据只引用本次提供的ID，不得为空。每条建议为一行、150字以内；每句虚构回应45字以内，全文500字以内。\n"
     rules += "七节之后追加一节【推荐】：第一行只写 A、B 或 C，是你建议本人采用的路线；第二行可选，写「理由：…」，40字以内。没有把握就只写推荐字母。\n"
     rules += "每路线里的数字/单位只能来自其依据列出的消息，或用户明确提出的台词/目标；这些提议不是已经确认的事实。不要新增价格、时间、人数、概率或执行承诺。不把不同消息的数值拼接，不改变单位。不写已同意/已确认/已付款等结果，询问用‘是否可以’而非宣称完成。原文与推断分开。不要提‘消息1’或在对白重复编号，编号仅写到依据行；不讨论路线序号和数量。无需重复具体数字时用‘预算范围’‘时间安排’等概括，引用仍须有效；若重复数字或数量，必须保持原文写法，例如‘一晚’不可改成‘1晚’。\n"
-    rules += "建议节必须是用户可直接放进群聊的一句话，用本人视角表达；不要写‘A建议…’、‘建议用户…’或分析说明。对白每行只写一句简短假设，不做长篇总结。严格保留中文括号【】及#，不要用Markdown标题或代码围栏。下面是输出形状，省略号须替换成内容，#编号须替换成本次有效ID：\n【摘要】\n#编号\n【A对白】\n虚构回应甲：…\n虚构回应乙：…\n依据：#编号\n待确认：…？\n【A建议】\n…\n【B对白】\n虚构回应甲：…\n虚构回应乙：…\n依据：#编号\n待确认：…？\n【B建议】\n…\n【C对白】\n虚构回应甲：…\n虚构回应乙：…\n依据：#编号\n待确认：…？\n【C建议】\n…\n"
+    rules += "建议节必须是用户可直接放进群聊的一句话，用本人视角表达；不要写‘A建议…’、‘建议用户…’或分析说明。建议里不能出现「#」、编号或「消息N」；要提到某条消息时，直接转述内容，例如「有人说不参加」。对白每行只写一句简短假设，不做长篇总结。严格保留中文括号【】及#，不要用Markdown标题或代码围栏。下面是输出形状，省略号须替换成内容，#编号须替换成本次有效ID：\n【摘要】\n#编号\n【A对白】\n虚构回应甲：…\n虚构回应乙：…\n依据：#编号\n待确认：…？\n【A建议】\n…\n【B对白】\n虚构回应甲：…\n虚构回应乙：…\n依据：#编号\n待确认：…？\n【B建议】\n…\n【C对白】\n虚构回应甲：…\n虚构回应乙：…\n依据：#编号\n待确认：…？\n【C建议】\n…\n"
     rules += "本次数据字段顺序为：消息列表、本人想说的话、表达目标、补充边界。只依据这些数据填充上述格式：" + [cue_source_payload().parse_json(), trial, cue_goal, ui.cue_goal_note.text()].to_json()
     rules
 }
@@ -2190,8 +2193,8 @@ fn cue_commitments_grounded(text, allowed){
 }
 fn cue_grounding_pieces(){
     let pieces = []
-    for i in cue_sources.len() { if cue_source_enabled(i) { pieces.push(cue_sources[i].body) } }
-    pieces.push(ui.cue_trial.text() + "\n" + ui.cue_goal_note.text())
+    for i in cue_sources.len() { if cue_source_enabled(i) { pieces.push({i: i, text: cue_sources[i].body}) } }
+    pieces.push({i: -1, text: ui.cue_trial.text() + "\n" + ui.cue_goal_note.text()})
     pieces
 }
 // 与 cue_numbers_in 同规则，但允许数字集合来自链上累积（probe 仍走 cue_numbers_in）。
@@ -2306,7 +2309,9 @@ fn cue_accept_reply(reply, request_revision, attempt){
     // 所以每步开头都重新检查请求有效性。
     if !cue_validate_structure(blocks) { cue_validation_failed(request_revision, attempt) return }
     cue_reply_num_tokens = []
-    cue_route_check = {blocks: blocks, rec: rec, revision: request_revision, attempt: attempt, prep: cue_grounding_pieces()}
+    cue_prep_num_map = {}
+    cue_user_num_tokens = []
+    cue_route_check = {blocks: blocks, rec: rec, revision: request_revision, attempt: attempt, prep: cue_grounding_pieces(), rejects: ["", "", ""]}
     start_timeout(0.01, fn(){ cue_validate_step(-2, 0) })
 }
 // cue_validate_protocol 的结构部分（七节完整、标记顺序、摘要编号存在），
@@ -2336,8 +2341,10 @@ fn cue_validate_step(route_index, phase){
             let rest = []
             for k in check.prep.len() { if k > 0 { rest.push(check.prep[k]) } }
             check.prep = rest
-            let toks = cue_numeric_tokens(cue_strip_refs(piece))
+            let toks = cue_numeric_tokens(cue_strip_refs(piece.text))
             for t in toks { cue_reply_num_tokens.push(t) }
+            if piece.i < 0 { cue_user_num_tokens = toks }
+            else { cue_prep_num_map["" + piece.i] = toks }
             start_timeout(0.01, fn(){ cue_validate_step(-2, 0) })
             return
         }
@@ -2362,35 +2369,53 @@ fn cue_validate_step(route_index, phase){
     // 每条路线分三相：格式/引用、数字、承诺句；每相各占一个回调额度。
     if phase == 0 {
         if !cue_validate_route_core(body, draft) {
-            cue_route_check = nil
-            cue_validation_failed(check.revision, check.attempt)
+            check.rejects[route_index] = cue_reject_reason
+            cue_validate_next(check, route_index)
             return
         }
         start_timeout(0.01, fn(){ cue_validate_step(route_index, 1) })
         return
     }
     if phase == 1 {
-        // 核对规则是「数值须逐字出现在勾选来源或用户输入里」：允许集合由链上准备。
+        // 数字口径：本路线依据列出的消息（逐条缓存的并集）加上用户输入。
+        let refs = cue_route_refs(body)
+        let route_tokens = []
+        for i in cue_sources.len() {
+            let id = "#" + (i + 1)
+            let cited = false
+            for r in refs { if r == id { cited = true } }
+            if cited && cue_prep_num_map["" + i] != nil {
+                for t in cue_prep_num_map["" + i] { route_tokens.push(t) }
+            }
+        }
+        for t in cue_user_num_tokens { route_tokens.push(t) }
         cue_reject_reason = "数字：数值或单位不在本路线依据及用户明确提议中"
-        if !cue_numbers_in_pre(body + "\n" + draft, cue_reply_num_tokens) {
-            cue_route_check = nil
-            cue_validation_failed(check.revision, check.attempt)
+        if !cue_numbers_in_pre(body + "\n" + draft, route_tokens) {
+            check.rejects[route_index] = cue_reject_reason
+            cue_validate_next(check, route_index)
             return
         }
         start_timeout(0.01, fn(){ cue_validate_step(route_index, 2) })
         return
     }
     if !cue_commitments_grounded(body + "\n" + draft, cue_grounding_allowed()) {
-        cue_route_check = nil
-        cue_validation_failed(check.revision, check.attempt)
-        return
+        check.rejects[route_index] = cue_reject_reason
     }
+    cue_validate_next(check, route_index)
+}
+// 某条路线不过关就只丢这一条；三条全不过才走自动重试（cue_validation_failed）。
+fn cue_validate_next(check, route_index){
     if route_index < 2 {
         start_timeout(0.01, fn(){ cue_validate_step(route_index + 1, 0) })
         return
     }
+    let blocks = check.blocks
+    let rec = check.rec
+    let revision = check.revision
+    let attempt = check.attempt
+    let rejects = check.rejects
     cue_route_check = nil
-    cue_routes_accepted(blocks, check.rec, check.revision)
+    cue_routes_accepted(blocks, rec, revision, attempt, rejects)
 }
 // 失败路径与拆分前逐字相同：重试一次或如实终止。
 fn cue_validation_failed(request_revision, attempt){
@@ -2404,46 +2429,68 @@ fn cue_validation_failed(request_revision, attempt){
     cue_set_status("助手候选未采用：" + cue_reject_reason + "。已用完一次修复，可改输入后重试或手工编辑。")
 }
 // 三条路线都通过后的采用，与拆分前相同。
-fn cue_routes_accepted(blocks, rec, request_revision){
-        let markers = cue_protocol_markers()
-        for i in blocks.len() { blocks[i] = blocks[i].strip_prefix(markers[i]).trim() }
-        cue_set_busy(false)
-        cue_rec_pick = rec.index
-        cue_routes = [
-            {title: "顺着这句", body: blocks[1], draft: blocks[2]},
-            {title: "换个问法", body: blocks[3], draft: blocks[4]},
-            {title: "换个玩法", body: blocks[5], draft: blocks[6]}
-        ]
-        cue_result_key = cue_request_key
-        cue_select_preview(0)
-        cue_summary = cue_source_excerpt(blocks[0])
-        cue_sync_message()
-        cue_sync_workspace()
-        // 0.5.3: the recommended route goes straight to the draft, but only after
-        // the same freshness re-check that manual adoption uses.
-        let pick = 0
-        let note_core = "助手未给推荐，默认第一条"
-        if rec.index >= 0 {
+fn cue_routes_accepted(blocks, rec, request_revision, attempt, rejects){
+    let markers = cue_protocol_markers()
+    for i in blocks.len() { blocks[i] = blocks[i].strip_prefix(markers[i]).trim() }
+    let failed = [false, false, false]
+    let failed_count = 0
+    let first_reason = ""
+    for i in 3 {
+        if rejects[i] != "" {
+            failed[i] = true
+            failed_count += 1
+            if first_reason == "" { first_reason = rejects[i] }
+        }
+    }
+    if failed_count == 3 {
+        cue_reject_reason = first_reason
+        cue_validation_failed(request_revision, attempt)
+        return
+    }
+    cue_set_busy(false)
+    cue_routes = [
+        {title: "顺着这句", body: blocks[1], draft: blocks[2], failed: failed[0], reason: rejects[0]},
+        {title: "换个问法", body: blocks[3], draft: blocks[4], failed: failed[1], reason: rejects[1]},
+        {title: "换个玩法", body: blocks[5], draft: blocks[6], failed: failed[2], reason: rejects[2]}
+    ]
+    cue_result_key = cue_request_key
+    // 字母保持 A、B、C 原位；放进草稿的是第一条通过的路线。
+    let letters = ["A", "B", "C"]
+    let pick = -1
+    for i in 3 { if pick < 0 && !failed[i] { pick = i } }
+    let note_core = "助手未给推荐，默认第一条"
+    if rec.index >= 0 {
+        if !failed[rec.index] {
             pick = rec.index
-            let letter = "A"
-            if pick == 1 { letter = "B" }
-            if pick == 2 { letter = "C" }
-            note_core = "推荐 " + letter
+            note_core = "推荐 " + letters[pick]
             if rec.reason != "" { note_core += "（" + rec.reason + "）" }
+        } else {
+            note_core = "推荐的 " + letters[rec.index] + " 没通过核对，已改用 " + letters[pick]
         }
-        cue_stage_log = "核对通过 · " + note_core
-        if ui.cue_draft.text().trim() != "" && cue_editor_origin != "model" {
-            cue_set_status("三种说法好了。" + note_core + "；草稿框已有内容，未覆盖；点「选用这句」采用。")
-            return
+    }
+    cue_rec_pick = pick
+    cue_select_preview(pick)
+    cue_summary = cue_source_excerpt(blocks[0])
+    cue_sync_message()
+    cue_sync_workspace()
+    // 0.5.3: the recommended route goes straight to the draft, but only after
+    // the same freshness re-check that manual adoption uses.
+    let head = "三种说法好了。"
+    if failed_count == 1 { head = "两种说法好了。" }
+    if failed_count == 2 { head = "一种说法好了。" }
+    cue_stage_log = "核对通过 · " + note_core
+    if ui.cue_draft.text().trim() != "" && cue_editor_origin != "model" {
+        cue_set_status(head + note_core + "；草稿框已有内容，未覆盖；点「选用这句」采用。")
+        return
+    }
+    cue_fresh_check(cue_route_window, fn(){
+        if pick < cue_routes.len() && cue_result_key == cue_context_key() {
+            cue_choose_route_ready(pick)
+            cue_stage_log = "核对通过 · 新消息 0 · " + note_core
+            cue_set_status(head + note_core + "；已放进草稿框。")
+            cue_sync_workspace()
         }
-        cue_fresh_check(cue_route_window, fn(){
-            if pick < cue_routes.len() && cue_result_key == cue_context_key() {
-                cue_choose_route_ready(pick)
-                cue_stage_log = "核对通过 · 新消息 0 · " + note_core
-                cue_set_status("三种说法好了。" + note_core + "；已放进草稿框。")
-                cue_sync_workspace()
-            }
-        })
+    })
 }
 // cue_validate_route 去掉最后的承诺句检查：拆分校验时承诺句单独占一个回调。
 fn cue_validate_route_core(body, draft){
@@ -2462,7 +2509,7 @@ fn cue_validate_route_core(body, draft){
         for id in refs { if token == id { found = true } }
         if !found { return false }
     }
-    // 数字检查单独一相（cue_validate_step phase 1），不在本回调里做。
+    // 数字与承诺句各单独一相（cue_validate_step phase 1/2），不在本回调里做。
     true
 }
 fn cue_rehearse(){
@@ -2496,6 +2543,7 @@ fn cue_rehearse(){
 }
 fn cue_choose_route(index){
     if index < 0 || index >= cue_routes.len() || cue_result_key != cue_context_key() { cue_set_status("请先生成当前来源与目标的候选。") return }
+    if cue_routes[index].failed == true { cue_set_status("这条没通过核对：" + cue_routes[index].reason) return }
     if cue_demo { cue_choose_route_ready(index) return }
     let candidate = cue_routes[index].to_json()
     cue_fresh_check(cue_route_window, fn(){
@@ -2698,6 +2746,7 @@ fn cue_select_preview(index){
         cue_set_status("先点试映下一幕，生成三条假设路线。")
         return
     }
+    if cue_routes[index].failed == true { cue_set_status("这条没通过核对，没有可看的对白。") return }
     cue_pause_playback()
     cue_play_index = index
     cue_play_lines = cue_routes[index].body.split("\n")
@@ -3334,20 +3383,32 @@ SolidView{width: Fill height: Fill flow: Down padding: 10 spacing: 8 new_batch: 
                             // row, so a take and its buttons stay on screen together in a 448px window.
                             // The take is model text: regular face, which covers every character.
                             RoundedView{width: Fill height: Fit flow: Down padding: 10 spacing: 4 new_batch: true draw_bg.color: card_bg draw_bg.border_radius: 10.0 draw_bg.border_size: card_line draw_bg.border_color: cue_green
-                                CueText{text: route.title + "：" + route.draft draw_text.color: cue_ink draw_text.text_style: CueRegular{font_size: 12}}
-                                CueText{text: "相关原文片段：\n" + cue_refs_excerpt(cue_route_refs(route.body)) draw_text.color: cue_muted draw_text.text_style.font_size: 10}
+                                let line1 = route.title + "：" + route.draft
+                                let line1_color = cue_ink
+                                if route.failed {
+                                    line1 = letter + " 这条没通过核对：" + route.reason
+                                    line1_color = #xa34c24
+                                }
+                                CueText{text: line1 draw_text.color: line1_color draw_text.text_style: CueRegular{font_size: 12}}
+                                let excerpt_line = "相关原文片段：\n" + cue_refs_excerpt(cue_route_refs(route.body))
+                                if route.failed { excerpt_line = "" }
+                                CueText{text: excerpt_line draw_text.color: cue_muted draw_text.text_style.font_size: 10}
                                 View{width: Fill height: Fit flow: Right spacing: 4 align: Align{y: 0.5}
                                     RoundedView{width: Fit height: Fit padding: Inset{left: 8 right: 8 top: 2 bottom: 2} new_batch: true draw_bg.color: cue_blue_soft draw_bg.border_radius: 6.0
                                         Label{text: letter draw_text.color: cue_green draw_text.text_style: CueBold{font_size: 10}}
                                     }
                                     if i == cue_rec_pick {
                                         RoundedView{width: Fit height: Fit padding: Inset{left: 8 right: 8 top: 2 bottom: 2} new_batch: true draw_bg.color: cue_green draw_bg.border_radius: 6.0
-                                            Label{text: "推荐" draw_text.color: #xffffff draw_text.text_style: CueBold{font_size: 10}}
+                                            Label{text: "推荐" draw_text.color: #ffffff draw_text.text_style: CueBold{font_size: 10}}
                                         }
                                     }
+                                    if !route.failed {
                                     if cue_fresh_state == "stale" || cue_io_busy || cue_send_latch || cue_send_phase == "confirm" { CueDisabled{text: "选用这句"} }
-                                    else { CueButton{text: "选用这句" on_click: || cue_choose_route(i)} }
+                                    else {
+                                    CueButton{text: "选用这句" on_click: || cue_choose_route(i)}
                                     CueLink{text: "查看假设对白" on_click: || cue_select_preview(i)}
+                                    }
+                                    }
                                 }
                             }
                         }

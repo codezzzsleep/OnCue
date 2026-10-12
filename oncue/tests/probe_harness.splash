@@ -408,7 +408,8 @@ fn probe_wait_for_turns(want, tries, done){
 fn probe_retry_repair(){
     let revision = cue_revision
     probe_begin("grounded_retry_hint")
-    probe_deliver(1, probe_reply("【摘要】\n#1\n@@@\n【A对白】\n虚构回应甲：人均 80 元。\n虚构回应乙：待确认。\n依据：#1\n待确认：预算\n@@@\n【A建议】\n几点出发比较方便？\n@@@\n【B对白】\n虚构回应甲：看 #1 的时间。\n虚构回应乙：待确认。\n依据：#1\n待确认：时间\n@@@\n【B建议】\n当天回来吗？\n@@@\n【C对白】\n虚构回应甲：按预算 500 排一版。\n虚构回应乙：待确认。\n依据：#1\n待确认：行程\n@@@\n【C建议】\n先按 9 点碰头可以吗？"))
+    // 按路线收以后，三条都带未落地数字才会整体重试。
+    probe_deliver(1, probe_reply("【摘要】\n#1\n@@@\n【A对白】\n虚构回应甲：人均 80 元。\n虚构回应乙：待确认。\n依据：#1\n待确认：预算\n@@@\n【A建议】\n几点出发比较方便？\n@@@\n【B对白】\n虚构回应甲：人均 80 元。\n虚构回应乙：待确认。\n依据：#1\n待确认：时间\n@@@\n【B建议】\n当天回来吗？\n@@@\n【C对白】\n虚构回应甲：人均 80 元。\n虚构回应乙：待确认。\n依据：#1\n待确认：行程\n@@@\n【C建议】\n先按 9 点碰头可以吗？"))
     // 内容级失败在分片链里异步发生：等重试真正发出（turn.start 第二次）再读提示。
     probe_wait_for_turns(2, 80, fn(){ probe_retry_hint_issued() })
 }
@@ -743,7 +744,9 @@ fn probe_playback(){
     cue_next_line()
     cue_restart_playback()
     probe_assert("playback.empty_route_controls", !cue_playing && cue_play_count == 0 && cue_ws_text() == "" && cue_routes.len() == 0, probe_playback_state())
-    cue_routes = probe_fixtures.playback_routes
+    let proutes = []
+    for r in probe_fixtures.playback_routes { proutes.push({title: r.title, body: r.body, draft: r.draft, failed: false, reason: ""}) }
+    cue_routes = proutes
     cue_select_preview(0)
     probe_assert("playback.select_starts_hidden", cue_play_index == 0 && cue_play_count == 0 && !cue_playing && cue_read_mode == 0 && cue_ws_page == 0 && cue_play_lines.len() == 5 && cue_ws_text().search("点击") >= 0, probe_playback_state())
     let before_invalid = probe_playback_state().to_json()
@@ -1127,6 +1130,8 @@ fn probe_grounding_commitments(){
 fn probe_grounding_routes(){
     // Route-local sources cannot borrow numeric values from another selected row.
     probe_assert("grounding.route_local_numeric_rejects_other_source", !cue_validate_route(probe_route_body("虚构回应甲：稍后讨论。\n依据：#2"), "预算500元。"), {})
+    // 复审要求：引用 #2 却用只在其他来源出现的数字，必须拒收。
+    probe_assert("grounding.route_ref2_uses_uncited_number_rejected", !cue_validate_route(probe_route_body("虚构回应甲：稍后讨论。\n依据：#2"), "9 点集合。"), {})
     probe_assert("grounding.route_ordinal_not_numeric_source", !cue_validate_route(probe_route_body("虚构回应甲：稍后讨论。\n依据：#2"), "先列2。"), {})
     probe_assert("grounding.route_requires_one_basis_line", !cue_validate_route(probe_route_body("虚构回应甲：参考#2。"), "稍后讨论。") && !cue_validate_route(probe_route_body("依据：#2\n依据：#3"), "稍后讨论。"), {})
     probe_assert("grounding.route_requires_one_to_four_refs", !cue_validate_route(probe_route_body("依据："), "稍后讨论。") && !cue_validate_route(probe_route_body("依据：#1、#2、#3、#4、#5"), "稍后讨论。"), {})
