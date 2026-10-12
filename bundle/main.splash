@@ -91,6 +91,7 @@ let cue_consent_caption = ""
 let cue_react_caption = ""
 // 复审 P：「去核对」切换到只含完整正文与确认按钮的核对视图，不靠滚动碰运气。
 let cue_confirm_view = false
+let cue_layout_confirm = false
 // 外部审查 D：每次等待发自己的闹钟序号；同 revision 的下一次请求不共享上一次的 90 秒。
 let cue_deadline_seq = 0
 let cue_route_window = nil
@@ -168,6 +169,12 @@ fn cue_stage_confirm_text(){
     "将发到 " + cue_scene + "：" + cue_prefix(cue_send_confirmation.body, 30) + "…"
 }
 fn cue_sync_workspace(){
+    let show_confirm = cue_confirm_view && cue_send_confirmation != nil
+    if cue_layout_confirm != show_confirm {
+        cue_layout_confirm = show_confirm
+        ui.cue_confirm_section.set_visible(show_confirm)
+        ui.app_scroll.set_visible(!show_confirm)
+    }
     cue_stage_display = cue_stage_text()
     cue_consent_caption = "会把勾选的 " + cue_selected_count() + " 条消息、你的台词和目标发给宿主助手。"
     if cue_reaction_rows.len() > 0 {
@@ -505,7 +512,11 @@ fn cue_clear_routes(){
     cue_sync_reader()
 }
 fn cue_invalidate(){
+    // Context changes invalidate an in-flight confirmation, but the restored
+    // unknown-send marker belongs to the draft and must survive this change.
+    let keep_sent = cue_editor_sent
     cue_send_editor_changed()
+    cue_editor_sent = keep_sent
     cue_revision += 1
     cue_summary = ""
     cue_result_key = ""
@@ -943,7 +954,12 @@ fn cue_extract_recommendation(blocks){
     if choice == "A" { result.index = 0 }
     if choice == "B" { result.index = 1 }
     if choice == "C" { result.index = 2 }
-    if reason.to_chars().len() > 40 { result.index = -1 reason = "" }
+    // A recommendation reason is displayed as product guidance, so apply the
+    // same numeric and commitment grounding gates as route content.
+    if reason.to_chars().len() > 40 || !cue_numbers_in(reason, cue_grounding_allowed()) || !cue_commitments_grounded(reason, cue_grounding_allowed()) {
+        result.index = -1
+        reason = ""
+    }
     if result.index >= 0 { result.reason = reason }
     result
 }
@@ -1432,20 +1448,34 @@ fn cue_send_reread(){
         let meta = cue_editor_sent.to_json().parse_json()
         cue_send_allow_resend = false
         cue_send_resend_of = -1
+        let expected = meta[4]
+        if expected.to_chars().len() > 500 { expected = cue_send_prefix(expected) }
         cue_send_notice("仅重新读取原请求的结果，不会再次发送。")
         cue_checked_window(cue_binding(), true, true, fn(error, window, own){
             if error != "" { cue_set_status(error) cue_sync_workspace() return }
             let matches = []
             for i in window.rows.len() {
                 let row = window.rows[i]
-                if row.sender_id == own && row.body == meta[4] && row.ts >= meta[2] { matches.push(row) }
+                if row.ts != nil && row.ts.is_number() {
+                    let sent_ms = meta[2]
+                    // Matrix rows use epoch milliseconds; older saved records
+                    // used time_now() seconds. Convert only the saved value.
+                    if sent_ms < 100000000000 { sent_ms *= 1000.0 }
+                    if row.sender_id == own && row.msgtype == "m.text" && row.body == expected && row.ts >= sent_ms { matches.push(row) }
+                }
             }
             if matches.len() == 1 {
-                let expected = []
-                if meta.len() > 5 && meta[5].is_array() { expected = meta[5] }
-                cue_editor_sent = ["OC_SEND_1", "observed_full", matches[0].ts, matches[0].event_id, meta[4], expected]
-                cue_send_phase = "idle"
-                cue_set_status("读回时看到了这条（事件已核对），视为已发到；不要再发一遍。")
+                let expected_routes = []
+                if meta.len() > 5 && meta[5].is_array() { expected_routes = meta[5] }
+                let kind = "observed_full"
+                let status = "读回时看到了这条（事件已核对），视为已发到；不要再发一遍。"
+                if meta[4].to_chars().len() > 500 {
+                    kind = "observed_prefix500"
+                    status = "读回时确认本人新增消息前500字一致；后续正文未能回读核对，发送保持关闭。"
+                }
+                cue_editor_sent = ["OC_SEND_1", kind, matches[0].ts, matches[0].event_id, meta[4], expected_routes]
+                cue_send_phase = kind
+                cue_set_status(status)
                 cue_sync_workspace()
                 return
             }
@@ -2886,70 +2916,109 @@ fn cue_read_take(slot){
 
 start_timeout(0.05, fn(){ cue_show_demo() cue_boot_state() cue_boot_autoload() })
 
-let cue_ink = #x193629
-let cue_muted = #x53675a
-let cue_green = #x136c47
+// OnCue visual system: pearl surfaces, blue actions, and quiet ink typography.
+// Portable OFL sans subsets lead; complete host families retain rare CJK/symbol/emoji coverage.
+let CueRegular = theme.font_regular{font_family: FontFamily{
+    latin := FontMember{res: http_resource("{{assets}}/fonts/oncue-sans-regular.otf") asc: 0.0 desc: 0.0}
+    symbols := FontMember{res: crate_resource("makepad_widgets:resources/NotoSans-Regular.ttf") asc: 0.0 desc: 0.0}
+    cjk := FontMember{res: crate_resource("makepad_widgets:resources/LXGWWenKaiRegular.ttf") asc: 0.0 desc: 0.0}
+    emoji := FontMember{res: crate_resource("makepad_widgets:resources/NotoColorEmoji.ttf") asc: 0.0 desc: 0.0}
+} line_spacing: 1.2}
+let CueBold = theme.font_bold{font_family: FontFamily{
+    latin := FontMember{res: http_resource("{{assets}}/fonts/oncue-sans-bold.otf") asc: 0.0 desc: 0.0}
+    body_fallback := FontMember{res: http_resource("{{assets}}/fonts/oncue-sans-regular.otf") asc: 0.0 desc: 0.0}
+    symbols := FontMember{res: crate_resource("makepad_widgets:resources/NotoSans-Regular.ttf") asc: 0.0 desc: 0.0}
+    cjk := FontMember{res: crate_resource("makepad_widgets:resources/LXGWWenKaiBold.ttf") asc: 0.0 desc: 0.0}
+    emoji := FontMember{res: crate_resource("makepad_widgets:resources/NotoColorEmoji.ttf") asc: 0.0 desc: 0.0}
+} line_spacing: 1.2}
+let cue_ink = #x203644
+let cue_muted = #x637683
+let cue_green = #x236bc0
+let cue_canvas = #xeff5f6
+let cue_surface = #xffffff
+let cue_soft = #xf4f8fa
+let cue_border = #xdce6eb
 let CueButton = ButtonFlat{
-    height: 28 padding: Inset{left: 8 right: 8}
-    draw_bg +: {border_radius: 7.0 color: #xe5eee7 color_hover: #xd7e7db color_down: #xc7dccd color_focus: #xe5eee7 border_size: 0.0}
-    draw_text +: {color: cue_ink color_hover: cue_ink color_down: cue_ink color_focus: cue_ink text_style.font_size: 11}
+    height: 30 padding: Inset{left: 11 right: 11}
+    draw_bg +: {border_radius: 8.0 color: #xeaf1f6 color_hover: #xdce9f3 color_down: #xcbddec color_focus: #xdce9f3 border_size: 0.0}
+    draw_text +: {color: cue_ink color_hover: cue_ink color_down: cue_ink color_focus: cue_ink text_style: CueRegular{font_size: 11}}
 }
 let CuePrimary = CueButton{
-    draw_bg +: {color: cue_green color_hover: cue_green color_down: #x0b5536 color_focus: cue_green}
-    draw_text +: {color: #xffffff color_hover: #ffffff color_down: #ffffff color_focus: #xffffff}
+    draw_bg +: {color: cue_green color_hover: #x185dae color_down: #x134c90 color_focus: #x185dae}
+    draw_text +: {color: #xffffff color_hover: #xffffff color_down: #xffffff color_focus: #xffffff text_style: CueBold{font_size: 11}}
 }
 let CueDisabled = CueButton{
-    draw_bg +: {color: #xe5e5e5 color_hover: #xe5e5e5 color_down: #xe5e5e5 color_focus: #xe5e5e5}
-    draw_text +: {color: #x888888 color_hover: #x888888 color_down: #x888888 color_focus: #x888888}
+    draw_bg +: {color: #xeef2f5 color_hover: #xeef2f5 color_down: #xeef2f5 color_focus: #xeef2f5}
+    draw_text +: {color: #x8796a1 color_hover: #x8796a1 color_down: #x8796a1 color_focus: #x8796a1}
 }
 let CueLink = CueButton{
     padding: Inset{left: 6 right: 6}
-    draw_bg +: {color: #xffffff color_hover: #xe5eee7 color_down: #xd7e7db color_focus: #ffffff}
+    draw_bg +: {color: #xffffff color_hover: #xeaf1f6 color_down: #xdce9f3 color_focus: #xeaf1f6}
     draw_text +: {color: cue_green color_hover: cue_green color_down: cue_green color_focus: cue_green}
 }
 let CueText = P{
     width: Fill height: Fit draw_text.color: cue_ink
-    draw_text.text_style.font_size: 13
+    draw_text.text_style: CueRegular{font_size: 12 line_spacing: 1.25}
 }
 let CueCard = RoundedView{
-    width: Fill height: Fit flow: Down padding: Inset{left: 10 right: 10 top: 6 bottom: 6} spacing: 3 new_batch: true draw_bg.color: #xffffff
+    width: Fill height: Fit flow: Down padding: Inset{left: 12 right: 12 top: 10 bottom: 10} spacing: 5 new_batch: true
+    draw_bg +: {color: cue_surface border_radius: 12.0 border_size: 1.0 border_color: cue_border}
 }
-let CueCap = Label{draw_text.color: cue_green draw_text.text_style: theme.font_bold{font_size: 11}}
-SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: true draw_bg.color: #xf5f7f3
-    // 标题和状态条：够宽时并排，不够宽时状态条换到下一行。
+let CueCap = Label{draw_text.color: cue_green draw_text.text_style: CueBold{font_size: 11}}
+let CueSection = Label{draw_text.color: cue_ink draw_text.text_style: CueBold{font_size: 13}}
+let CueMeta = P{width: Fill height: Fit draw_text.color: cue_muted draw_text.text_style: CueRegular{font_size: 10}}
+let CueStep = RoundedView{width: Fill height: 28 align: Align{x: 0.5 y: 0.5} new_batch: true draw_bg.color: #xe4edf2 draw_bg.border_radius: 8.0}
+let CueStepDone = CueStep{draw_bg.color: #xdcecef}
+SolidView{width: Fill height: Fill flow: Down padding: 10 spacing: 8 new_batch: true draw_bg.color: cue_canvas
+    // Compact brand/status header; no hero artwork competes with the task.
     View{width: Fill height: Fit flow: Right{wrap: true} spacing: 10 align: Align{y: 0.5}
-        Label{text: "OnCue · 群聊试映室" draw_text.color: cue_ink draw_text.text_style: theme.font_bold{font_size: 15}}
-        RoundedView{width: "min(100%, max(320px, 100% - 210px))" height: Fit padding: Inset{left: 10 right: 10 top: 3 bottom: 3} new_batch: true draw_bg.color: #xe5eee7
+        View{width: 250 height: Fit flow: Down spacing: 2
+            Label{text: "OnCue · 群聊试映室" draw_text.color: cue_ink draw_text.text_style: CueBold{font_size: 17}}
+            Label{text: "先试着说，再决定要不要发" draw_text.color: cue_muted draw_text.text_style: CueRegular{font_size: 10}}
+        }
+        RoundedView{width: "min(100%, max(392px, 100% - 260px))" height: Fit padding: Inset{left: 10 right: 10 top: 7 bottom: 7} new_batch: true
+            draw_bg +: {color: #xe3eef2 border_radius: 9.0}
             cue_status := CueText{text: "样例消息与对白均为虚构。" draw_text.text_style.font_size: 11}
         }
     }
-    // 阶段条：读群 → 试映 → 上映 → 反响，完成打勾并附一行记录；右侧是当前阶段的关键操作。
-    View{width: Fill height: Fit flow: Right{wrap: true} spacing: 8 align: Align{y: 0.5}
-        cue_stage_bar := View{width: Fit height: Fit flow: Right spacing: 6 align: Align{y: 0.5} on_render: || {
-            Label{text: cue_stage_display draw_text.color: cue_ink draw_text.text_style: theme.font_bold{font_size: 11}}
-            if cue_stage_log != "" { Label{text: cue_stage_log draw_text.color: cue_muted draw_text.text_style.font_size: 10} }
+    View{width: Fill height: Fit flow: Right{wrap: true} spacing: 10 align: Align{y: 0.5}
+        cue_stage_bar := View{width: "min(100%, 406px)" height: Fit flow: Down spacing: 3 on_render: || {
+            View{width: Fill height: Fit flow: Right spacing: 5
+                if cue_stage_display.search("读群 ✓") >= 0 { CueStepDone{Label{text: "01  读群 ✓" draw_text.color: #x246874 draw_text.text_style: CueBold{font_size: 10}}} }
+                else { CueStep{Label{text: "01  读群" draw_text.color: cue_muted draw_text.text_style: CueRegular{font_size: 10}}} }
+                if cue_stage_display.search("试映 ✓") >= 0 { CueStepDone{Label{text: "02  试映 ✓" draw_text.color: #x246874 draw_text.text_style: CueBold{font_size: 10}}} }
+                else { CueStep{Label{text: "02  试映" draw_text.color: cue_muted draw_text.text_style: CueRegular{font_size: 10}}} }
+                if cue_stage_display.search("上映 ✓") >= 0 { CueStepDone{Label{text: "03  上映 ✓" draw_text.color: #x246874 draw_text.text_style: CueBold{font_size: 10}}} }
+                else { CueStep{Label{text: "03  上映" draw_text.color: cue_muted draw_text.text_style: CueRegular{font_size: 10}}} }
+                if cue_stage_display.search("反响 ✓") >= 0 { CueStepDone{Label{text: "04  反响 ✓" draw_text.color: #x246874 draw_text.text_style: CueBold{font_size: 10}}} }
+                else { CueStep{Label{text: "04  反响" draw_text.color: cue_muted draw_text.text_style: CueRegular{font_size: 10}}} }
+            }
+            if cue_stage_log != "" { CueMeta{text: cue_stage_log} }
         }}
-        Label{text: "" width: Fill}
-        cue_stage_action := View{width: Fit height: Fit on_render: || {
+        cue_stage_action := View{width: "min(100%, max(392px, 100% - 416px))" height: Fit on_render: || {
+            if cue_send_restored_unknown() {
+                CueButton{text: "重新读取确认" on_click: || cue_send_reread()}
+            } else {
             if cue_send_confirmation != nil {
                 if cue_confirm_view { CueDisabled{text: "去核对"} }
-                else { CueButton{text: "去核对" on_click: || {cue_confirm_view = true cue_sync_workspace()}} }
+                else { CuePrimary{text: "去核对" on_click: || {cue_confirm_view = true cue_sync_workspace()}} }
             } else {
                 if cue_send_current_observed() {
                     if cue_io_busy || cue_send_latch || cue_busy { CueDisabled{text: "看反响"} }
-                    else { CueButton{text: "看反响" on_click: || cue_react()} }
+                    else { CuePrimary{text: "看反响" on_click: || cue_react()} }
                 } else {
                     if !cue_demo && cue_send_phase != "confirm" && !cue_send_latch && !cue_io_busy && cue_editor_text.trim() != "" && !cue_send_restored_unknown() {
-                        CueButton{text: "发到群里" on_click: || cue_send_prepare()}
+                        CuePrimary{text: "发到群里" on_click: || cue_send_prepare()}
                     } else {
                         if !cue_demo && cue_sources.len() > 0 && cue_consent_key != cue_model_consent_key() && !cue_busy && !cue_io_busy {
-                            View{width: Fit height: Fit flow: Down spacing: 1
+                            View{width: Fill height: Fit flow: Down spacing: 2
                                 CuePrimary{text: "允许并试映" on_click: || cue_allow_and_rehearse()}
-                                Label{text: cue_consent_caption draw_text.color: cue_muted draw_text.text_style.font_size: 9}
+                                CueMeta{text: cue_consent_caption}
                             }
                         }
                     }
                 }
+            }
             }
         }}
     }
@@ -2960,38 +3029,39 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
             let confirmation = cue_send_confirmation
             CueCard{
                 CueText{text: "确认视图：只留核对内容；点「返回编辑」恢复。" draw_text.color: cue_muted draw_text.text_style.font_size: 10}
-                CueText{text: "将发到：" + cue_scene draw_text.text_style.font_size: 12}
-                ScrollYView{width: Fill height: 180 draw_bg.color: #xf5f7f3
+                CueText{text: "将发到：" + cue_scene draw_text.text_style: CueRegular{font_size: 12}}
+                ScrollYView{width: Fill height: 160 draw_bg.color: cue_soft
                     View{width: Fill height: Fit flow: Down padding: 4 spacing: 3
-                        for row in confirmation.rows { CueText{text: "新增/变化：" + row.sender + "：" + row.body draw_text.color: #xa03425 draw_text.text_style.font_size: 11} }
+                        for row in confirmation.rows { CueText{text: "新增/变化：" + row.sender + "：" + row.body draw_text.color: #xa34c24 draw_text.text_style.font_size: 11} }
                         CueText{text: "完整发送正文（" + confirmation.body.to_chars().len() + " / 4096 码点，框内可滚动逐字核对）："}
                         CueText{text: confirmation.body}
                         CueText{text: "原样发送，不改草稿；不会自动保存。最近消息读取可能缓存，不能保证此后没有新消息。" draw_text.color: cue_muted draw_text.text_style.font_size: 10}
-                        if confirmation.body.to_chars().len() > 500 { CueText{text: "宿主最多回读正文前500字，无法核对这之后是否还有正文。" draw_text.color: #xa03425 draw_text.text_style.font_size: 11} }
+                        if confirmation.body.to_chars().len() > 500 { CueText{text: "宿主最多回读正文前500字，无法核对这之后是否还有正文。" draw_text.color: #xa34c24 draw_text.text_style.font_size: 11} }
                     }
                 }
                 View{width: Fill height: Fit flow: Right spacing: 4
                     if cue_io_busy || cue_send_latch { CueDisabled{text: "确认发送"} }
                     else { CuePrimary{text: "确认发送" on_click: || cue_send_confirm_now()} }
-                    CueButton{text: "返回编辑" on_click: || {cue_confirm_view = false cue_sync_workspace()}}
+                    CueButton{text: "返回编辑" on_click: || cue_send_cancel()}
                 }
             }
         }
     }}
-    app_scroll := ScrollYView{width: Fill height: Fill flow: Down spacing: 6
-        content := View{width: Fill height: Fit flow: Down spacing: 6
+    app_scroll := ScrollYView{width: Fill height: Fill flow: Down spacing: 10
+        content := View{width: Fill height: Fit flow: Down spacing: 10
             // A full-width task flow keeps controls reachable at 412px as well.
             source_panel := View{width: Fill height: Fit flow: Down spacing: 4
                 CueCard{
-                    View{width: Fill height: Fit flow: Right{wrap: true} spacing: 3
+                    View{width: Fill height: Fit flow: Right{wrap: true} spacing: 5 align: Align{y: 0.5}
+                        CueSection{text: "准备开口"}
                         CueButton{text: "载入群聊" on_click: || cue_import_room()}
                         CueLink{text: "样例舞台" on_click: || cue_show_demo()}
                     }
                     View{width: Fill height: Fit flow: Right spacing: 8 align: Align{y: 0.5}
                         CueCap{text: "我想说"}
                         cue_trial := TextInput{width: Fill height: 56 is_multiline: true empty_text: "写一句想接的话" on_change: |text| cue_edit_trial(text)
-                            draw_bg +: {color: #xf5f7f3 color_hover: #xf5f7f3 color_focus: #xf5f7f3 color_empty: #xf5f7f3 border_radius: 7.0}
-                            draw_text +: {color: cue_ink color_hover: cue_ink color_focus: cue_ink color_empty: cue_muted color_empty_hover: cue_muted text_style.font_size: 12}
+                            draw_bg +: {color: #xf4f8fa color_hover: #xeef4f8 color_focus: #xeaf2f8 color_empty: #xf4f8fa border_radius: 9.0}
+                            draw_text +: {color: cue_ink color_hover: cue_ink color_focus: cue_ink color_empty: cue_muted color_empty_hover: cue_muted text_style: CueRegular{font_size: 12}}
                         }
                     }
                     View{width: Fill height: Fit flow: Right{wrap: true} spacing: 2
@@ -3000,13 +3070,21 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
                         CueButton{text: "推动下一步" on_click: || cue_select_goal("推动下一步")}
                     }
                     cue_goal_note := TextInput{width: Fill height: 48 is_multiline: true empty_text: "补充边界（可选，240字内）" on_change: |text| cue_edit_goal(text)
-                        draw_bg +: {color: #xf5f7f3 color_hover: #xf5f7f3 color_focus: #xf5f7f3 color_empty: #xf5f7f3 border_radius: 7.0}
-                        draw_text +: {color: cue_ink color_empty: cue_muted text_style.font_size: 12}
+                        draw_bg +: {color: #xf4f8fa color_hover: #xeef4f8 color_focus: #xeaf2f8 color_empty: #xf4f8fa border_radius: 9.0}
+                        draw_text +: {color: cue_ink color_empty: cue_muted text_style: CueRegular{font_size: 12}}
+                    }
+                    cue_actions := View{width: Fill height: Fit flow: Right spacing: 6
+                        cue_rehearse_button := View{width: Fit height: Fit on_render: || {
+                            if cue_demo || (!cue_busy && !cue_io_busy && cue_sources.len() > 0 && cue_consent_key == cue_model_consent_key()) {
+                                CuePrimary{text: "试映下一幕" on_click: || cue_allow_and_rehearse()}
+                            }
+                        }}
+                        CueButton{text: "停止等待" on_click: || cue_stop_wait()}
                     }
                     cue_privacy := View{width: Fill height: Fit flow: Down spacing: 2 on_render: || {
                         CueText{text: "目标：" + cue_goal + " · 本次勾选 " + cue_selected_count() + " 条消息" draw_text.text_style.font_size: 11}
                         if cue_switch_target != "" {
-                            CueText{text: "当前有未保存草稿。保存后重试，或明确放弃当前编辑再切换。" draw_text.color: #xa03425 draw_text.text_style.font_size: 11}
+                            CueText{text: "当前有未保存草稿。保存后重试，或明确放弃当前编辑再切换。" draw_text.color: #xa34c24 draw_text.text_style.font_size: 11}
                             View{width: Fill height: Fit flow: Right spacing: 3
                                 CueButton{text: "放弃编辑并切换" on_click: || cue_confirm_switch()}
                                 CueButton{text: "留在当前房间" on_click: || {cue_switch_target = "" cue_sync_workspace()}}
@@ -3025,28 +3103,21 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
                             }
                         }
                     }}
-                    cue_actions := View{width: Fill height: Fit flow: Right spacing: 6
-                        cue_rehearse_button := View{width: Fit height: Fit on_render: || {
-                            if cue_demo || (!cue_busy && !cue_io_busy && cue_sources.len() > 0 && cue_consent_key == cue_model_consent_key()) {
-                                CuePrimary{text: "试映下一幕" on_click: || cue_allow_and_rehearse()}
-                            }
-                        }}
-                        CueButton{text: "停止等待" on_click: || cue_stop_wait()}
-                    }
                 }
             }
             result_panel := View{width: Fill height: Fit flow: Down spacing: 4
                 CueCard{
-                    cue_overview := View{width: Fill height: Fit flow: Down spacing: 5 on_render: || {
+                    CueSection{text: "三种说法"}
+                    cue_overview := View{width: Fill height: Fit flow: Down spacing: 7 on_render: || {
                         if cue_fresh_text != "" {
-                            CueText{text: cue_fresh_text draw_text.color: #xa03425 draw_text.text_style.font_size: 11}
+                            CueText{text: cue_fresh_text draw_text.color: #xa34c24 draw_text.text_style.font_size: 11}
                             for row in cue_fresh_rows { CueText{text: row.sender + "：" + row.body draw_text.text_style.font_size: 11} }
                         }
                         if cue_routes.len() == 0 { CueText{text: "点「试映下一幕」后，三种说法会出现在这里。" draw_text.color: cue_muted draw_text.text_style.font_size: 11} }
                         for i in cue_routes.len() {
                             let route = cue_routes[i]
-                            RoundedView{width: Fill height: Fit flow: Down padding: 6 new_batch: true draw_bg.color: #xf5f7f3
-                                CueText{text: route.title + "：" + route.draft draw_text.text_style.font_size: 12}
+                            RoundedView{width: Fill height: Fit flow: Down padding: 10 spacing: 4 new_batch: true draw_bg.color: cue_soft draw_bg.border_radius: 9.0
+                                CueText{text: route.title + "：" + route.draft draw_text.text_style: CueBold{font_size: 12}}
                                 CueText{text: "相关原文片段：\n" + cue_refs_excerpt(cue_route_refs(route.body)) draw_text.color: cue_muted draw_text.text_style.font_size: 10}
                                 View{width: Fill height: Fit flow: Right spacing: 3
                                     if cue_fresh_state == "stale" || cue_io_busy || cue_send_latch || cue_send_phase == "confirm" { CueDisabled{text: "选用这句"} }
@@ -3058,11 +3129,12 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
                     }}
                 }
                 CueCard{
+                    CueSection{text: "草稿工作台"}
                     View{width: Fill height: Fit flow: Right spacing: 8 align: Align{y: 0.5}
                         CueCap{text: "草稿"}
                         cue_draft := TextInput{width: Fill height: 70 is_multiline: true empty_text: "选路线后用这句放入草稿，再改" on_change: |text| cue_edit_draft(text)
-                            draw_bg +: {color: #xf5f7f3 color_hover: #xf5f7f3 color_focus: #xf5f7f3 color_empty: #xf5f7f3 border_radius: 7.0}
-                            draw_text +: {color: cue_ink color_hover: cue_ink color_focus: cue_ink color_empty: cue_muted color_empty_hover: cue_muted text_style.font_size: 12}
+                            draw_bg +: {color: #xf4f8fa color_hover: #xeef4f8 color_focus: #xeaf2f8 color_empty: #xf4f8fa border_radius: 9.0}
+                            draw_text +: {color: cue_ink color_hover: cue_ink color_focus: cue_ink color_empty: cue_muted color_empty_hover: cue_muted text_style: CueRegular{font_size: 12}}
                         }
                     }
                     View{width: Fill height: Fit flow: Right{wrap: true} spacing: 2
@@ -3090,7 +3162,7 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
                         if cue_compare_mode == 1 { before = cue_take_a after = cue_take_b }
                         if before != "" || after != "" {
                             CueText{text: "前：" + before draw_text.color: cue_muted draw_text.text_style.font_size: 11}
-                            CueText{text: "后：" + after draw_text.text_style.font_size: 12}
+                            CueText{text: "后：" + after draw_text.text_style: CueRegular{font_size: 12}}
                         }
                         let label = "你改过这句，应用没有再检查"
                         if cue_editor_origin == "model" { label = "助手候选，仅经格式/引用/数字/承诺规则检查" }
@@ -3102,8 +3174,8 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
                         } else { CueText{text: "A/B为本房间已保存文本；取回后再核对各自来源。" draw_text.color: cue_muted draw_text.text_style.font_size: 10} }
                     }}
                     cue_refine_input := TextInput{width: Fill height: 48 is_multiline: true empty_text: "修改要求，例如更短但保留拒绝" on_change: |text| cue_edit_refine(text)
-                        draw_bg +: {color: #xf5f7f3 color_hover: #xf5f7f3 color_focus: #xf5f7f3 color_empty: #xf5f7f3 border_radius: 7.0}
-                        draw_text +: {color: cue_ink color_empty: cue_muted text_style.font_size: 12}
+                        draw_bg +: {color: #xf4f8fa color_hover: #xeef4f8 color_focus: #xeaf2f8 color_empty: #xf4f8fa border_radius: 9.0}
+                        draw_text +: {color: cue_ink color_empty: cue_muted text_style: CueRegular{font_size: 12}}
                     }
                     CueButton{text: "准备修订候选" on_click: || cue_refine()}
                     cue_refinement := View{width: Fill height: Fit flow: Down spacing: 3 on_render: || {
@@ -3124,29 +3196,31 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
                         if cue_send_text != "" { CueText{text: cue_send_text draw_text.text_style.font_size: 11} }
                         if cue_send_confirmation != nil {
                             let confirmation = cue_send_confirmation
-                            CueText{text: "将发到：" + cue_scene draw_text.text_style.font_size: 12}
+                            CueText{text: "将发到：" + cue_scene draw_text.text_style: CueRegular{font_size: 12}}
                             CueLink{text: "核对房间与账号" on_click: || {cue_send_evidence_open = !cue_send_evidence_open cue_sync_workspace()}}
                             if cue_send_evidence_open { CueText{text: "房间ID：" + confirmation.binding.room + "\n账号：" + confirmation.own + "（宿主提供）" draw_text.text_style.font_size: 10} }
-                            for row in confirmation.rows { CueText{text: "新增/变化：" + row.sender + "：" + row.body draw_text.color: #xa03425 draw_text.text_style.font_size: 11} }
+                            for row in confirmation.rows { CueText{text: "新增/变化：" + row.sender + "：" + row.body draw_text.color: #xa34c24 draw_text.text_style.font_size: 11} }
                             CueText{text: "完整发送正文（" + confirmation.body.to_chars().len() + " / 4096 码点，框内可滚动逐字核对）："}
-                        ScrollYView{width: Fill height: 170 draw_bg.color: #xf5f7f3
+                        ScrollYView{width: Fill height: 170 draw_bg.color: cue_soft
                             View{width: Fill height: Fit flow: Down padding: 4
                                 CueText{text: confirmation.body}
                             }
                         }
                             CueText{text: "原样发送，不改草稿；不会自动保存。最近消息读取可能缓存，不能保证此后没有新消息。" draw_text.color: cue_muted draw_text.text_style.font_size: 10}
-                            if confirmation.body.to_chars().len() > 500 { CueText{text: "宿主最多回读正文前500字，无法核对这之后是否还有正文。" draw_text.color: #xa03425 draw_text.text_style.font_size: 11} }
-                            if confirmation.resend_of >= 0 { CueText{text: "这是另一次发送；上次请求仍可能成功，可能重复。" draw_text.color: #xa03425} }
+                            if confirmation.body.to_chars().len() > 500 { CueText{text: "宿主最多回读正文前500字，无法核对这之后是否还有正文。" draw_text.color: #xa34c24 draw_text.text_style.font_size: 11} }
+                            if confirmation.resend_of >= 0 { CueText{text: "这是另一次发送；上次请求仍可能成功，可能重复。" draw_text.color: #xa34c24} }
                             View{width: Fill height: Fit flow: Right spacing: 4
                                 if cue_io_busy || cue_send_latch { CueDisabled{text: "确认发送"} }
                                 else { CuePrimary{text: "确认发送" on_click: || cue_send_confirm_now()} }
                                 CueButton{text: "返回修改" on_click: || cue_send_cancel()}
                             }
                         }
-                        if cue_send_phase == "unknown" || cue_send_phase == "readback" || cue_send_restored_unknown() {
-                            if cue_io_busy || cue_send_latch { CueDisabled{text: "重新读取确认"} }
-                            else { CueButton{text: "重新读取确认" on_click: || cue_send_reread()} }
-                            if cue_send_allow_resend && !cue_send_latch && !cue_io_busy && !cue_send_restored_unknown() { CueButton{text: "我已核对，仍要再次发送（可能重复）" on_click: || cue_send_resend()} }
+                                        if cue_send_phase == "unknown" || cue_send_phase == "readback" {
+                            if !cue_send_restored_unknown() {
+                                if cue_io_busy || cue_send_latch { CueDisabled{text: "重新读取确认"} }
+                                else { CueButton{text: "重新读取确认" on_click: || cue_send_reread()} }
+                                if cue_send_allow_resend && !cue_send_latch && !cue_io_busy { CueButton{text: "我已核对，仍要再次发送（可能重复）" on_click: || cue_send_resend()} }
+                            }
                         }
                         if cue_send_active >= 0 {
                             CueLink{text: "查看本次打开的发送核对记录" on_click: || {cue_send_evidence_open = !cue_send_evidence_open cue_sync_workspace()}}
@@ -3163,7 +3237,7 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
                     cue_reaction_panel := View{width: Fill height: Fit flow: Down spacing: 3 on_render: || {
                         if cue_confirm_view && cue_send_confirmation != nil { View{width: Fill height: 0} } else {
                         if cue_reaction_rows.len() > 0 && cue_reaction_state != "" {
-                            CueText{text: "发出那条之后的回复（应用按原话列出，未经过助手）：" draw_text.color: cue_muted draw_text.text_style.font_size: 10}
+                            Label{width: Fill height: Fit text: "发出那条之后的回复（应用按原话列出，未经过助手）：" draw_text.color: cue_muted draw_text.text_style: CueRegular{font_size: 10}}
                             for row in cue_reaction_rows { CueText{text: row.sender + "：" + row.body draw_text.text_style.font_size: 11} }
                         }
                         if cue_reaction_state == "listed" && cue_consent_key != cue_model_consent_key() {
@@ -3182,7 +3256,7 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
                         CueLink{text: "本地草稿管理 / 删除 / 旧版迁移" on_click: || cue_toggle_storage()}
                         if cue_storage_open || !cue_store_ready {
                         CueText{text: "按账号/房间隔离，样例单存。仅支持一个写入窗口；无崩溃原子性保证。" draw_text.color: cue_muted draw_text.text_style.font_size: 10}
-                        if !cue_store_ready { CueText{text: cue_store_error draw_text.color: #xa03425 draw_text.text_style.font_size: 11} }
+                        if !cue_store_ready { CueText{text: cue_store_error draw_text.color: #xa34c24 draw_text.text_style.font_size: 11} }
                         View{width: Fill height: Fit flow: Right{wrap: true} spacing: 2
                             CueLink{text: "重新读取存储" on_click: || cue_reload_store()}
                             CueLink{text: "删除本房间草稿" on_click: || cue_request_delete(cue_room_id)}
@@ -3202,7 +3276,7 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
                             let label = "删除本房间主稿和A/B（不含旧版副本）"
                             if cue_delete_target == "legacy" { label = "永久移除三份旧版文件（不含已经复制的新稿）" }
                             if cue_delete_target == "all" { label = "移除所有房间的新格式草稿，包括无法读取的记录" }
-                            CueText{text: label + "？不可撤销；确认30秒有效。" draw_text.color: #xa03425 draw_text.text_style.font_size: 11}
+                            CueText{text: label + "？不可撤销；确认30秒有效。" draw_text.color: #xa34c24 draw_text.text_style.font_size: 11}
                             View{width: Fill height: Fit flow: Right spacing: 4
                                 CueButton{text: "确认删除" on_click: || cue_confirm_delete()}
                                 CueButton{text: "取消删除" on_click: || cue_cancel_delete()}
@@ -3244,7 +3318,7 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
                     if shown > total { shown = total }
                     Label{text: "第 " + shown + " 页 / 共 " + total + " 页" width: Fill draw_text.color: cue_muted draw_text.text_style.font_size: 11}
                 }}
-                    RoundedView{width: Fill height: Fit min_height: 257 flow: Down padding: 6 new_batch: true draw_bg.color: #xf5f7f3
+                    RoundedView{width: Fill height: Fit min_height: 257 flow: Down padding: 6 new_batch: true draw_bg.color: cue_soft
                         readout := View{width: Fill height: Fit flow: Down spacing: 4 on_render: || {
                         let idx = cue_ws_page
                         if idx >= cue_ws_pages.len() { idx = 0 }
@@ -3290,7 +3364,7 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
             }
                 CueCard{
                     View{width: Fill height: Fit flow: Right spacing: 6 align: Align{y: 0.5}
-                        cue_scene_label := Label{text: "样例舞台 · 国庆搭子局" width: Fill draw_text.color: cue_ink draw_text.text_style: theme.font_bold{font_size: 12}}
+                        cue_scene_label := Label{text: "样例舞台 · 国庆搭子局" width: Fill draw_text.color: cue_ink draw_text.text_style: CueBold{font_size: 12}}
                         CueButton{text: "展开/收起参考消息" on_click: || cue_toggle_sources()}
                     }
                     cue_msg_list := View{width: Fill height: Fit flow: Down spacing: 2 on_render: || {
@@ -3306,7 +3380,7 @@ SolidView{width: Fill height: Fill flow: Down padding: 8 spacing: 6 new_batch: t
                             CueLink{text: include_text on_click: || cue_toggle_source(i)}
                             if cue_is_selected(i) {
                                 RoundedView{width: Fill height: Fit flow: Right spacing: 6 padding: Inset{left: 8 right: 8 top: 3 bottom: 3} new_batch: true draw_bg.color: #xe5eee7
-                                    Label{text: "#" + (i + 1) width: 36 draw_text.color: cue_green draw_text.text_style: theme.font_bold{font_size: 11}}
+                                    Label{text: "#" + (i + 1) width: 36 draw_text.color: cue_green draw_text.text_style: CueBold{font_size: 11}}
                                     Label{text: s.sender + "：" + s.body width: Fill draw_text.color: cue_ink draw_text.text_style.font_size: 13}
                                 }
                             } else {
