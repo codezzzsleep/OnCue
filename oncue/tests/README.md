@@ -57,7 +57,7 @@ python3 -m unittest discover -s oncue/tests -p 'selftest_*.py' -v
 `oncue/tests/ui/` 是按 [CONTRACT.md](ui/CONTRACT.md) 写的界面契约与场景，用 [splash-app-verify](https://github.com/OctoSense-org/OctoSense-App-Flow/tree/main/skills/splash-app-verify) 运行：
 
 ```sh
-python3 <splash-app-verify>/scripts/uitest.py run bundle oncue/tests/ui --keep-going
+python3 skills/splash-app-verify/scripts/uitest.py run bundle oncue/tests/ui --keep-going
 ```
 
 85 次运行（场景分布在 412×892、954×448、1000×800 三种尺寸），约 310 秒。宿主回复由场景注入，失败时到 `build/uitest/<场景>@<尺寸>/FEEDBACK.md` 看修复请求。

@@ -153,7 +153,7 @@ git clone https://github.com/codezzzsleep/OnCue.git
 python3 -m unittest discover -s oncue/tests -p 'selftest_*.py' -v
 
 # 界面场景：用 splash-app-verify 在 card-host 里跑真应用
-python3 <splash-app-verify>/scripts/uitest.py run bundle oncue/tests/ui --keep-going
+python3 skills/splash-app-verify/scripts/uitest.py run bundle oncue/tests/ui --keep-going
 ```
 
 逻辑测试需要先构建 `hub` 和 `card-host`，步骤见[测试说明](oncue/tests/README.md)。为适配 Rinx 1.3.0 单次回调 20 万条指令的上限，核对拆进计时器回调分步执行；等待助手的期限为 150 秒。

@@ -26,7 +26,7 @@ card-host 可以打开应用并看内置样例，但它不提供 Matrix 和助�
 
 ## Rinx 房间绑定修复（官方已含；v1.1.0 需回移植）
 
-**0.5.3 最终源码的验证宿主是官方 Rinx [1.3.0 发布包](https://github.com/hagency-org/Rinx/releases/tag/v1.3.0)（零本地补丁）**，2026-10-13 完整跑通主流程与第二账号反响、确认期间新消息 N16（实测记录见 [evidence/native-130/](../evidence/native-130/)；早期实测用官方源码 `c515e5fc`，对应界面升级前源码）。官方自 v1.2.0 起已修复房间绑定（`src/miniapps/ui.rs` 用 `ids!(import_form.room)` 限定导入表单），评委使用官方新版 Rinx 不需要任何补丁。
+**0.5.3 最终源码的验证宿主是官方 Rinx [1.3.0 发布包](https://github.com/hagency-org/Rinx/releases/tag/v1.3.0)（零本地补丁）**，2026-10-13 完整跑通主流程与第二账号反响、确认期间新消息 N16（实测记录见 [evidence/native-130/](../../evidence/native-130/)；早期实测用官方源码 `c515e5fc`，对应界面升级前源码）。官方自 v1.2.0 起已修复房间绑定（`src/miniapps/ui.rs` 用 `ids!(import_form.room)` 限定导入表单），评委使用官方新版 Rinx 不需要任何补丁。
 
 **只有仍钉在 v1.1.0（`4b89097d`）的构建需要下面的回移植**。OctoSense 的 `Cargo.toml` 用 `[patch."https://github.com/hagency-org/Rinx.git"] rinx = { path = "../rinx" }` 指向本地检出即可带上它（补丁全文见下文，上游 PR 素材 `build/RINX-PR-room-binding.md`）。
 
@@ -80,6 +80,8 @@ card-host 可以打开应用并看内置样例，但它不提供 Matrix 和助�
 **上游 PR 素材**已备好在 `build/RINX-PR-room-binding.md`（问题、复现、修法、回归建议），是否提交由作者决定；上游 v1.2.0 已含同义修复，届时可移除本地补丁。
 
 ## 本地导入
+
+仓库里的 `bundle/` 本身是未签名包，可以直接作为包路径导入（2026-10-13 在官方 Rinx 1.3.0 发布包上实测，Review 面板显示「Local unsigned bundle」），这时跳过第 1 步。需要一份与仓库隔离的独立副本时，再按第 1 步生成。
 
 1. 生成未签名副本。Rinx 的本地导入不接受已签名的包。
 
