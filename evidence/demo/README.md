@@ -2,7 +2,7 @@
 
 ## 0.5.3 复赛演示（2 分钟版）
 
-[oncue-demo-053-2min.mp4](oncue-demo-053-2min.mp4)：1 分 56 秒，1920×1080 30fps，H.264 + AAC，大小 5.1 MB，2026-10-13 制作。只保留功能演示，旁白重新配音。画面与下面的完整版来自同一次实拍：官方 Rinx 1.3.0 发布包，模型 `MiniMax-M2.7-highspeed`，`bundle/main.splash` SHA-256 `2de9daef…`。等待与滚动的段落加速，画面右上角标出倍数；没有变化的画面已剪去。第二账号的两条回复由测试脚本经 Matrix 接口发出。
+[oncue-demo-053-2min.mp4](oncue-demo-053-2min.mp4)（B 站：https://www.bilibili.com/video/BV18aWA6HECb）：1 分 56 秒，1920×1080 30fps，H.264 + AAC，大小 5.1 MB，2026-10-13 制作。只保留功能演示，旁白重新配音。画面与下面的完整版来自同一次实拍：官方 Rinx 1.3.0 发布包，模型 `MiniMax-M2.7-highspeed`，`bundle/main.splash` SHA-256 `2de9daef…`。等待与滚动的段落加速，画面右上角标出倍数；没有变化的画面已剪去。第二账号的两条回复由测试脚本经 Matrix 接口发出。
 
 | 时间 | 内容 |
 | --- | --- |

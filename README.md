@@ -10,7 +10,7 @@
     <img src="docs/readme/badges/license.svg" alt="License Apache-2.0">
   </p>
   <p>
-    <a href="evidence/demo/oncue-demo-053-2min.mp4">演示视频</a> ·
+    <a href="https://www.bilibili.com/video/BV18aWA6HECb">演示视频（B 站）</a> ·
     <a href="#快速开始">快速开始</a> ·
     <a href="#工作原理">工作原理</a> ·
     <a href="oncue/VERIFICATION.md">验证记录</a> ·
@@ -131,8 +131,8 @@ git clone https://github.com/codezzzsleep/OnCue.git
 </table>
 
 <p align="center">
-  <a href="evidence/demo/oncue-demo-053-2min.mp4"><img src="docs/readme/video-thumb.png" alt="演示视频（1:56）：官方 Rinx 1.3.0 真机录屏，中文配音" width="560"></a>
-  <br><sub>点击观看带配音的演示（1:56）· <a href="evidence/demo/oncue-demo-053.mp4">带贡献讲解的完整版（4:24）</a></sub>
+  <a href="https://www.bilibili.com/video/BV18aWA6HECb"><img src="docs/readme/video-thumb.png" alt="演示视频（1:56）：官方 Rinx 1.3.0 真机录屏，中文配音" width="560"></a>
+  <br><sub>点击在 B 站观看带配音的演示（1:56）· <a href="evidence/demo/oncue-demo-053-2min.mp4">仓库内同一视频</a> · <a href="evidence/demo/oncue-demo-053.mp4">带贡献讲解的完整版（4:24）</a></sub>
 </p>
 
 ## 测试
