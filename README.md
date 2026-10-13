@@ -24,7 +24,7 @@ OnCue 是运行在 OctoSense 的 Rinx 里的 Splash 小程序。它读你授权�
 
 ## 功能
 
-- **打开即读群**：读取所选群最近的消息（最多 30 条），保留原编号，可以勾选这次参考哪些。
+- **打开即读群**：打开就读所选的群，列出最近 12 条消息并保留原编号，可以勾选这次参考哪些。
 - **三种说法，逐条核对**：按你选的目标（澄清条件、礼貌拒绝、推动下一步）写三种说法，并可标出一条推荐；程序核对每条的出处、数字和承诺句式，不合格的只拦那一条，并写明原因。
 - **两步确认发送**：发送前再读一次群，有新消息先标出来；发出后读回核实，结果不确定时绝不自动重发。
 - **看反响**：群友的回复按原话列出，助手对照试映时的预想给出下一句，这一步同样要过核对。
@@ -35,17 +35,15 @@ OnCue 是运行在 OctoSense 的 Rinx 里的 Splash 小程序。它读你授权�
 
 **环境要求**
 
-- Rinx v1.2.0 或更新版本，推荐[官方 1.3.0 发布包](https://github.com/hagency-org/Rinx/releases/tag/v1.3.0)
+- [官方 Rinx 1.3.0 发布包](https://github.com/hagency-org/Rinx/releases/tag/v1.3.0)（验证所用版本）
 - 一个已登录、有消息的 Matrix 群
 - 在 Rinx 里配置好助手（模型）
 
 没有选房间时，应用打开后进入本地样例，可以先看一遍流程，样例不调用模型。
 
-**从 App Hub 安装**
-
-Rinx 里打开 **Discover → Mini apps**，进入 App Hub，找到 OnCue 后 **Add**、**Open**。打开时宿主会列出八项服务和所选的群，确认后本次运行才获得授权。
-
 **本地导入**
+
+OnCue 已向 App Hub 提交上架审核（[#78](https://github.com/OctoSense-org/OctoSense-App-Hub/issues/78)），上架前用本地导入运行。
 
 ```bash
 git clone https://github.com/codezzzsleep/OnCue.git
@@ -132,7 +130,7 @@ git clone https://github.com/codezzzsleep/OnCue.git
 
 <p align="center">
   <a href="https://www.bilibili.com/video/BV18aWA6HECb"><img src="docs/readme/video-thumb.png" alt="演示视频（1:56）：官方 Rinx 1.3.0 真机录屏，中文配音" width="560"></a>
-  <br><sub>点击在 B 站观看带配音的演示（1:56）· <a href="evidence/demo/oncue-demo-053-2min.mp4">仓库内同一视频</a> · <a href="evidence/demo/oncue-demo-053.mp4">带贡献讲解的完整版（4:24）</a></sub>
+  <br><sub>点击在 B 站观看带配音的演示（1:56）· <a href="evidence/demo/oncue-demo-053-2min.mp4">仓库内同一视频</a> · <a href="evidence/demo/oncue-demo-053.mp4">含 PPT 讲解的完整版（4:24）</a></sub>
 </p>
 
 ## 测试
@@ -141,7 +139,7 @@ git clone https://github.com/codezzzsleep/OnCue.git
 
 | 测试 | 结果 | 说明 |
 | --- | --- | --- |
-| 界面场景 | 85/85 次运行通过 | 75 个场景 × 412×892、954×448、1000×800 三种尺寸，宿主的每种回复和错误由场景注入 |
+| 界面场景 | 85/85 次运行通过 | 75 个场景共 85 次运行，覆盖 412×892、954×448、1000×800 三种尺寸，宿主的每种回复和错误由场景注入 |
 | 逻辑测试 | 12 套 437 项断言通过 | 在真实 card-host 虚拟机里直接跑生产函数，结果[可离线复核](evidence/logic-tests/) |
 | 工具单元测试 | 114 项通过 | `oncue/tools` 的单元测试 |
 | 打包检查 | `hub check` 通过 | 只有「未签名」提示 |
@@ -189,9 +187,6 @@ build/                      审核问答与宿主问题复现材料
   <tr><td>防编造扩展到中文数字和承诺句式</td><td>覆盖带单位的中文数字、半天、复合单位；承诺句式逐句检查</td></tr>
   <tr><td>应用包移到仓库根目录</td><td>已移到 <code>bundle/</code></td></tr>
   <tr><td>改用 GitHub 发布流程</td><td>打 tag 触发 <code>publish-app.yml</code>，当前版本 0.5.4</td></tr>
-  <tr><td>「【推荐】B」同行写法也算推荐</td><td>解析器同时接受独占行与同行写法，逻辑测试覆盖</td></tr>
-  <tr><td>反响协议改名，避免与修订协议混淆</td><td>反响对照协议改名 F1，修订协议仍为 R1</td></tr>
-  <tr><td>「允许并试映」旁说明这次发什么</td><td>按钮下方列出这次发给助手的内容（不含名字）</td></tr>
 </table>
 </details>
 

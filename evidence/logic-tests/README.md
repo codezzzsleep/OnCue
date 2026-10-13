@@ -32,6 +32,6 @@ done
 
 已执行，每套输出 `PASS: N assertions; source/provenance/assertion inventory verified`。这只读取既有结果并核对生产源码、探针与断言清单，不重新运行应用。重跑方法见[测试说明](../../oncue/tests/README.md)。
 
-宿主服务返回值受控注入，没有真实 Matrix 发送；send4 含真实30秒传输超时窗口。文件系统、UI、计时器及时间真实；deadline观察约93秒，playback超过6.5秒。存储结果另有独立文件内容校验，不以成功提示代替保存。
+宿主服务返回值受控注入，没有真实 Matrix 发送；send4 含真实30秒传输超时窗口。文件系统、UI、计时器及时间真实；deadline观察约153秒，playback超过6.5秒。存储结果另有独立文件内容校验，不以成功提示代替保存。
 
 各套保存当时的生产源码、探针、provenance和运行结果。探针包内复制的截图仅用于准入，不是本次交互证据；探针包内的字体副本与 `bundle/fonts/` 逐字节相同，未重复归档；实际原生截图见[验证记录](../../oncue/VERIFICATION.md)。

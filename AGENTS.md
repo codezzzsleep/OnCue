@@ -40,17 +40,17 @@ OnCue 是参加 GOSIM Agentic App 2026 的 OctoScript 小程序，运行在 Rinx
 # 工具单元测试
 python3 -m unittest discover -s oncue/tests -p 'selftest_*.py' -v
 
-# 检查已签名的包（OCTO_HUB 指向本地构建的 hub）
-"$OCTO_HUB" check bundle --publisher-key oncue.dev=50578fd7e0d8ac51a1e9e590835427ce8e71f46dba491860c75ae4e7c8c78042
+# 检查应用包（仓库里是未签名开发包；OCTO_HUB 指向本地构建的 hub）
+"$OCTO_HUB" check bundle --allow-unsigned
 
-# 生成未签名副本，用于 card-host 和 Rinx 本地导入
+# 生成与仓库隔离的未签名副本（可选；bundle/ 本身也能直接导入）
 python3 oncue/tools/prepare_dev_bundle.py "$(mktemp -d)/bundle" --hub "$OCTO_HUB"
 ```
 
 ## 已知的坑
 
 - card-host 不提供 `matrix.*` 和 `octos.*`，调用会返回 `no service answers "…" on this device`。读取群聊和试映只能在 Rinx 里验证。
-- 已签名的包不能直接用于 card-host 和 Rinx 的本地导入，要先生成未签名副本。
+- 发布版由 GitHub 发布工作流生成并附证明；仓库里的 `bundle/` 是未签名开发包，可直接用于 card-host 和 Rinx 本地导入。
 - 比赛用的 Matrix 服务器是 `matrix.rinx.chat`，不是 `matrix.org`。登录走浏览器单点登录。
 - 在 Linux aarch64 + Xvfb 上（2026-10-11 前用的旧机器），`tools/octo shot` 截不了图（`grab timeout`）。用 `ffmpeg -f x11grab` 抓窗口。抓之前用 `xwininfo` 取窗口的位置和大小，抓取区域要对准窗口。
 - 同一台机器上开多个宿主实例时，每个实例用不同的 `OCTOS_APP_CORE_DIR`。

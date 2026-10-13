@@ -19,10 +19,10 @@ CI 只跑第三种，不运行应用的代码。
 
 ### 重跑
 
-需要：按 OctoScript-App-Design-Flow 的 QUICKSTART 构建好 `hub` 和 `card-host`，`tools/octo doctor` 通过；Python 3.9 以上；一个 X display。
+需要：按 OctoSense App Flow 的 QUICKSTART 构建好 `hub` 和 `card-host`，`tools/octo doctor` 通过；Python 3.9 以上；一个 X display。
 
 ```bash
-export OCTO=/path/to/OctoScript-App-Design-Flow/tools/octo
+export OCTO=/path/to/OctoSense-App-Flow/tools/octo
 WORK="$(mktemp -d)"
 for SUITE in parser pagination retry deadline playback storage grounding envelope send send2 send3 send4; do
   python3 oncue/tests/generate_probe.py --workdir "$WORK" --suite "$SUITE" || exit $?
@@ -54,7 +54,7 @@ python3 -m unittest discover -s oncue/tests -p 'selftest_*.py' -v
 
 ## 界面场景
 
-`oncue/tests/ui/` 是按 [CONTRACT.md](ui/CONTRACT.md) 写的界面契约与场景，用 [splash-app-verify](https://github.com/OctoSense-org/OctoSense-App-Flow/tree/main/skills/splash-app-verify) 运行：
+`oncue/tests/ui/` 是按 [CONTRACT.md](ui/CONTRACT.md) 写的界面契约与场景，用 [splash-app-verify](../../skills/splash-app-verify/)（已向 App Flow 提交 [PR #192](https://github.com/OctoSense-org/OctoSense-App-Flow/pull/192)）运行：
 
 ```sh
 python3 skills/splash-app-verify/scripts/uitest.py run bundle oncue/tests/ui --keep-going

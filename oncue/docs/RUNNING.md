@@ -2,10 +2,10 @@
 
 ## 需要什么
 
-- Rinx v1.2.0 或更新版本；推荐独立运行的 v1.3.0。OctoSense 最新 main（`0209df1`）自带的构建仍钉在 Rinx v1.1.0，照它构建会碰到导入表单读错房间号的问题（症状见下文「Rinx 房间绑定修复」），需要先打下文印出的补丁。
+- 官方 Rinx 1.3.0 发布包（验证所用版本，独立运行）。OctoSense `0209df1` 自带的构建钉在 Rinx v1.1.0，照它构建会碰到导入表单读错房间号的问题（症状见下文「Rinx 房间绑定修复」），需要先打下文印出的补丁。
 - 比赛服务器 `matrix.rinx.chat` 的账号，和一个有消息的房间。登录走浏览器单点登录。
 - 宿主里已经配置好助手。
-- 本地构建的 `hub`，用来生成未签名副本。构建方法见 OctoScript-App-Design-Flow 的 QUICKSTART。
+- （可选）本地构建的 `hub`，用来生成与仓库隔离的未签名副本。构建方法见 [OctoSense App Flow](https://github.com/OctoSense-org/OctoSense-App-Flow) 的 QUICKSTART。
 
 card-host 可以打开应用并看内置样例，但它不提供 Matrix 和助手服务，读取群聊和试映只能在 Rinx 里进行。
 
@@ -77,7 +77,7 @@ card-host 可以打开应用并看内置样例，但它不提供 Matrix 和助�
 
 **未补丁对照运行记录**（2026-10-11，本机，未补丁二进制直接由上游 v1.1.0 构建）：导入表单填入包路径与房间 `!2TfO…`，Review 正常列出服务；点 Run 后 Rinx 提示 "this mini-app is not attached to a room"，OnCue 状态行显示「这次打开没有选房间。请关闭应用，导入时填上房间再打开。」主流程（读群、试映、发送）全部无法进行。截图证据：`evidence/rinx-patch/unpatched-no-room.png`。同机同包在打过补丁的二进制上走完整主流程，见 `evidence/native-053/`。
 
-**上游 PR 素材**已备好在 `build/RINX-PR-room-binding.md`（问题、复现、修法、回归建议），是否提交由作者决定；上游 v1.2.0 已含同义修复，届时可移除本地补丁。
+问题、复现、修法和回归建议整理在 `build/RINX-PR-room-binding.md`。上游 v1.2.0 已含同义修复，升级后不再需要本地补丁。
 
 ## 本地导入
 

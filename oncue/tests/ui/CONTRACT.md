@@ -1,6 +1,6 @@
 # OnCue 界面契约（tests/ui）
 
-这份契约规定 OnCue 每个界面状态该显示什么、每个操作改变什么、每个宿主服务的每种回复怎么处理。`tests/ui/` 里的场景按这里的行号命名，用 [splash-app-verify](https://github.com/OctoSense-org/OctoSense-App-Flow/tree/main/skills/splash-app-verify) 在 card-host 里运行。宿主回复由场景注入，形状与错误原文取自 Rinx `fdcfed1` 源码，出处见第三节。
+这份契约规定 OnCue 每个界面状态该显示什么、每个操作改变什么、每个宿主服务的每种回复怎么处理。`tests/ui/` 里的场景按这里的行号命名，用 [splash-app-verify](../../../skills/splash-app-verify/) 在 card-host 里运行。宿主回复由场景注入，形状与错误原文取自 Rinx `fdcfed1` 源码，出处见第三节。
 
 ## 一、界面与状态
 
@@ -94,3 +94,4 @@
 | --- | --- | --- |
 | 412×892 | card-host 默认，手机竖屏 | S1 的首屏控件不滚动可见 |
 | 954×448 | Rinx 990×613 窗口里小程序实际得到的区域（按截图量得） | S1 的首屏控件不滚动可见；其余控件滚动可达 |
+| 1000×800 | Rinx 1.3.0 桌面版的小程序窗口（「Rinx · Mini apps」） | 分区层级与确认视图可读（场景 56、57） |

@@ -1,6 +1,6 @@
 # Rinx PR 素材：导入表单房间号读到错误的输入框
 
-> 用途：上游 Rinx 的修复 PR 素材。**是否提交由作者决定**（评审意见第 4 条：补丁若必需，准备好材料即可）。
+> 用途：Rinx 导入表单房间绑定问题的复现与修法记录。
 > 核实于 2026-10-11：上游 main（已发布 1.3.0）的 `src/miniapps/ui.rs` 已含同义修复（`ids!(import_form.room)`）。因此本素材主要服务于仍钉在 v1.1.0（`4b89097d`）的下游：升级 Rinx ≥ 1.2.0 即可移除本地补丁。
 
 ## 标题
@@ -44,7 +44,7 @@ Mini apps 导入面板（Discover → Mini apps → Import an app）里，房间
 +                            self.view.text_input(cx, ids!(import_form.room)).set_text(cx, &self.reviewed_room);
 ```
 
-完整 diff 见 `oncue/docs/RUNNING.md` 的「Rinx 房间绑定补丁」一节。
+完整 diff 见 `oncue/docs/RUNNING.md` 的「Rinx 房间绑定修复」一节。
 
 ## 回归建议
 
