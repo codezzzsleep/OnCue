@@ -3,7 +3,7 @@
   <h1>OnCue · 群聊试映室</h1>
   <p><b>在群里开口之前，先在这里试一下。</b></p>
   <p>
-    <img src="docs/readme/badges/version.svg" alt="版本 0.5.3">
+    <img src="docs/readme/badges/version.svg" alt="版本 0.5.4">
     <img src="docs/readme/badges/host.svg" alt="宿主 官方 Rinx 1.3.0">
     <img src="docs/readme/badges/ui.svg" alt="界面场景 85/85 通过">
     <img src="docs/readme/badges/logic.svg" alt="逻辑测试 12 套 437 项">
@@ -188,7 +188,7 @@ build/                      审核问答与宿主问题复现材料
   <tr><td>补「拒绝授权、授权到期」的验证记录</td><td>在官方 Rinx 上实拍四种授权状态；授权到期实测约 1 小时</td></tr>
   <tr><td>防编造扩展到中文数字和承诺句式</td><td>覆盖带单位的中文数字、半天、复合单位；承诺句式逐句检查</td></tr>
   <tr><td>应用包移到仓库根目录</td><td>已移到 <code>bundle/</code></td></tr>
-  <tr><td>改用 GitHub 发布流程</td><td>打 tag 触发 <code>publish-app.yml</code>，版本 0.5.3</td></tr>
+  <tr><td>改用 GitHub 发布流程</td><td>打 tag 触发 <code>publish-app.yml</code>，当前版本 0.5.4</td></tr>
   <tr><td>「【推荐】B」同行写法也算推荐</td><td>解析器同时接受独占行与同行写法，逻辑测试覆盖</td></tr>
   <tr><td>反响协议改名，避免与修订协议混淆</td><td>反响对照协议改名 F1，修订协议仍为 R1</td></tr>
   <tr><td>「允许并试映」旁说明这次发什么</td><td>按钮下方列出这次发给助手的内容（不含名字）</td></tr>

@@ -1,6 +1,8 @@
 # 验证记录
 
-版本 **0.5.3**（仓库内为未签名开发包；发布版经 GitHub 发布流程生成，标签 `v0.5.3`）。验证日期：2026-10-13。
+版本 **0.5.4**（仓库内为未签名开发包；发布版经 GitHub 发布流程生成，标签 `v0.5.4`）。验证日期：2026-10-13。
+
+0.5.4 的应用代码与 0.5.3 逐字节相同（`bundle/main.splash` SHA-256 不变），只更新了商店截图、介绍文字和版本号。下文写「0.5.3」的测试与真机记录，验证的就是这份代码。
 
 生产入口SHA-256：`2de9daef4c4780c6e20ab08bab31a23f637c96f9a83d43b765f50832347bfe4b`（`bundle/main.splash`）。
 
@@ -12,6 +14,8 @@
 oncue-screening-room 0.5.3 — PASSED
   [warning] publisher-signature: unsigned: accountability rests on the hub alone
 ```
+
+0.5.4 只改了商店截图、介绍文字和版本号，包摘要用 `oncue/tools/stamp_bundle.py` 重新计算（`4ad49143…`）；发布时由 GitHub 发布工作流里的 hub 再检查一次，结果见 `v0.5.4` 的工作流记录。
 
 申请能力八项：`storage`、`matrix.room_info`、`matrix.read_messages`、`matrix.account_info`、`matrix.send_message`、`octos.session.open`、`octos.turn.start`、`octos.turn.interrupt`；不直连网络。随包字体为 SIL OFL 许可的 OnCue Sans（Noto Sans CJK SC 裁剪重命名），授权全文在 `bundle/fonts/LICENSE.txt`。
 

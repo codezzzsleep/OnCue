@@ -16,7 +16,7 @@
   },
   "id": "oncue-screening-room",
   "integrity": {
-    "bundle_blake3": "0d303bf7fefd30d8360695ad0f4cc1e942fa973f0dde8aa684534a056e92b1fd"
+    "bundle_blake3": "4ad4914314ed91b1b68810e6ae01d9eaa20e1c11bd093cdc7d8dcd4d88fa3a66"
   },
   "name": "OnCue · 群聊试映室",
   "network": {
@@ -26,5 +26,5 @@
   "storage": {
     "max_bytes": 4194304
   },
-  "version": "0.5.3"
+  "version": "0.5.4"
 }

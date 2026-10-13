@@ -16,7 +16,7 @@
   "listing": {
     "age_rating": "all",
     "category": "productivity",
-    "description": "在群里开口之前，先在这里试一下。写下想说的话，选一个目标（澄清条件、礼貌拒绝或推动下一步），助手参考你勾选的群聊消息给出三种说法和一条推荐，每种都附上它依据的原文。挑一句放进草稿，可以自己改，也可以让助手按你的要求再改一版，对照前后再决定用不用。草稿按群分开保存在本机。采用建议前会重新读取最近消息。你可以核对房间、账号和完整草稿后明确确认发送；应用不自动发送或重试。发送后会回读核对，结果不明时仅重新读取，避免重复发送。发出后可以点「看反响」重读群聊：之后的回复按原话列出，允许有效时助手才对照试映预想并拟好下一句，没有新回复时如实说明，不猜反响。",
+    "description": "在群里开口之前，先在这里试一下。打开就读你授权的群聊。写下想说的话，选一个目标（澄清条件、礼貌拒绝或推动下一步），助手参考你勾选的消息给出三种说法，并可标出一条推荐，每种都附上它依据的原文。程序逐条核对出处、数字和承诺句式，不合格的只拦那一条并写明原因。通过核对的推荐句自动放进草稿（你手动改过的草稿不会被覆盖），也可以换一句、自己改，或让助手按你的要求再改一版，对照前后再决定用不用。草稿按群分开保存在本机。采用建议前会重新读取最近消息。你可以核对房间、账号和完整草稿后明确确认发送；应用不自动发送或重试。发送后会回读核对，结果不明时仅重新读取，避免重复发送。发出后可以点「看反响」重读群聊：之后的回复按原话列出，允许有效时助手才对照试映预想并拟好下一句，没有新回复时如实说明，不猜反响。",
     "icon": "assets/icon.svg",
     "keywords": [
       "群聊",
@@ -35,11 +35,13 @@
       "privacy_policy_url": "https://github.com/codezzzsleep/OnCue/blob/main/oncue/PRIVACY.md",
       "support": "https://github.com/codezzzsleep/OnCue/issues"
     },
-    "release_notes": "0.5.3：打开即读群，不再先点载入；一次点击完成允许与试映，助手推荐自动放进草稿（草稿已有内容不覆盖）；发出后可「看反响」，回复按原话列出、允许有效才请助手对照并拟下一句，两次不合格则丢弃；顶部阶段条标出读群、试映、上映、反响，当前主操作只在阶段条出现。",
+    "release_notes": "0.5.4：商店截图换成 0.5.3 界面在官方 Rinx 1.3.0 上的真机截图，介绍文字与实现对齐；应用代码与 0.5.3 相同。0.5.3：打开即读群，不再先点载入；一次点击完成允许与试映，通过核对的推荐句自动放进草稿（你手动改过的草稿不覆盖）；发出后可「看反响」，回复按原话列出、允许有效才请助手对照并拟下一句，两次不合格则丢弃；顶部阶段条标出读群、试映、上映、反响，当前主操作只在阶段条出现。",
     "schema": 1,
     "screenshots": [
-      "screenshots/01-goal-and-draft.png",
-      "screenshots/02-revision-review.png"
+      "screenshots/01-read.png",
+      "screenshots/02-check.png",
+      "screenshots/03-confirm.png",
+      "screenshots/04-reaction.png"
     ],
     "subtitle": "先试着说，再决定要不要发"
   },
@@ -61,7 +63,7 @@
     },
     "id": "oncue-screening-room",
     "integrity": {
-      "bundle_blake3": "0d303bf7fefd30d8360695ad0f4cc1e942fa973f0dde8aa684534a056e92b1fd"
+      "bundle_blake3": "4ad4914314ed91b1b68810e6ae01d9eaa20e1c11bd093cdc7d8dcd4d88fa3a66"
     },
     "name": "OnCue · 群聊试映室",
     "network": {
@@ -71,7 +73,7 @@
     "storage": {
       "max_bytes": 4194304
     },
-    "version": "0.5.3"
+    "version": "0.5.4"
   },
   "questions": [
     "Does the app do what its name, subtitle and description claim? Cite the text in its source.",
@@ -84,5 +86,5 @@
   ],
   "schema": 1,
   "screenshots": [],
-  "version": "0.5.3"
+  "version": "0.5.4"
 }
