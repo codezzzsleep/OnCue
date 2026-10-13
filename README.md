@@ -12,7 +12,7 @@
 
 <p align="center">
   <a href="evidence/demo/oncue-demo-053.mp4"><b>▶ 演示视频（4:24）</b></a> ·
-  <a href="OnCue%20复赛说明.pdf">复赛说明 PDF</a> ·
+  <a href="OnCue%20复赛PPT.pdf">复赛说明 PDF</a> ·
   <a href="oncue/VERIFICATION.md">验证记录</a> ·
   <a href="oncue/docs/RUNNING.md">运行说明</a>
 </p>
