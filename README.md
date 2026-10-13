@@ -10,7 +10,7 @@
     <img src="docs/readme/badges/license.svg" alt="License Apache-2.0">
   </p>
   <p>
-    <a href="evidence/demo/oncue-demo-053.mp4">演示视频</a> ·
+    <a href="evidence/demo/oncue-demo-053-2min.mp4">演示视频</a> ·
     <a href="#快速开始">快速开始</a> ·
     <a href="#工作原理">工作原理</a> ·
     <a href="oncue/VERIFICATION.md">验证记录</a> ·
@@ -74,7 +74,7 @@ git clone https://github.com/codezzzsleep/OnCue.git
 
 | 问题 | 会发生什么 | OnCue 的把关 |
 | --- | --- | --- |
-| 编造 | 写出群里没人说过的数字和承诺 | 每条说法只能引用你勾选的消息；数字、中文数字、承诺句式没有出处就拒绝 |
+| 编造 | 写出群里没人说过的数字和承诺 | 每条说法只能引用你勾选的消息；数字（含带单位的中文数字）、承诺句式没有出处就拒绝 |
 | 越权 | 没确认就发；群里有了新消息还照发旧稿 | 两步确认才发送；发前再读群，有新消息先标出；发后读回，从不自动重发 |
 | 断环 | 发完就结束，下一句只能靠猜 | 看反响：原话照列，对照预想给出下一句；对照同样要过检查 |
 
@@ -131,8 +131,8 @@ git clone https://github.com/codezzzsleep/OnCue.git
 </table>
 
 <p align="center">
-  <a href="evidence/demo/oncue-demo-053.mp4"><img src="docs/readme/video-thumb.png" alt="演示视频（4:24）：官方 Rinx 1.3.0 真机录屏，中文配音" width="560"></a>
-  <br><sub>点击观看带配音的完整演示（4:24）</sub>
+  <a href="evidence/demo/oncue-demo-053-2min.mp4"><img src="docs/readme/video-thumb.png" alt="演示视频（1:56）：官方 Rinx 1.3.0 真机录屏，中文配音" width="560"></a>
+  <br><sub>点击观看带配音的演示（1:56）· <a href="evidence/demo/oncue-demo-053.mp4">带贡献讲解的完整版（4:24）</a></sub>
 </p>
 
 ## 测试
@@ -186,7 +186,7 @@ build/                      审核问答与宿主问题复现材料
 <table>
   <tr><th>建议</th><th>做了什么</th></tr>
   <tr><td>补「拒绝授权、授权到期」的验证记录</td><td>在官方 Rinx 上实拍四种授权状态；授权到期实测约 1 小时</td></tr>
-  <tr><td>防编造扩展到中文数字和承诺句式</td><td>覆盖中文数字、半天、复合单位；承诺句式逐句检查</td></tr>
+  <tr><td>防编造扩展到中文数字和承诺句式</td><td>覆盖带单位的中文数字、半天、复合单位；承诺句式逐句检查</td></tr>
   <tr><td>应用包移到仓库根目录</td><td>已移到 <code>bundle/</code></td></tr>
   <tr><td>改用 GitHub 发布流程</td><td>打 tag 触发 <code>publish-app.yml</code>，版本 0.5.3</td></tr>
   <tr><td>「【推荐】B」同行写法也算推荐</td><td>解析器同时接受独占行与同行写法，逻辑测试覆盖</td></tr>
