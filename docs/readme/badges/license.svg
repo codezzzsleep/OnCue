@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="151" height="22" role="img" aria-label="License: Apache-2.0">
+<title>License: Apache-2.0</title>
+<clipPath id="r"><rect width="151" height="22" rx="4"/></clipPath>
+<g clip-path="url(#r)"><rect width="65" height="22" fill="#14201A"/><rect x="65" width="86" height="22" fill="#6B756F"/></g>
+<g font-family="Verdana,'Noto Sans CJK SC','PingFang SC','Microsoft YaHei',sans-serif" font-size="12" text-anchor="middle">
+<text x="32.5" y="15" fill="#F1EEE4">License</text>
+<text x="108.0" y="15" fill="#FFFFFF" font-weight="bold">Apache-2.0</text>
+</g></svg>
