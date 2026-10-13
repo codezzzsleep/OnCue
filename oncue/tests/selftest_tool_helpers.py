@@ -211,9 +211,25 @@ class BridgeTests(OfflineTest):
         b.reveal = Mock(return_value=target)
         b.snap.side_effect = AssertionError('must not resnapshot after reveal')
         result = b.click_app(text='Go', ty='Button')
-        b.reveal.assert_called_once_with(text='Go', id=None, ty='Button')
+        b.reveal.assert_called_once_with(text='Go', id=None, ty='Button', after=None)
         self.assertIs(result['target'], target)
         b.get.assert_called_once_with('click', x=115.0, y=110.0, wait=1)
+
+    def test_reveal_after_keeps_only_targets_below_the_anchor(self):
+        # 选用这句 appears once per route card; `after` pins the intended card,
+        # mirroring the uitest DSL selector instead of deleting buttons.
+        anchor = widget('Label', 'card-b', '路线 B', (20, 30, 60, 16))
+        first = widget(rect=(20, 60, 60, 24))
+        second = widget(rect=(20, 120, 60, 24))
+        b = self.bridge([viewport(), first, anchor, second])
+        result = b.click_app(text='Go', after='路线 B')
+        self.assertIs(result['target'], second)
+        b2 = self.bridge([viewport(), first, anchor, second])
+        with self.assertRaisesRegex(ValueError, 'duplicate'):
+            b2.click_app(text='Go')
+        b3 = self.bridge([viewport(), first, anchor, second])
+        with self.assertRaisesRegex(ValueError, 'Cannot reveal'):
+            b3.click_app(text='Go', after='没有这张卡')
 
     def test_app_scroll_requires_unique_nonempty_viewport(self):
         for rows in ([], [viewport(), viewport()], [viewport((0, 0, 0, 30))]):

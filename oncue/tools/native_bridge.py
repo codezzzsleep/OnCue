@@ -93,18 +93,27 @@ class Bridge:
         return [r for r in rows if _visible(r) and r.get('ty') != 'Splash']
 
     @staticmethod
-    def _targets(rows, text=None, id=None, ty=None):
+    def _targets(rows, text=None, id=None, ty=None, after=None):
         if text is None and id is None:
             raise ValueError('Specify widget text or id')
         if ty is not None and (not isinstance(ty, str) or not ty):
             raise ValueError('Widget ty must be a nonempty type name')
         # Text selects buttons, not their coincident Label children. An explicit
         # id can select an input or other widget; fill additionally pins its type.
-        return [r for r in rows if _visible(r) and r.get('ty') not in ('Label', 'Splash')
-                and (text is None or r.get('t') == text)
-                and (id is None or r.get('i') == id)
-                and (r.get('ty') == ty if ty is not None
-                     else text is None or _button(r.get('ty')))]
+        found = [r for r in rows if _visible(r) and r.get('ty') not in ('Label', 'Splash')
+                 and (text is None or r.get('t') == text)
+                 and (id is None or r.get('i') == id)
+                 and (r.get('ty') == ty if ty is not None
+                      else text is None or _button(r.get('ty')))]
+        # `after` keeps only targets listed after the first row containing the
+        # anchor text: same-named buttons in repeated cards (选用这句 ×3) are
+        # distinguished by the card they belong to, mirroring the uitest DSL.
+        if after is not None and found:
+            anchor = after.get('text') if isinstance(after, dict) else after
+            ai = next((i for i, r in enumerate(rows)
+                       if _visible(r) and anchor in (r.get('t') or '')), None)
+            found = [r for r in found if ai is not None and rows.index(r) > ai]
+        return found
 
     @staticmethod
     def _viewport(rows):
@@ -193,22 +202,34 @@ class Bridge:
     def app_scroll(self, dy):
         return self._scroll_viewport(self._viewport(self.snap()), dy)
 
-    def reveal(self, text=None, id=None, *, ty=None):
+    def reveal(self, text=None, id=None, *, ty=None, after=None):
         """Find a unique target fully inside app_scroll, using one snapshot per step.
 
         Reset to the top, then allow up to 40 downward scrolls. Duplicate targets
         are refused even if only one is inside the viewport. Known visible overlay
         rectangles covering the target centre cause refusal, not a guessed click.
         """
-        self._targets([], text=text, id=id, ty=ty)  # Validate before any input event.
+        self._targets([], text=text, id=id, ty=ty, after=after)  # Validate before any input event.
         rows = self.snap()
-        if len(self._targets(rows, text=text, id=id, ty=ty)) > 1:
+        if len(self._targets(rows, text=text, id=id, ty=ty, after=after)) > 1:
             raise ValueError('Expected unique visible widget, found duplicate targets')
+        # Fixed-position widgets (the 0.5.3 stage bar lives above app_scroll) can
+        # never be scrolled into the scroll viewport; accept one that is already
+        # fully inside the window and uncovered, with the same uniqueness guard.
+        matches = self._targets(rows, text=text, id=id, ty=ty, after=after)
+        win = next((r for r in rows if r.get('ty') == 'Window'), None)
+        if len(matches) == 1 and win is not None:
+            row = matches[0]
+            x, y, w, h = row['r']
+            wx, wy, ww, wh = win['r']
+            if wx <= x and x + w <= wx + ww and wy <= y and y + h <= wy + wh:
+                self._uncovered(rows, row)
+                return row
         self._scroll_viewport(self._viewport(rows), -5000)
         for step in range(41):
             rows = self.snap()
             viewport = self._viewport(rows)
-            matches = self._targets(rows, text=text, id=id, ty=ty)
+            matches = self._targets(rows, text=text, id=id, ty=ty, after=after)
             if len(matches) > 1:
                 raise ValueError('Expected unique visible widget, found duplicate targets')
             if matches:
@@ -224,7 +245,7 @@ class Bridge:
                 self._scroll_viewport(viewport, 150)
         raise ValueError('Cannot reveal a unique widget fully inside app_scroll viewport')
 
-    def click_app_visible(self, text=None, id=None, *, ty=None):
+    def click_app_visible(self, text=None, id=None, *, ty=None, after=None):
         """Click only a currently exposed app control, without scrolling or retries.
 
         Playback pause checks must not spend the remaining route duration walking
@@ -232,7 +253,7 @@ class Bridge:
         use the same fresh snapshot for the target and its viewport.
         """
         rows = self.snap()
-        matches = self._targets(rows, text=text, id=id, ty=ty)
+        matches = self._targets(rows, text=text, id=id, ty=ty, after=after)
         if len(matches) != 1:
             raise ValueError(f'Expected unique visible widget, found {len(matches)}')
         row = matches[0]
@@ -243,13 +264,13 @@ class Bridge:
         self._uncovered(rows, row)
         return self._click_row(row)
 
-    def click_app(self, text=None, id=None, *, ty=None):
+    def click_app(self, text=None, id=None, *, ty=None, after=None):
         # Click the exact row verified by reveal: do NOT take another snapshot or
         # repeat an unscoped text/id search that might select a different widget.
         last = None
         for attempt in range(4):
             try:
-                row = self.reveal(text=text, id=id, ty=ty)
+                row = self.reveal(text=text, id=id, ty=ty, after=after)
             except ValueError as exc:
                 last = exc
                 if 'covered' not in str(exc) or attempt == 3:

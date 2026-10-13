@@ -1,0 +1,33 @@
+{
+  "name": "N2 没有群聊服务：留在样例，状态栏写明原因",
+  "sizes": [
+    "412x892"
+  ],
+  "steps": [
+    {
+      "wait": {
+        "text": [
+          "当前宿主不提供群聊服务，请在 Rinx 里打开。"
+        ]
+      },
+      "timeout": 5
+    },
+    {
+      "scroll_to": "样例舞台 · 国庆搭子局"
+    },
+    {
+      "expect": {
+        "absent": [
+          "原消息已载入"
+        ],
+        "calls": [
+          {
+            "service": "matrix.send_message",
+            "count": 0
+          }
+        ]
+      }
+    }
+  ],
+  "host_profile": "rinx"
+}

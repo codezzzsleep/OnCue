@@ -1,0 +1,9 @@
+{
+  "source_sha256": "89a23d4c2e6c850b4aa6d4fc1f134d58cb11c4f21d39207ab9ab98e7daa766f0",
+  "host": "官方 Rinx c515e5fc9b6dc22e67f7d551b09fdd793ec685a1（零本地补丁）",
+  "opened_at": "2026-10-11T15:55:46+0800",
+  "observed_at": "2026-10-11T17:03:30+0800",
+  "elapsed_minutes": 67.7,
+  "observation": "宿主界面显示「Session ended. Review and run again.」（screenshot: session-ended-053.png）；期间未保存任何内容丢失（本次未产生待保存草稿，应用内无未保存编辑）",
+  "note": "未补丁宿主上的历史授权到期记录；截图仅遮盖导入栏中的本机路径与完整测试房间标识，Session ended 状态与其余界面未改动"
+}

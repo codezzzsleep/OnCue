@@ -4,12 +4,12 @@
     "storage"
   ],
   "compute": {
-    "instruction_budget": 8000000,
+    "instruction_budget": 64000000,
     "memory_bytes": 33554432
   },
   "id": "oncue-probe-send4",
   "integrity": {
-    "bundle_blake3": "29620c2e853a969991012eb6da1c768eda4f4eb59be1a95a7c878b906544d17d"
+    "bundle_blake3": "fafcef86cb932a0a67ce9fe2c6ccbdb74f1a5a45bab6e2920b5dca9f9f8d4dd5"
   },
   "name": "OnCue controlled send4 probe",
   "network": {
@@ -19,5 +19,5 @@
   "storage": {
     "max_bytes": 4194304
   },
-  "version": "0.5.2"
+  "version": "0.5.3"
 }

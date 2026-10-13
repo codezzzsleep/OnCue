@@ -74,5 +74,6 @@
     "octos.turn.interrupt": {
       "data": {}
     }
-  }
+  },
+  "host_profile": "rinx"
 }

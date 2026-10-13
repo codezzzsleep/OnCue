@@ -34,6 +34,8 @@ REQUIRED_FUNCTIONS = {
     "cue_import_legacy", "cue_request_delete", "cue_confirm_delete",
     "cue_source_payload", "cue_context_key", "cue_toggle_source", "cue_grant_model",
     "cue_revoke_model", "cue_validate_route", "cue_route_refs", "cue_numbers_in",
+    "cue_commitment_spans", "cue_commitments_grounded", "cue_grounding_allowed",
+    "cue_parse_reaction", "cue_reaction_reset",
     "cue_refine", "cue_refine_identity", "cue_decode_refinement",
     "cue_accept_refinement", "cue_apply_refinement", "cue_edit_refine",
 }
@@ -42,7 +44,7 @@ LEGACY_FILES = ("draft.txt", "take-a.txt", "take-b.txt")
 STORAGE_FIXTURES = ("draft", "take_a", "take_b")
 INITIALIZER = re.compile(
     r"(?m)^start_timeout\(0\.05,\s*fn\(\)\{\s*"
-    r"cue_show_demo\(\)\s+cue_(?:refresh_takes|boot_state)\(\)\s*\}\)\s*$"
+    r"cue_show_demo\(\)\s+cue_(?:refresh_takes|boot_state)\(\)(?:\s+cue_boot_autoload\(\))?\s*\}\)\s*$"
 )
 
 
@@ -253,6 +255,11 @@ def generate(source_path: Path, workdir: Path, suite: str) -> Path:
     manifest["capabilities"] = ["storage"]
     manifest["network"] = {"hosts": []}
     manifest["integrity"] = {"bundle_blake3": "0" * 64}
+    # The harness services several host callbacks inside one VM step, so a probe
+    # step spans work the real host splits across separate event-loop turns; the
+    # production budget (8M per single turn) stays unchanged and is covered by
+    # the UI scenarios, which run one user action per step under the same budget.
+    manifest["compute"] = {"instruction_budget": 64000000, "memory_bytes": 33554432}
     listing_path = source_path.parent / "listing.json"
     listing_bytes = listing_path.read_bytes()
     listing = json.loads(listing_bytes)
@@ -263,6 +270,13 @@ def generate(source_path: Path, workdir: Path, suite: str) -> Path:
         asset = source_path.parent / relative
         if asset.is_symlink() or not asset.is_file() or source_path.parent not in asset.resolve().parents:
             raise ValueError(f"Unsafe/missing source asset: {relative}")
+        assets.append((relative, asset.read_bytes()))
+    # Splash fonts are external bundle assets and must also be present in
+    # disposable logic probe bundles; otherwise probes silently exercise host fallback.
+    for relative in sorted(str(p.relative_to(source_path.parent)) for p in (source_path.parent / "fonts").glob("*") if p.is_file()):
+        asset = source_path.parent / relative
+        if asset.is_symlink() or source_path.parent not in asset.resolve().parents:
+            raise ValueError(f"Unsafe font asset: {relative}")
         assets.append((relative, asset.read_bytes()))
     # Detect concurrent source editing before publishing the snapshot.
     if source_path.read_bytes() != original:

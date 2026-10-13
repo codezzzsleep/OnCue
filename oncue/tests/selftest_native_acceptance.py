@@ -112,8 +112,8 @@ class NativeAcceptanceTests(unittest.TestCase):
         self.assertEqual(native.turn_state("助手候选未采用：引用无效。已用完一次修复，可改输入后重试或手工编辑。"), "failure")
         self.assertEqual(native.turn_state("输入或来源已变化，旧回复未应用；原草稿保留。"), "failure")
         self.assertEqual(native.turn_state("这次试映没有完成：service error"), "failure")
-        self.assertEqual(native.turn_state("助手试映等待超过 90 秒，已结束等待。"), "failure")
-        self.assertEqual(native.turn_state(native.SUCCESS), "success")
+        self.assertEqual(native.turn_state("助手试映等待超过 150 秒，已结束等待。"), "failure")
+        self.assertEqual(native.turn_state("三种说法好了。推荐 C（留余地）；已放进草稿框。"), "success")
         self.assertEqual(native.turn_state("unrecognized production contract"), "unknown")
 
     def test_preuse_freshness_is_pending_and_fail_closed(self):
@@ -168,7 +168,8 @@ class NativeAcceptanceTests(unittest.TestCase):
     def test_waits_through_automatic_retry_and_records_status(self):
         recorder = self.recorder()
         recorder.status = Mock(side_effect=["助手正在准备三种说法…",
-                                           "助手的回答没通过检查，正在自动重试一次…", native.SUCCESS])
+                                           "助手的回答没通过检查，正在自动重试一次…",
+                                           "三种说法好了。推荐 A（先顺着说）；已放进草稿框。"])
         with patch.object(native.time, "sleep"), patch.object(native.time, "monotonic", return_value=0):
             recorder.wait_status(native.turn_state, "test")
         self.assertEqual([event["state"] for event in recorder.actions], ["pending", "pending", "success"])
@@ -369,8 +370,12 @@ class NativeAcceptanceTests(unittest.TestCase):
             recorder.fresh_draft("draft", "fixture")
 
     def test_turn_success_is_exact_and_failure_contracts_current(self):
-        self.assertEqual(native.turn_state(native.SUCCESS), "success")
+        self.assertEqual(native.turn_state("三种说法好了。推荐 A（先顺着说）；已放进草稿框。"), "success")
+        self.assertEqual(native.turn_state("三种说法好了。助手未给推荐，默认第一条；已放进草稿框。"), "success")
+        self.assertEqual(native.turn_state("三种说法好了。推荐 B（省事）；草稿框已有内容，未覆盖；点「选用这句」采用。"), "success")
         self.assertEqual(native.turn_state(native.SUCCESS + " stale suffix"), "unknown")
+        self.assertEqual(native.turn_state("三种说法好了。推荐 A（先顺着说）；已放进草稿框。 trailing"), "unknown")
+        self.assertEqual(native.turn_state("三种说法好了。选之前对一下。"), "unknown")  # 0.5.2 旧文案不再算成功
         for status in ("先看一下勾选的消息，再点「允许当前范围内的试映与修订」。",
                        "请求超过宿主32 KiB限制，请减少参考消息或输入。",
                        "助手候选未采用：数字。已用完一次修复。"):
@@ -453,6 +458,15 @@ class NativeAcceptanceTests(unittest.TestCase):
                 value = self.send_store(["OC_SEND_1", state, 1234.5, event, "literal🙂"])
                 self.assertEqual(native.decode_store(self.encode_store(value)), value)
                 self.assertEqual(len(value[2][0][1]), 10)
+
+    def test_decode_send_metadata_with_expectations(self):
+        marker = ["OC_SEND_1", "observed_full", 1234.5, "$e", "literal🙂",
+                  ["预想一", "预想二", "预想三"]]
+        value = self.send_store(marker)
+        self.assertEqual(native.decode_store(self.encode_store(value)), value)
+        bad = ["OC_SEND_1", "unknown", 0, "", "literal🙂", "not-a-list"]
+        with self.assertRaises(RuntimeError):
+            native.decode_store(self.encode_store(self.send_store(bad)))
 
     def test_decode_send_metadata_shape_tag_and_state_fail_closed(self):
         invalid = ([], {}, "historical", ["OC_SEND_1"],

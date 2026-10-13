@@ -1,22 +1,9 @@
 {
-  "name": "S4 没允许就点试映：只提示，不调用助手",
+  "name": "S4/A14 未点「允许并试映」前对助手零调用；点一次完成允许和试映",
   "use": "_room.json",
   "steps": [
     {
       "run": "_load.json"
-    },
-    {
-      "scroll_to": "试映下一幕"
-    },
-    {
-      "click": "试映下一幕"
-    },
-    {
-      "wait": {
-        "text": [
-          "先看一下勾选的消息，再点「允许当前范围内的试映与修订」。"
-        ]
-      }
     },
     {
       "expect": {
@@ -24,10 +11,49 @@
           {
             "service": "octos.session.open",
             "count": 0
+          },
+          {
+            "service": "octos.turn.start",
+            "count": 0
           }
         ]
+      }
+    },
+    {
+      "expect": {
+        "text": [
+          "会把勾选的 3 条消息、你的台词和目标发给宿主助手"
+        ]
+      }
+    },
+    {
+      "scroll_to": "允许并试映"
+    },
+    {
+      "click": "允许并试映"
+    },
+    {
+      "wait": {
+        "text": [
+          "三种说法好了。",
+          "已放进草稿框"
+        ]
       },
-      "timeout": 1
+      "timeout": 5
+    },
+    {
+      "expect": {
+        "calls": [
+          {
+            "service": "octos.session.open",
+            "count": 1
+          },
+          {
+            "service": "octos.turn.start",
+            "count": 1
+          }
+        ]
+      }
     }
   ]
 }

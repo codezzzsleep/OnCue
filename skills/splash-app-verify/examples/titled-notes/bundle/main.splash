@@ -9,6 +9,7 @@ let status = "Write a note and keep it."
 let asking = false
 let ask_token = 0         // the reply to an older request is ignored
 let store_file = "notes-v1.json"
+let store_locked = false  // the file could not be read: never write over it
 
 // ---- 2. Decisions: plain functions, data in, data out, no ui.
 fn clean(text){ text.trim() }
@@ -39,15 +40,24 @@ fn model_message(error){
 fn load(){
     if fs.exists(store_file) {
         let v = fs.read(store_file).parse_json()
-        if store_valid(v) { notes = v.notes } else { status = "The saved notes could not be read; nothing was changed." }
+        if store_valid(v) { notes = v.notes } else {
+            // Keep the unreadable file as it is: the person may still recover it.
+            store_locked = true
+            status = "The saved notes could not be read; nothing was changed, and nothing will be saved over them."
+        }
     }
     sync()
 }
-fn save(){ fs.write(store_file, {version: 1, notes: notes}.to_json()) }
+fn save(){
+    if store_locked { return false }
+    fs.write(store_file, {version: 1, notes: notes}.to_json())
+    true
+}
 
 // ---- 4. Actions: change state, then sync once.
 fn keep(){
     let text = clean(ui.entry.text())
+    if store_locked { status = "Not kept: the saved notes could not be read, and keeping would overwrite them." sync() return }
     if !note_ok(text) { status = "Write something first (up to 500 characters)." sync() return }
     notes = with_note(notes, text)
     save()

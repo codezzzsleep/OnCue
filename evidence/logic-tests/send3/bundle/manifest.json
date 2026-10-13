@@ -4,12 +4,12 @@
     "storage"
   ],
   "compute": {
-    "instruction_budget": 8000000,
+    "instruction_budget": 64000000,
     "memory_bytes": 33554432
   },
   "id": "oncue-probe-send3",
   "integrity": {
-    "bundle_blake3": "27cf4315b7c650efe9dfc27ba633bb28e7e61e7dc95fd2ca7a8739ece3a8b10a"
+    "bundle_blake3": "a96e3d9a730c1391d4bea238e7a0a22449d48042cb35a6fa4763a16b03d21e5f"
   },
   "name": "OnCue controlled send3 probe",
   "network": {
@@ -19,5 +19,5 @@
   "storage": {
     "max_bytes": 4194304
   },
-  "version": "0.5.2"
+  "version": "0.5.3"
 }

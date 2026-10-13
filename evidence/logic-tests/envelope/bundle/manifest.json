@@ -4,12 +4,12 @@
     "storage"
   ],
   "compute": {
-    "instruction_budget": 8000000,
+    "instruction_budget": 64000000,
     "memory_bytes": 33554432
   },
   "id": "oncue-probe-envelope",
   "integrity": {
-    "bundle_blake3": "6f5ebd8437446c24fe003630195dd019c5528e17eb75d86a3346c63e03e310c6"
+    "bundle_blake3": "fb3289a8232b8fce61e1138c46bbacb77410f973fd97bf28584b3d62dc0e6bf8"
   },
   "name": "OnCue controlled envelope probe",
   "network": {
@@ -19,5 +19,5 @@
   "storage": {
     "max_bytes": 4194304
   },
-  "version": "0.5.2"
+  "version": "0.5.3"
 }

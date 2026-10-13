@@ -38,7 +38,7 @@ class InfrastructureTests(unittest.TestCase):
                 self.assertEqual(set(before), set(after))
                 for name in before:
                     self.assertEqual(before[name]["source"], after[name]["source"])
-                self.assertIn("start_timeout(90.0", after["cue_deadline"]["source"])
+                self.assertIn("start_timeout(150.0", after["cue_deadline"]["source"])
                 self.assertIn("start_timeout(1.4", after["cue_play_pulse"]["source"])
                 self.assertEqual(provenance["source_sha256"], generate_probe.digest(self.source.encode("utf-8")))
                 self.assertFalse(provenance["natural_model_test"])
@@ -113,9 +113,9 @@ class InfrastructureTests(unittest.TestCase):
         literal = [name for name in literal if name not in ("storage.legacy_explicit_copy_", "envelope.auth_room_", "envelope.auth_model_")]
         self.assertEqual(len(literal), len(set(literal)))
         dynamic = {
-            "parser": {"parser." + case["id"] for case in self.fixtures["parser"] + self.fixtures["refinement"]},
+            "parser": {"parser." + case["id"] for case in self.fixtures["parser"] + self.fixtures["refinement"] + self.fixtures["recommendations"]},
             "pagination": {"pagination." + case["id"] for case in self.fixtures["pagination"]},
-            "grounding": {"grounding." + case["id"] for group in ("excerpts", "tokens", "numbers", "references")
+            "grounding": {"grounding." + case["id"] for group in ("excerpts", "tokens", "numbers", "references", "commitments", "reaction_parse")
                           for case in self.fixtures["grounding"][group]},
             "envelope": {"envelope.auth_" + mode + "_" + str(i) for mode in ("room", "model") for i in range(6)},
             "storage": {"storage." + case["id"] for case in self.fixtures["storage"]["invalid_cases"]}
@@ -234,8 +234,9 @@ class InfrastructureTests(unittest.TestCase):
         self.assertEqual(generate_probe.CORE_SUITES,
                          ("parser", "pagination", "retry", "deadline", "playback", "storage", "grounding", "envelope"))
         self.assertEqual(generate_probe.SUITES, (*generate_probe.CORE_SUITES, "send", "send2", "send3", "send4"))
+        # 0.5.3 复审：承诺句式扩至 38 项 + 条件小句细化 14 项 + 同行推荐 7 项 + 反响对照格式 7 项（reaction_parse）。
         self.assertEqual(sum(len(self.fixtures["assertion_ids"][suite])
-                             for suite in generate_probe.CORE_SUITES), 293)
+                             for suite in generate_probe.CORE_SUITES), 362)
         self.assertEqual(len(self.fixtures["assertion_ids"]["send"]), 44)
         self.assertEqual(len(self.fixtures["assertion_ids"]["send2"]), 21)
         self.assertEqual(len(self.fixtures["assertion_ids"]["send3"]), 7)

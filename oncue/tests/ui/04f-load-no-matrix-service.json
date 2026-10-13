@@ -15,5 +15,6 @@
       },
       "timeout": 5
     }
-  ]
+  ],
+  "host_profile": "rinx"
 }

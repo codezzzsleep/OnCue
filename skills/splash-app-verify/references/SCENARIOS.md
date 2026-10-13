@@ -39,11 +39,27 @@ whose names start with `_` are shared parts, not scenarios.
 | `use` | A part (`"_room.json"`) or a list of them: their `host` replies, `storage` and shared fields fill in what this scenario does not set | none |
 | `sizes` (or `size`) | Window sizes, `WxH` in layout points; the scenario runs once per size from a fresh launch | `412x892`, card-host's default |
 | `viewport` | `[x, y, w, h]` that must hold what `in_view` lists | the whole window |
-| `storage` | Files written into the app's jail before it starts: text, or JSON for an object | none |
+| `storage` | Files written into the app's jail before it starts: text, or JSON for an object. A name is a path inside the jail: no absolute path, `..`, backslash or glob character | none |
 | `host` | Replies for `host.request`, by service name; see below | every call answers `no service answers "<family>" on this device`, as card-host does |
+| `host_profile` | What a request for a service the manifest does not declare gets: `octosense` answers it, as the current OctoSense hosts do (capability names are disclosures there), and the run lists it as undisclosed; `rinx` refuses it with Rinx's `Mini app was not granted <service>` | `octosense` |
 | `fake_host` | `false` runs the bundle as it is, with card-host's real (empty) services | `true` |
-| `startup_timeout` | Seconds to wait for the first widgets | 60 |
+| `startup_timeout` | Seconds to wait for the first widgets, at most 600 | 60 |
 | `allow_runtime_errors` | `true` stops a runtime error in the log from failing the scenario | `false` |
+| `description`, `note` | Free text for people; the runner ignores it | none |
+
+Every key in a scenario, a step, a check and a selector is checked when the
+scenarios load. An unknown key (`texts` for `text`, `servce` for `service`) or a
+value of the wrong kind (`"text": "Kept."` instead of a list, `"false"` in quotes
+where `false` is meant, `true` where a count is meant, a size that is not
+`WxH`) stops the run with exit status 2 before any app starts: a check the
+runner skipped, or a switch it read the wrong way, would otherwise pass
+without testing anything. The same holds for what JSON allows but nothing
+after it can use: `NaN` or `Infinity`, a lone surrogate escape such as
+`\ud800`, nesting more than 64 deep. Every time (`sleep`, `timeout`,
+`startup_timeout`, `delay`) is seconds from 0 to 600, since a larger number is
+almost always milliseconds; a file name must fit the filesystem (255 bytes a
+part) and hold no control character. A bundle that contains a symbolic link is
+refused too: the runner never writes through a link.
 
 Size the app the way its hosts do. A shell that gives the app part of its
 window gives it a smaller rectangle than the window: measure that rectangle
@@ -56,7 +72,9 @@ with `"use"`, and its steps with a `{"run": "_part.json"}` step, which the
 runner replaces by the part's `steps`. Keep one part for the host replies of
 the normal path (`_room.json`) and one for each sequence many scenarios repeat
 (`_load.json`, `_confirm.json`). A scenario then states only what differs:
-the one reply that fails, the steps after it, the checks.
+the one reply that fails, the steps after it, the checks. A part may hold both
+fixtures and steps; it cannot `use` another part, and its keys are checked like
+a scenario's.
 
 ## Host replies
 
@@ -68,21 +86,42 @@ order with the last one repeating. `"*"` answers any service not listed.
 | `{"data": …}` | `{is_ok: true, data: …, error: ""}` |
 | `{"error": "text"}` | `{is_ok: false, data: nil, error: "text"}` |
 | `{"never": true}` | No callback: test the app's own timeout or stop button |
-| `"delay": seconds` | Wait before the callback (default 0.05); use it to test a second click while a request is out |
+| `"delay": seconds` | Wait before the callback (default 0.05, at most 600); use it to test a second click while a request is out |
+
+A reply has exactly one of `data`, `error` and `never`, and may add `delay` and
+a `"note"` for people. `error` is the text the app gets; `never` is `true`.
 
 A host answers each request once ([SCRIPT-API](../../../docs/SCRIPT-API.md#host-services-hostrequest)),
-so a reply is one callback. As on a real host, a service the manifest does not
-request answers `this app was not granted "<family>", which "<service>" needs`,
-whatever the fixture says.
+so a reply is one callback.
+
+A service the manifest does not declare is treated as `host_profile` says. On
+current OctoSense hosts a capability name is a disclosure, not a gate (see
+[CAPABILITIES](../../../docs/CAPABILITIES.md#current-source-policy-and-release-boundary)),
+so the fixture answers and the run prints `called without declaring: …`. Rinx
+still grants a mini-app only the services it was granted, so a Rinx mini-app's
+scenarios set `"host_profile": "rinx"` (in their shared part), and an undeclared
+call gets `Mini app was not granted <service>`, whatever the fixture says.
 
 Copy reply shapes and error texts from the host's source or documentation, and
 name the source in the contract. A fixture the real host could never send
 tests nothing. Write the failure texts the host really produces, such as
 `Mini-app authorization expired` or `no service answers "matrix" on this device`.
 
-The fake `host` keeps `has` and `capabilities` from the real one. Every call is
-logged to `uitest-calls.json` in the copy's jail, which the `calls` check reads;
-the runner adds `storage` to the copy's manifest for that file.
+The fake `host` keeps `has` from the real one; `capabilities` returns the
+manifest's list as written. The test copy differs from the bundle only in
+`main.splash` (and loses a signature its new bytes would not match): the
+runner adds no capability and writes nothing into the app's jail beyond the
+scenario's `storage`.
+
+Every call is printed to card-host's log as one line, with whether it was
+declared; the `calls` check reads those lines. Each line carries a code that is
+new for every run, so the app cannot print a line the runner would take for a
+call, and the fake host prints a ready line before the app's first line runs.
+A missing ready line, a call line that does not parse, a gap in the call
+numbers or a record cut off at the end of the log is broken evidence (exit
+status 2), never "no calls": a `"count": 0` or an `excludes` check cannot pass
+on evidence the runner could not read. While the app runs, a record still being
+written makes a check wait for it.
 
 ## Steps
 
@@ -98,8 +137,10 @@ the runner adds `storage` to the copy's manifest for that file.
 | `{"sleep": 0.5}` | Waits; prefer `wait` |
 | `{"run": "_part.json"}` | The part's steps, in place |
 
-Any step may add `"allow_runtime_errors": true`, and a `"note"` that says why
-the step is there.
+Any step but `run` may add `"allow_runtime_errors": true` (the log is checked
+after every step), and any step a `"note"` that says why it is there.
+`timeout` and `sleep` are seconds, at most 600; `scroll_to` tries at most
+`"max"` scrolls (default 25, at most 1000).
 
 A `SELECTOR` is a string, matched against a widget's whole text, or an object:
 
@@ -109,20 +150,20 @@ A `SELECTOR` is a string, matched against a widget's whole text, or an object:
 | `text` | Its whole text, trimmed |
 | `contains` | Part of its text or of an input's value |
 | `type` | Its widget type, such as `TextInput` |
-| `after` | Only widgets listed after the first match of this selector: the button in the same card as a text, in a list whose rows have no ids |
+| `after` | Only widgets listed after the one this selector picks (its own `nth` counts): the button in the same card as a text, in a list whose rows have no ids. At most 8 deep |
 | `nth` | Which match, from 0, among those on screen now |
 
 ## Checks
 
 | Check | Holds when |
 | --- | --- |
-| `"text": ["…"]` | Each text appears in some widget on screen, in its text or input value |
-| `"absent": ["…"]` | No widget on screen shows the text |
-| `"in_view": [SELECTOR]` | The widget is wholly inside the viewport and no scroll view cuts it off |
+| `"text": ["…"]` | Each text appears within one widget on screen, in its text or input value; a text is never matched across two widgets |
+| `"absent": ["…" or SELECTOR]` | No widget on screen shows the text, or matches the selector (`{"type": "Button", "text": "Send"}` when the same words may appear in a sentence) |
+| `"in_view": [SELECTOR]` | The widget is wholly inside the viewport and no scroll view cuts it off (see below) |
 | `"enabled"` / `"disabled": [SELECTOR]` | The widget exists and is (not) enabled |
 | `"count": [{"of": SELECTOR, "n": 3}]` | Exactly n widgets on screen match |
 | `"calls": [{"service": "…", "count": 1, "contains": "…", "excludes": "…"}]` | The app made that many calls to the service; `contains` filters by the JSON of the arguments; without `count`, at least one; `excludes` fails if any of those calls sends the text (a name that must not reach a model, say) |
-| `"files": [{"name": "…", "contains": ["…"]}]` | The jail has the file and it contains each text; `"missing": true` requires its absence |
+| `"files": [{"name": "…", "contains": ["…"]}]` | The file at exactly that path in the jail exists and contains each text; `"missing": true` requires its absence. The name follows the `storage` rules; a file of the same name elsewhere (a backup) or a link does not count |
 
 ## What the runner sees
 
@@ -130,8 +171,13 @@ The runner reads `/snap`, which lists the widgets on screen, the way a person
 sees the app:
 
 - A widget inside a scroll view is listed only while it is scrolled into view,
-  and a half-hidden one is reported by its visible part. `in_view` and
-  `scroll_to` recognise a widget cut off at a scroll view's edge.
+  and a half-hidden one is reported by its visible part, so its cut edge lies
+  on the scroll view's edge. A whole widget can also sit flush against that
+  edge. When a widget touches a container's edge, `in_view` and `scroll_to`
+  settle it by looking: they scroll that container a little toward the edge
+  and snap again. If the widget grows, part of it was hidden; if it only moves,
+  or nothing moves because the content ends there, it was whole. The probe is
+  scrolled back afterwards.
 - `text`, `absent` and `count` judge what is on screen now. Scroll to the part
   of the app first: an `absent` over an area that is off screen passes without
   testing anything.
@@ -142,5 +188,18 @@ sees the app:
 A widget can be drawn yet not readable this way (text clipped inside its own
 box, colour, overlap); that is for the visual review.
 
+A step also fails when the log shows the script failing: an error, a panic, a
+parse error, or a stop on its instruction budget (older runtimes stop a script
+there; current ones only count), or when card-host has exited.
+
 After every run the runner copies the app's jail to `<out>/<scenario>@<size>/jail/`:
 evidence of what the app wrote, and the seed for a restart scenario's `storage`.
+
+`<out>/summary.json` belongs to one invocation. It is rewritten when a run
+starts (`"status": "running"`) and after every scenario, and always ends as
+`passed`, `failed`, `environment_error` (no display, a host that would not
+close, unreadable evidence) or `aborted` (a scenario file or the card-host
+could not be used, or the run was interrupted), with a `finished` time. It carries a `run_id`, the runner version, digests of the
+bundle and of the card-host binary, and each result carries the digest of the
+scenario as it ran. A summary left by an earlier run is never mistaken for this
+one.

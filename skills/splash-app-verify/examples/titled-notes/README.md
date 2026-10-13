@@ -13,10 +13,15 @@ python3 skills/splash-app-verify/scripts/uitest.py run \
   skills/splash-app-verify/examples/titled-notes/tests --out /tmp/uitest-titled --keep-going
 ```
 
-Recorded on 2026-10-09 (Linux x86_64, 2 cores, Xvfb with Mesa llvmpipe, card-host
-built from App Hub `18cd41d`): all 10 runs pass. Each takes 0.8–1.3 s, except the
-"never answers" scenario, which waits out the app's own 20-second timer. card-host's
-peak resident memory was 242–245 MB in every run.
+Recorded on 2026-10-11 (Linux x86_64, 2 cores, Xvfb with Mesa llvmpipe, card-host
+built from App Hub `8d3853c` with the Splash runtime Octoscript-Makepad `6cf2d90a`):
+all 10 runs pass. Each takes 0.6–1.0 s, except the "never answers" scenario, which
+waits out the app's own 20-second timer. card-host's peak resident memory was
+243–245 MB in every run.
+
+`05-corrupt-store` keeps a note after the unreadable file is reported and checks
+that the file is still the original. Before the app locked writes, that step
+replaced the file with the new note; the scenario failed then and passes now.
 
 ## The braced `else` in `on_render`
 

@@ -10,3 +10,4 @@ __pycache__/
 build/*
 !build/review.json
 !build/REVIEW-ANSWERS.md
+!build/RINX-PR-room-binding.md

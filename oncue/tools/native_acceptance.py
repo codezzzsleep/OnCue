@@ -27,9 +27,10 @@ from rinx_session import module, resize
 
 APP_ID = "oncue-screening-room"
 DEFAULT_RELEASE = Path(__file__).resolve().parents[2] / "bundle"
-SUCCESS = "三种说法好了。每条下面是它依据的原文，选之前对一下。"
+SUCCESS = "三种说法好了"  # 0.5.3 成功文案：前缀 + 推荐说明（可变）+ 两种固定后缀之一
+SUCCESS_SUFFIXES = ("；已放进草稿框。", "；草稿框已有内容，未覆盖；点「选用这句」采用。")
 CONSENT = "允许当前范围内的试映与修订"
-CONSENT_GRANTED = "已允许。点试映或修订时，会把台词、目标和勾选的消息发给助手。"
+CONSENT_GRANTED = "已允许。试映、修订和看反响时，会把台词、目标、勾选的消息和发出后群里的新回复正文（不含名字）发给助手。"
 SAVE_SUCCESS = "草稿已保存在本机；本次保存不会发送消息。"
 STORE_FILE = "rehearsals-v1.json"
 LEGACY_FILES = ("draft.txt", "take-a.txt", "take-b.txt")
@@ -138,7 +139,7 @@ def turn_state(status):
     # The native bridge exposes widget text, not cue_busy/revision. Match the
     # current production contract explicitly and fail on unknown/changed text.
     # An automatic retry is PENDING even though its text contains “未通过”.
-    if status == SUCCESS:
+    if status.startswith(SUCCESS + "。") and status.endswith(SUCCESS_SUFFIXES):
         return "success"
     if "正在自动重试一次" in status or status.startswith(("助手正在准备三种说法", "这一幕正在展开")):
         return "pending"
@@ -149,7 +150,7 @@ def turn_state(status):
                           "授权已过期", "账号已经切换", "Rinx 没有登录", "没有读到群聊",
                           "当前宿主不提供", "宿主没有授权")):
         return "failure"
-    if "等待超过 90 秒" in status:
+    if "等待超过 150 秒" in status:
         return "failure"
     return "unknown"
 
@@ -162,7 +163,7 @@ def room_state(status):
     if status.startswith(("没有读到群聊", "这次打开没有选房间", "宿主没有授权读取这个房间",
                           "当前宿主不提供群聊服务", "宿主没有授权这项房间或账号服务", "消息读取失败", "这个群聊暂时没有", "已停止等待",
                           "宿主未提供稳定房间ID", "宿主消息格式或大小异常", "当前有未保存编辑",
-                          "读取期间草稿改变，未切换房间", "授权已过期", "账号已经切换", "Rinx 没有登录")) or "等待超过 90 秒" in status:
+                          "读取期间草稿改变，未切换房间", "授权已过期", "账号已经切换", "Rinx 没有登录")) or "等待超过 150 秒" in status:
         return "failure"
     return "unknown"
 
@@ -229,7 +230,7 @@ def decode_store(raw):
                 # authority from persisted data. Older nine-field slots stay valid,
                 # but a ten-field slot is not readable by the 0.5.1 reader.
                 sent = slot[9]
-                require(isinstance(sent, list) and len(sent) == 5
+                require(isinstance(sent, list) and len(sent) in (5, 6)
                         and sent[0] == "OC_SEND_1", "Invalid saved send metadata")
                 require(sent[1] in ("unknown", "observed_full", "observed_prefix500"),
                         "Invalid saved send state")
@@ -241,6 +242,13 @@ def decode_store(raw):
                         "Observed send metadata requires an event id")
                 require(isinstance(sent[4], str) and sent[4] == slot[0],
                         "Saved send body differs from draft")
+                # 0.5.3: optional sixth element carries the rehearsal's three
+                # expectation drafts for reaction comparison.
+                if len(sent) == 6:
+                    require(isinstance(sent[5], list) and len(sent[5]) <= 8
+                            and all(isinstance(e, str) and len(e.encode("utf-8")) <= 4096
+                                    for e in sent[5]),
+                            "Invalid saved expectation list")
     return value
 
 
@@ -300,10 +308,10 @@ class Recorder:
         require(len(rows) == 1, "Expected exactly one OnCue status label")
         return rows[0].get("t", "")
 
-    def click(self, text=None, *, id=None, shell=False):
+    def click(self, text=None, *, id=None, after=None, shell=False):
         self.check_context()
-        result = self.b.click(text=text, id=id) if shell else self.b.click_app(text=text, id=id)
-        self.record("click", text=text, id=id, shell=shell, target=result["target"]["r"])
+        result = self.b.click(text=text, id=id) if shell else self.b.click_app(text=text, id=id, after=after)
+        self.record("click", text=text, id=id, after=after, shell=shell, target=result["target"]["r"])
         return result
 
     def click_visible(self, text):

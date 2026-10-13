@@ -33,8 +33,12 @@ skills/splash-app-verify/scripts/setup.sh          # Linux: Xvfb + Mesa; builds 
 python3 skills/splash-app-verify/scripts/uitest.py doctor
 ```
 
-`doctor` must print `[ok]` for `card-host` and the display. On a machine with
-no display the runner starts its own Xvfb; nothing appears on anyone's screen.
+`doctor` must print `[ok]` for `card-host` and the display. `setup.sh` records
+the `card-host` it finds or builds, so later shells need no variable;
+`--card-host` and `OCTO_CARD_HOST` still win. Build `card-host` from current
+App Hub `main`: it carries the Splash runtime the current hosts run. On a
+machine with no display the runner starts its own Xvfb; nothing appears on
+anyone's screen.
 
 ## 1. Write the contract before any code
 
@@ -45,7 +49,7 @@ against them, so a gap here becomes a gap in the app.
 | --- | --- | --- |
 | Screens and states | screen × state: first open with data, empty, loading, ready, each failure | what the person sees: the exact texts that must and must not show |
 | Actions | button, input or gesture | widget id (`name :=`), visible text, what changes, what is saved |
-| Host services | `host.request` service | capability, the documented reply shape, every failure the app must show: not granted, no service, an error, no answer, an authorization that ended |
+| Host services | `host.request` service | capability, the documented reply shape, every failure the app must show: not granted, no service, an error, no answer, an authorization that ended. Name the host: on OctoSense a capability is a disclosure; Rinx refuses a mini-app what it was not granted |
 | Storage | file in the jail | format, version, what happens when it is missing or corrupt |
 | Sizes | size the app is given: a phone, and the rectangle each shell gives it inside its own window | what must be on the first screen without scrolling; what may need a scroll |
 
@@ -65,7 +69,8 @@ you change it. At least:
 
 The format is in [references/SCENARIOS.md](references/SCENARIOS.md). Put the
 normal host replies and repeated sequences (load, confirm) in shared `_parts`,
-so each scenario states only what differs. Run them once on the old source,
+so each scenario states only what differs; a Rinx mini-app's shared part sets
+`"host_profile": "rinx"`. Run them once on the old source,
 or on the bare template. A new scenario must fail first; one that passes
 before the feature exists tests nothing.
 
@@ -155,8 +160,15 @@ Report, from `build/uitest/summary.json` and the flow's checks:
    `card-host.log`, `calls.json` and `FEEDBACK.md` under `build/uitest/`;
    every run also keeps the app's jail files there.
 
-Exit status: 0 all passed, 1 a scenario failed, 2 the environment or a scenario
-file is broken (not the app's fault).
+Exit status: 0 all passed, 1 a scenario failed, 2 the environment, the
+evidence or a scenario file is broken (not the app's fault). Scenario files
+are checked when they load: an unknown key, a value of the wrong kind or a
+file name that leaves the jail stops the run before any app starts. The test
+copy keeps the bundle's capabilities and storage as written; the fake host
+reports calls through card-host's log. Under each result the runner notes what
+is true of the run but not a failure, such as a service called without being
+declared. `summary.json` is rewritten by every run and names its `run_id` and
+`status`.
 
 It sees what `/snap` lists, which is what is on screen; scroll to a part of
 the app before checking it ([what the runner sees](references/SCENARIOS.md#what-the-runner-sees)).

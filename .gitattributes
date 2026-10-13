@@ -5,3 +5,5 @@ bundle/** -text
 *.webp binary
 *.ttf binary
 *.woff2 binary
+*.gif binary
+*.mp4 binary

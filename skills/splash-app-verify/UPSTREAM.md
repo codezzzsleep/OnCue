@@ -1,22 +1,13 @@
-# 上游来源说明
+# 来源说明
 
-本目录是 **OctoSense App Flow** 仓库 `skills/splash-app-verify` 的原样拷贝，用于 OnCue 0.5.2 的界面场景测试；本 PR 未改动其中任何文件。
+本目录是界面测试技能 splash-app-verify 的第 3.3.1 版，用来运行 OnCue 的界面场景（`oncue/tests/ui/`）。
 
-| 属性 | 值 |
-|------|-----|
-| 上游仓库 | [OctoSense-org/OctoSense-App-Flow](https://github.com/OctoSense-org/OctoSense-App-Flow) |
-| 基于提交 | `049bc6b4010aa3660bab4ad632857d6ed4612151`（official main，2026-10-08） |
-| 上游路径 | `skills/splash-app-verify/` |
+| 项 | 内容 |
+| --- | --- |
+| 作者 | OnCue 团队。为开发 OnCue 而写，本身是通用的，可以测试任何 Splash 脚本应用 |
+| 去向 | 已作为 [PR #192](https://github.com/OctoSense-org/OctoSense-App-Flow/pull/192) 提交给 [OctoSense App Flow](https://github.com/OctoSense-org/OctoSense-App-Flow)，目标目录为 `skills/splash-app-verify/` |
+| 版本 | 第 3.3.1 版：PR 的第一个提交 `ead131180e19b6e0baac355ea1d3888a9cac0d90`，加上第二个提交 `204007f3cdaafe4befdc15e5b5ddadf93fe9bcd2`「run on Windows: UTF-8 results, portable tests」。运行器协议版本仍是 `scripts/uitest.py` 中的 `RUNNER_VERSION = 3` |
+| 对应提交 | 基于 App Flow `main` 的 `15b1da01a769a770aaf12bd3012d17c6ff267b6c`。本目录与 PR 分支最新提交里的 `skills/splash-app-verify/` 逐字相同（本文件除外），可以用 `diff -r` 核对 |
+| 验证环境 | card-host 用 App Hub `main` 的 `8d3853c9f9b6604fa1d095e7aff20911093e273a` 编译，Splash 运行时是 Octoscript-Makepad `6cf2d90aa33ff4ae603f49c7557f3ecf986207f0` |
 
-## 文中相对链接的指向
-
-SKILL.md、references/ 等文件中的相对链接（如 `../../docs/MODEL-VALIDATION.md`、`../../flows/script-app/FLOW.md`、`../../../docs/SCRIPT-API.md`）按**上游仓库的目录结构**书写，请在上游仓库中阅读：
-
-- `docs/` → https://github.com/OctoSense-org/OctoSense-App-Flow/tree/main/docs
-- `flows/` → https://github.com/OctoSense-org/OctoSense-App-Flow/tree/main/flows
-
-OnCue 仓库内不含 `docs/` 与 `flows/` 目录，这些链接在本仓库内无法跳转是有意为之：保持与上游逐字一致，便于后续同步与比对。
-
-## 上游 PR
-
-已计划将本 skill 的改进提交回上游 App Flow 仓库，PR 链接在 10 月 13 日提交后补充于此。
+文中的相对链接（如 `../../docs/SCRIPT-API.md`）是按 App Flow 仓库的目录结构写的，在本仓库里打不开。请到 PR 对应提交阅读：[Skill](https://github.com/codezzzsleep/OctoSense-App-Flow/tree/204007f3cdaafe4befdc15e5b5ddadf93fe9bcd2/skills/splash-app-verify) · [开发文档](https://github.com/codezzzsleep/OctoSense-App-Flow/tree/204007f3cdaafe4befdc15e5b5ddadf93fe9bcd2/docs)。

@@ -1,0 +1,67 @@
+[
+  {
+    "at": 1791664879.3354294,
+    "kind": "click",
+    "text": "发到群里",
+    "id": null,
+    "shell": false,
+    "target": [
+      387,
+      277,
+      75,
+      28
+    ]
+  },
+  {
+    "at": 1791664881.5858412,
+    "kind": "click",
+    "text": "确认发送",
+    "id": null,
+    "shell": false,
+    "target": [
+      387,
+      277,
+      75,
+      28
+    ]
+  },
+  {
+    "at": 1791664883.3469882,
+    "kind": "capture",
+    "path": "sent.png",
+    "frame": [
+      204,
+      104,
+      990,
+      634
+    ],
+    "display": ":98",
+    "scope": "caller-selected display; not bridge/display process attestation"
+  },
+  {
+    "at": 1791664883.9544253,
+    "kind": "click",
+    "text": "看反响",
+    "id": null,
+    "shell": false,
+    "target": [
+      681,
+      277,
+      60,
+      28
+    ]
+  },
+  {
+    "at": 1791664885.324231,
+    "kind": "capture",
+    "path": "reaction.png",
+    "frame": [
+      204,
+      104,
+      990,
+      634
+    ],
+    "display": ":98",
+    "scope": "caller-selected display; not bridge/display process attestation"
+  }
+]

@@ -4,12 +4,12 @@
     "storage"
   ],
   "compute": {
-    "instruction_budget": 8000000,
+    "instruction_budget": 64000000,
     "memory_bytes": 33554432
   },
   "id": "oncue-probe-pagination",
   "integrity": {
-    "bundle_blake3": "fc329af5a6436e44bb1139fc7d78f48eb32b7af9d2733e3ce4bad55d82a11380"
+    "bundle_blake3": "4ebd7590caaf9df913b6fa3f20a06018f3fa1696681d63f2944a1e43d91c520f"
   },
   "name": "OnCue controlled pagination probe",
   "network": {
@@ -19,5 +19,5 @@
   "storage": {
     "max_bytes": 4194304
   },
-  "version": "0.5.2"
+  "version": "0.5.3"
 }

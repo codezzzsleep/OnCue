@@ -45,8 +45,15 @@ if [ -z "${OCTO_CARD_HOST:-}" ] && ! command -v card-host >/dev/null; then
   fi
 fi
 
-if [ -n "$hub" ] && [ -x "$hub/target/release/card-host" ] && [ -z "${OCTO_CARD_HOST:-}" ]; then
-  export OCTO_CARD_HOST="$hub/target/release/card-host"
-  echo "Set OCTO_CARD_HOST=$OCTO_CARD_HOST for this shell; add it to your profile to keep it."
+# A script cannot set a variable in the shell that ran it, so record the
+# card-host where uitest.py looks for it in every later shell.
+found="${OCTO_CARD_HOST:-}"
+[ -z "$found" ] && [ -n "$hub" ] && [ -x "$hub/target/release/card-host" ] && found="$hub/target/release/card-host"
+[ -z "$found" ] && found="$(command -v card-host || true)"
+if [ -n "$found" ]; then
+  conf="${XDG_CONFIG_HOME:-$HOME/.config}/splash-app-verify/card-host"
+  mkdir -p "$(dirname "$conf")"
+  printf '%s\n' "$(cd "$(dirname "$found")" && pwd)/$(basename "$found")" > "$conf"
+  echo "Recorded card-host in $conf; uitest.py finds it from any shell (OCTO_CARD_HOST or --card-host still win)."
 fi
 python3 "$here/uitest.py" doctor

@@ -29,7 +29,7 @@ OnCue 是参加 GOSIM Agentic App 2026 的 OctoScript 小程序，运行在 Rinx
 
 1. 把 `manifest.json` 里的版本号加一。同一个版本号只能对应一份内容。
 2. 跑工具单元测试：`python3 -m unittest discover -s oncue/tests -p 'selftest_*.py'`。
-3. 如果改了 `main.splash`：按 `oncue/tests/README.md` 重跑 8 套逻辑测试，用新结果替换 `evidence/logic-tests/`，更新 `oncue/VERIFICATION.md` 里的 SHA-256。
+3. 如果改了 `main.splash`：按 `oncue/tests/README.md` 重跑 12 套逻辑测试，用新结果替换 `evidence/logic-tests/`，更新 `oncue/VERIFICATION.md` 里的 SHA-256。
 4. 如果改了界面文案：先搜 `oncue/tools/` 和 `oncue/tests/`，验收脚本和测试数据引用了一部分文案，要一起改。
 5. 在 `CHANGELOG.md` 里加一条。
 6. 冻结后列出需要作者做的事：合并分支、推版本标签、核对 GitHub 发布工作流和提交材料。使用 GitHub 发布流程，不添加私钥签名。
@@ -52,9 +52,13 @@ python3 oncue/tools/prepare_dev_bundle.py "$(mktemp -d)/bundle" --hub "$OCTO_HUB
 - card-host 不提供 `matrix.*` 和 `octos.*`，调用会返回 `no service answers "…" on this device`。读取群聊和试映只能在 Rinx 里验证。
 - 已签名的包不能直接用于 card-host 和 Rinx 的本地导入，要先生成未签名副本。
 - 比赛用的 Matrix 服务器是 `matrix.rinx.chat`，不是 `matrix.org`。登录走浏览器单点登录。
-- 在 Linux aarch64 + Xvfb 上，`tools/octo shot` 截不了图（`grab timeout`）。用 `ffmpeg -f x11grab` 抓窗口。抓之前用 `xwininfo` 取窗口的位置和大小，抓取区域要对准窗口。
+- 在 Linux aarch64 + Xvfb 上（2026-10-11 前用的旧机器），`tools/octo shot` 截不了图（`grab timeout`）。用 `ffmpeg -f x11grab` 抓窗口。抓之前用 `xwininfo` 取窗口的位置和大小，抓取区域要对准窗口。
 - 同一台机器上开多个宿主实例时，每个实例用不同的 `OCTOS_APP_CORE_DIR`。
 - 清理进程用 `curl 127.0.0.1:<端口>/quit`，不要用 `pkill -f`。
+- Rinx 每次回调有 20 万条指令上限，超过会被直接中止且接不住（uncatchable Bail）：重活要拆成独立的计时器回调，每步开头复查请求有效性；逐字累积在这个 VM 里是平方级开销，能用 `regex`/`split`/`search` 原生操作就不要逐字循环。
+- `uitest` 场景里的 `text` 是整行精确匹配；部分匹配用 `{"contains": "…"}`（写法见场景 06）。
+- 读对象上不存在的字段会直接报错；给数据结构新增字段时，所有构造处（包括演示数据和测试夹具）都要补齐。
+- Rinx 1.3.0 桌面版的小程序在单独窗口（「Rinx · Mini apps」，1000×800）打开：截图和输入都要按窗口路由，别假定单窗口；`MAKEPAD_TRACE_FONT_LOAD=1` 会给每次字体加载写一行 `font load: member=… path=… bytes=…`，用它确认字体是否真的加载。
 - Splash 语法：
   - 十六进制颜色写成 `#x1e1e2e`。
   - 不支持 `0x` 字面量，没有 `range()`，循环写 `for i in n`。

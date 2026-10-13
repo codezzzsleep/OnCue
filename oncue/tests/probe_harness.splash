@@ -160,6 +160,22 @@ fn probe_complete_freshness(){
         probe_window_reply(probe_requests.len() - 1, cue_source_window.rows, false)
     }
 }
+
+// 交付好回复后，分片校验链异步跑完；出现自动复核读取时应答，全链收尾再续。
+fn probe_accept_async(index, next_fn){
+    probe_deliver(index, probe_good_reply())
+    probe_accept_pump(120, next_fn)
+}
+fn probe_accept_pump(tries, next_fn){
+    if cue_io_busy && cue_io_stage == "room" {
+        probe_complete_freshness()
+        start_timeout(0.01, fn(){ probe_accept_pump(tries - 1, next_fn) })
+        return
+    }
+    if (!cue_busy && !cue_io_busy) || tries <= 0 { next_fn() return }
+    start_timeout(0.01, fn(){ probe_accept_pump(tries - 1, next_fn) })
+}
+
 fn probe_begin(case_id){
     probe_reset(case_id)
     cue_rehearse()
@@ -208,6 +224,16 @@ fn probe_parser(){
     probe_assert("parser.excerpt_rejects_rewording", cue_source_excerpt("#2 杭州") == "" && cue_source_excerpt("#99") == "" && cue_source_excerpt("#2\n#2") == "", {})
     probe_assert("parser.rejects_invented_price", !cue_numbers_grounded("青旅人均80元") && cue_numbers_grounded("预算500，依据#1"), {})
     probe_assert("parser.rejects_invalid_citation", !cue_references_valid("依据#99") && cue_references_valid("依据#2、#3"), {})
+    start_timeout(0.01, fn(){ probe_parser_recommendations() })
+}
+fn probe_parser_recommendations(){
+    let fixtures = probe_fixtures.recommendations
+    for i in fixtures.len() {
+        let fixture = fixtures[i]
+        let blocks = ["【摘要】\n#1", "【A对白】\n甲", "【A建议】\n建议甲", "【B对白】\n乙", "【B建议】\n建议乙", "【C对白】\n丙", fixture.tail]
+        let rec = cue_extract_recommendation(blocks)
+        probe_assert("parser." + fixture.id, rec.index == fixture.expected_index && rec.reason == fixture.expected_reason, {actual_index: rec.index, actual_reason: rec.reason})
+    }
     start_timeout(0.01, fn(){ probe_parser_markers() })
 }
 fn probe_parser_markers(){
@@ -240,13 +266,28 @@ fn probe_parser_markers(){
     probe_assert("parser.marked7_wrapped_separator_combo_rejected", !combo_ok, {combo: "outer @@@ wrapper + unseparated marked body", blocks: wrapped_blocks})
     start_timeout(0.01, fn(){ probe_parser_accept() })
 }
+// dbg-run1 真实回复的 B建议段（已匿名）：内嵌 #9 引用，必须按「建议不写#编号」被拒。
+fn probe_real_reply(){ probe_reply("【摘要】\n#9\n#12\n@@@\n【A对白】\n虚构回应甲：可以，9点出发、住一晚没问题。\n虚构回应乙：好的，你们先按这个方向看。\n依据：#9,#12\n待确认：是否有人开车同行？\n@@@\n【A建议】\n继续推进9点出发、杭州住一晚的安排，如有开车的人请告知确认。\n@@@\n【B对白】\n虚构回应甲：9点出发可以，但我刚才说了不参加。\n虚构回应乙：出发时间没问题，住宿青旅的话我先查价格。\n依据：#9,#12\n待确认：行程是否仍按4人推进，需不需要调整？\n@@@\n【B建议】\n我注意到#9表示不参加，目前行程按4人算是否还合适？如果人数有变住宿方案需要重新确认。\n@@@\n【C对白】\n虚构回应甲：好的，你先查一下价格。\n虚构回应乙：好的，查完发群里。\n依据：#12\n待确认：预算范围是多少？\n@@@\n【C建议】\n我先查一下青旅价格，确认在预算范围内再继续推进。\n@@@\n【推荐】\nC\n理由：与\"先澄清条件\"目标一致，避免直接拍板后需调整。") }
 fn probe_parser_accept(){
+    probe_reset("parser.real_reply_hash_in_suggestion")
+    let real = cue_split_blocks(probe_real_reply().data.text)
+    let real_suggestion = real[4].strip_prefix("【B建议】").trim()
+    let rejected = real_suggestion.search("#9") >= 0 && !cue_validate_route(probe_route_body("依据：#2"), real_suggestion) && cue_reject_reason.search("建议不写#编号") >= 0
+    probe_assert("parser.real_reply_hash_in_suggestion", rejected, {reason: cue_reject_reason, suggestion: real_suggestion})
     probe_reset("parser.output_order_and_markers")
     // This parser oracle invokes acceptance directly, so supply the immutable
     // generation snapshot normally captured by cue_rehearse before host dispatch.
     cue_route_window = cue_window_snapshot()
     cue_set_busy(true)
     cue_accept_reply(probe_good_reply(), cue_revision, 0)
+    // 接受现在是分片的计时器回调链：等链跑完（不再忙）再断言。
+    probe_wait_idle(60, fn(){ probe_parser_accept_assert() })
+}
+fn probe_wait_idle(tries, done){
+    if !cue_busy || tries <= 0 { done() return }
+    start_timeout(0.01, fn(){ probe_wait_idle(tries - 1, done) })
+}
+fn probe_parser_accept_assert(){
     let mapping = probe_routes_match()
     let rendered = []
     let selected = []
@@ -348,6 +389,10 @@ fn probe_retry(){
         same_prompt = second_prompt.search(first_prompt) == 0 && second_prompt.search("没有通过检查") >= 0
     }
     probe_deliver(2, probe_good_reply())
+    // 成功路径现在是分片的计时器链：等链跑完（不再忙）再断言。
+    probe_wait_idle(80, fn(){ probe_retry_case1_assert(revision, retry_wait, same_prompt) })
+}
+fn probe_retry_case1_assert(revision, retry_wait, same_prompt){
     probe_assert("retry.first_malformed_second_valid", retry_wait && same_prompt && !cue_busy && cue_revision == revision && probe_routes_match(),
         {state: probe_snapshot(), turn_calls: probe_count_service("octos.turn.start"), same_prompt: same_prompt})
     let before_duplicate = probe_snapshot().to_json()
@@ -356,15 +401,27 @@ fn probe_retry(){
 
     start_timeout(0.01, fn(){ probe_retry_repair() })
 }
+fn probe_wait_for_turns(want, tries, done){
+    if probe_count_service("octos.turn.start") >= want || tries <= 0 { done() return }
+    start_timeout(0.01, fn(){ probe_wait_for_turns(want, tries - 1, done) })
+}
 fn probe_retry_repair(){
     let revision = cue_revision
     probe_begin("grounded_retry_hint")
-    probe_deliver(1, probe_reply("【摘要】\n#1\n@@@\n【A对白】\n虚构回应甲：人均 80 元。\n虚构回应乙：待确认。\n依据：#1\n待确认：预算\n@@@\n【A建议】\n几点出发比较方便？\n@@@\n【B对白】\n虚构回应甲：看 #1 的时间。\n虚构回应乙：待确认。\n依据：#1\n待确认：时间\n@@@\n【B建议】\n当天回来吗？\n@@@\n【C对白】\n虚构回应甲：按预算 500 排一版。\n虚构回应乙：待确认。\n依据：#1\n待确认：行程\n@@@\n【C建议】\n先按 9 点碰头可以吗？"))
+    // 按路线收以后，三条都带未落地数字才会整体重试。
+    probe_deliver(1, probe_reply("【摘要】\n#1\n@@@\n【A对白】\n虚构回应甲：人均 80 元。\n虚构回应乙：待确认。\n依据：#1\n待确认：预算\n@@@\n【A建议】\n几点出发比较方便？\n@@@\n【B对白】\n虚构回应甲：人均 80 元。\n虚构回应乙：待确认。\n依据：#1\n待确认：时间\n@@@\n【B建议】\n当天回来吗？\n@@@\n【C对白】\n虚构回应甲：人均 80 元。\n虚构回应乙：待确认。\n依据：#1\n待确认：行程\n@@@\n【C建议】\n先按 9 点碰头可以吗？"))
+    // 内容级失败在分片链里异步发生：等重试真正发出（turn.start 第二次）再读提示。
+    probe_wait_for_turns(2, 80, fn(){ probe_retry_hint_issued() })
+}
+fn probe_retry_hint_issued(){
     let grounded_hint = false
     if probe_count_service("octos.turn.start") == 2 && probe_requests.len() >= 3 {
         grounded_hint = probe_requests[2].payload.text.search("数字：‘") >= 0 && probe_requests[2].payload.text.search("不在本路线依据") >= 0
     }
     probe_deliver(2, probe_good_reply())
+    probe_wait_idle(80, fn(){ probe_retry_hint_assert(grounded_hint) })
+}
+fn probe_retry_hint_assert(grounded_hint){
     probe_assert("retry.grounded_retry_hint", grounded_hint && !cue_busy && probe_routes_match(),
         {state: probe_snapshot(), turn_calls: probe_count_service("octos.turn.start"), grounded_hint: grounded_hint})
 
@@ -376,7 +433,7 @@ fn probe_retry_repair(){
 
     probe_begin("stop_during_second")
     probe_deliver(1, probe_bad_reply())
-    revision = cue_revision
+    let revision = cue_revision
     cue_stop_wait()
     let after_stop = probe_snapshot().to_json()
     probe_deliver(2, probe_good_reply())
@@ -407,6 +464,9 @@ fn probe_retry_races(){
     old_callback(probe_reply("OLD\n@@@\nA\n@@@\nB\n@@@\nC\n@@@\nD\n@@@\nE\n@@@\nF"))
     let old_ignored_while_busy = cue_busy && new_waiting == probe_snapshot().to_json()
     probe_deliver(1, probe_good_reply())
+    probe_wait_idle(80, fn(){ probe_retry_races_assert(old_callback, old_ignored_while_busy) })
+}
+fn probe_retry_races_assert(old_callback, old_ignored_while_busy){
     let new_state = probe_snapshot().to_json()
     old_callback(probe_reply("OLD\n@@@\nA\n@@@\nB\n@@@\nC\n@@@\nD\n@@@\nE\n@@@\nF"))
     probe_assert("retry.old_callback_new_request", old_ignored_while_busy && new_state == probe_snapshot().to_json() && probe_routes_match(), {state: probe_snapshot(), old_ignored_while_busy: old_ignored_while_busy})
@@ -631,37 +691,37 @@ fn probe_deadline_observe(){
         probe_events.push({kind: "observed_not_busy", elapsed: elapsed, at: probe_timeout_at, state: probe_snapshot()})
         probe_checkpoint(false)
     }
-    if elapsed < 92.5 { start_timeout(0.10, fn(){ probe_deadline_observe() }) }
+    if elapsed < 152.5 { start_timeout(0.10, fn(){ probe_deadline_observe() }) }
 }
 fn probe_deadline(){
-    probe_reset("deadline_90_seconds_real_time")
+    probe_reset("deadline_150_seconds_real_time")
     probe_deadline_start = time_now()
     cue_rehearse()
     probe_deadline_revision = cue_revision
-    // Session-open is deliberately part of the same 90-second budget.
+    // Session-open is deliberately part of the same 150-second budget.
     start_timeout(5.0, fn(){
         probe_deliver(0, {is_ok: true, data: {}, error: ""})
         probe_checkpoint(false)
     })
-    start_timeout(80.0, fn(){
-        probe_assert("deadline.waiting_at_80", cue_busy && cue_revision == probe_deadline_revision && probe_count_service("octos.turn.start") == 1,
+    start_timeout(140.0, fn(){
+        probe_assert("deadline.waiting_at_140", cue_busy && cue_revision == probe_deadline_revision && probe_count_service("octos.turn.start") == 1,
             {elapsed: time_now() - probe_deadline_start, state: probe_snapshot()})
         probe_deliver(1, probe_bad_reply())
         probe_assert("deadline.same_revision_on_retry", cue_busy && cue_revision == probe_deadline_revision && probe_count_service("octos.turn.start") == 2,
             {elapsed: time_now() - probe_deadline_start, state: probe_snapshot()})
         probe_checkpoint(false)
     })
-    start_timeout(91.5, fn(){
-        probe_assert("deadline.original_budget_expired", !cue_busy && cue_revision > probe_deadline_revision && cue_summary == "" && cue_routes.len() == 0 && probe_count_service("octos.turn.interrupt") == 1 && ui.cue_status.text().search("90") >= 0,
+    start_timeout(151.5, fn(){
+        probe_assert("deadline.original_budget_expired", !cue_busy && cue_revision > probe_deadline_revision && cue_summary == "" && cue_routes.len() == 0 && probe_count_service("octos.turn.interrupt") == 1 && ui.cue_status.text().search("150") >= 0,
             {elapsed: time_now() - probe_deadline_start, state: probe_snapshot(), interrupts: probe_count_service("octos.turn.interrupt")})
         let observed_elapsed = probe_timeout_at - probe_deadline_start
-        probe_assert("deadline.timeout_elapsed", probe_timeout_at > 0.0 && observed_elapsed >= 89.5 && observed_elapsed <= 91.5,
+        probe_assert("deadline.timeout_elapsed", probe_timeout_at > 0.0 && observed_elapsed >= 149.5 && observed_elapsed <= 151.5,
             {observed_elapsed: observed_elapsed, tolerance_seconds: 1.5, clock: "time_now Unix seconds; external collector also uses monotonic time"})
         probe_before_late = probe_snapshot().to_json()
         probe_checkpoint(false)
     })
-    start_timeout(92.0, fn(){ probe_deliver(2, probe_good_reply()) })
-    start_timeout(93.0, fn(){
+    start_timeout(152.0, fn(){ probe_deliver(2, probe_good_reply()) })
+    start_timeout(153.0, fn(){
         probe_assert("deadline.late_callback_ignored", !cue_busy && probe_before_late == probe_snapshot().to_json(),
             {elapsed: time_now() - probe_deadline_start, state: probe_snapshot()})
         probe_assert("deadline.host_allowlist", probe_unexpected == 0, {unexpected: probe_unexpected})
@@ -684,7 +744,9 @@ fn probe_playback(){
     cue_next_line()
     cue_restart_playback()
     probe_assert("playback.empty_route_controls", !cue_playing && cue_play_count == 0 && cue_ws_text() == "" && cue_routes.len() == 0, probe_playback_state())
-    cue_routes = probe_fixtures.playback_routes
+    let proutes = []
+    for r in probe_fixtures.playback_routes { proutes.push({title: r.title, body: r.body, draft: r.draft, failed: false, reason: ""}) }
+    cue_routes = proutes
     cue_select_preview(0)
     probe_assert("playback.select_starts_hidden", cue_play_index == 0 && cue_play_count == 0 && !cue_playing && cue_read_mode == 0 && cue_ws_page == 0 && cue_play_lines.len() == 5 && cue_ws_text().search("点击") >= 0, probe_playback_state())
     let before_invalid = probe_playback_state().to_json()
@@ -1004,7 +1066,7 @@ fn probe_grounding(){
     start_timeout(0.01, fn(){ probe_grounding_fixture(0, 0) })
 }
 fn probe_grounding_fixture(group, index){
-    let groups = [probe_fixtures.grounding.excerpts, probe_fixtures.grounding.tokens, probe_fixtures.grounding.numbers, probe_fixtures.grounding.references]
+    let groups = [probe_fixtures.grounding.excerpts, probe_fixtures.grounding.tokens, probe_fixtures.grounding.numbers, probe_fixtures.grounding.references, probe_fixtures.grounding.commitments]
     if group >= groups.len() { probe_grounding_protocol() return }
     let fixtures = groups[group]
     if index >= fixtures.len() { start_timeout(0.01, fn(){ probe_grounding_fixture(group + 1, 0) }) return }
@@ -1015,6 +1077,14 @@ fn probe_grounding_fixture(group, index){
     if group == 1 { actual = cue_numeric_tokens(fixture.text) passed = probe_equal_strings(actual, fixture.expected) }
     if group == 2 { actual = cue_numbers_grounded(fixture.text) passed = actual == fixture.expected }
     if group == 3 { actual = cue_references_valid(fixture.text) passed = actual == fixture.expected }
+    if group == 4 {
+        let allowed = ui.cue_trial.text() + "\n" + ui.cue_goal_note.text()
+        for i in cue_sources.len() { if cue_source_enabled(i) { allowed += "\n" + cue_sources[i].body } }
+        let extra = try { fixture.allowed_extra } catch { nil }
+        if extra != nil { allowed += "\n" + extra }
+        actual = cue_commitments_grounded(fixture.text, allowed)
+        passed = actual == fixture.expected
+    }
     probe_assert("grounding." + fixture.id, passed, {actual: actual, expected: fixture.expected, semantic_verification: false})
     start_timeout(0.01, fn(){ probe_grounding_fixture(group, index + 1) })
 }
@@ -1060,6 +1130,8 @@ fn probe_grounding_commitments(){
 fn probe_grounding_routes(){
     // Route-local sources cannot borrow numeric values from another selected row.
     probe_assert("grounding.route_local_numeric_rejects_other_source", !cue_validate_route(probe_route_body("虚构回应甲：稍后讨论。\n依据：#2"), "预算500元。"), {})
+    // 复审要求：引用 #2 却用只在其他来源出现的数字，必须拒收。
+    probe_assert("grounding.route_ref2_uses_uncited_number_rejected", !cue_validate_route(probe_route_body("虚构回应甲：稍后讨论。\n依据：#2"), "9 点集合。"), {})
     probe_assert("grounding.route_ordinal_not_numeric_source", !cue_validate_route(probe_route_body("虚构回应甲：稍后讨论。\n依据：#2"), "先列2。"), {})
     probe_assert("grounding.route_requires_one_basis_line", !cue_validate_route(probe_route_body("虚构回应甲：参考#2。"), "稍后讨论。") && !cue_validate_route(probe_route_body("依据：#2\n依据：#3"), "稍后讨论。"), {})
     probe_assert("grounding.route_requires_one_to_four_refs", !cue_validate_route(probe_route_body("依据："), "稍后讨论。") && !cue_validate_route(probe_route_body("依据：#1、#2、#3、#4、#5"), "稍后讨论。"), {})
@@ -1110,6 +1182,11 @@ fn probe_grounding_052(){
     probe_assert("grounding.052.allow_one_choice", cue_numbers_in("再给大家一个选择", basis), {})
     probe_assert("grounding.052.allow_confirm_once", cue_numbers_in("我再确认一次", basis), {})
     probe_assert("grounding.052.allow_apology", cue_numbers_in("十分抱歉", basis), {})
+    // 每条断言都会把累计结果全量序列化写盘（崩溃证据）；一个回调里断言太多会撞
+    // 运行时每次回调 20 万条指令上限，052 拆成两步。
+    start_timeout(0.01, fn(){ probe_grounding_052b(basis) })
+}
+fn probe_grounding_052b(basis){
     probe_assert("grounding.052.allow_two_directions", cue_numbers_in("给两个方向", basis), {})
     probe_assert("grounding.052.allow_together", cue_numbers_in("我们一起去", basis), {})
     probe_assert("grounding.052.reject_people_commitment", !cue_numbers_in("三个人都已经同意了", basis) || cue_has_commitment_claim("三个人都已经同意了"), {})
@@ -1119,7 +1196,22 @@ fn probe_grounding_052(){
     probe_assert("grounding.052.qualified_classifier", cue_numeric_tokens("两个人 一个小时 一个晚 两个月 一个星期").to_json() == "[\"两个人\",\"一个小时\",\"一个晚\",\"两个月\",\"一个星期\"]", {})
     probe_assert("grounding.052.vague_ignored", cue_numeric_tokens("一个 两个 一次 两次 一点 十分 百分").len() == 0, {})
     probe_assert("grounding.052.minutes_kept", cue_numeric_tokens("十分钟 百分钟").to_json() == "[\"十分钟\",\"百分钟\"]", {})
-    probe_finish()
+    start_timeout(0.01, fn(){ probe_reaction_parse(0) })
+}
+
+// 外部审查 F：反响对照的两节格式——标记各一次、顺序固定、首标记前无文字、对照 ≤200 字。
+fn probe_reaction_parse(index){
+    let fixtures = probe_fixtures.grounding.reaction_parse
+    if index >= fixtures.len() { start_timeout(0.01, fn(){ probe_finish() }) return }
+    if index == 0 {
+        cue_send_history = [{body: "预算 300 左右包括车票吗？", receipt: {event_id: "$probe"}, own: "@me:example.org"}]
+        cue_reaction_attempt = 0
+        cue_reaction_rows = [{body: "我中午 12 点以后才能走。"}]
+    }
+    let fixture = fixtures[index]
+    let actual = cue_parse_reaction(fixture.text)
+    probe_assert("grounding." + fixture.id, actual.fine == fixture.fine, {fine: actual.fine, expected: fixture.fine, reason: cue_reject_reason})
+    start_timeout(0.01, fn(){ probe_reaction_parse(index + 1) })
 }
 
 fn probe_envelope(){

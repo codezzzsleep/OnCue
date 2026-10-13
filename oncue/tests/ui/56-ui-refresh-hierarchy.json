@@ -1,0 +1,17 @@
+{
+  "name": "视觉升级：品牌说明、四阶段与分区层级在三个尺寸保持可读",
+  "use": "_room.json",
+  "sizes": ["412x892", "954x448", "1000x800"],
+  "steps": [
+    {"wait": {"text": ["原消息已载入，共 3 条。"]}, "timeout": 5},
+    {"expect": {"in_view": ["OnCue · 群聊试映室", "先试着说，再决定要不要发", {"contains": "读群 ✓"}, {"id": "cue_trial"}, "允许并试映"]}},
+    {"type": {"into": {"id": "cue_trial"}, "text": "我来安排时间"}},
+    {"click": "允许并试映"},
+    {"wait": {"text": ["三种说法好了。", "已放进草稿框"]}, "timeout": 5},
+    {"expect": {"in_view": ["发到群里"]}},
+    {"scroll_to": "三种说法"},
+    {"expect": {"text": ["三种说法"]}},
+    {"scroll_to": "草稿工作台"},
+    {"expect": {"text": ["草稿工作台"]}}
+  ]
+}
