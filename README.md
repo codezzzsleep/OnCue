@@ -40,22 +40,9 @@
 
 ## 一次发言，四幕试映
 
-```mermaid
-flowchart LR
-    A["<b>01 读群</b><br/>打开即读最近 30 条<br/>保留原编号"]:::stage --> B["<b>02 试映</b><br/>助手写三种说法<br/>附假设对白与推荐"]:::stage
-    B --> C{"程序逐条核对<br/>出处 · 数字 · 承诺"}:::check
-    C -- "通过" --> D["推荐句进草稿<br/>可改可不发"]:::stage
-    C -- "不通过" --> X["只拦这一条<br/>写明原因"]:::reject
-    D --> E{"你确认发送？"}:::human
-    E -- "确认" --> F["<b>03 上映</b><br/>发前再读群<br/>发后读回核实"]:::stage
-    F --> G["<b>04 反响</b><br/>原话照列<br/>对照预想 · 给下一句"]:::stage
-    G -. "下一句放进确认区" .-> E
-
-    classDef stage fill:#F4F1E8,stroke:#1F6B4A,stroke-width:2px,color:#1B2420
-    classDef check fill:#FFF4DF,stroke:#E3A23B,stroke-width:2px,color:#1B2420
-    classDef human fill:#1F6B4A,stroke:#14201A,color:#FFFFFF
-    classDef reject fill:#FBE9E2,stroke:#A34C24,color:#A34C24
-```
+<p align="center">
+  <img src="docs/readme/flow.png" alt="一次发言的四幕：读群、试映、上映、反响；程序逐条核对，不通过只拦那一条；人确认后才发送；反响给出的下一句回到确认区" width="100%">
+</p>
 
 人只做三次决定：**允许发给助手**、**应用修订**、**确认发送**。其余的读群、核对、读回都由 Agent 自动完成。
 
@@ -93,44 +80,15 @@ flowchart LR
 
 ## 三道把关是怎么串起来的
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor 你
-    participant O as OnCue（小程序）
-    participant R as Rinx 宿主
-    participant A as 宿主助手（octos）
-    你->>O: 写台词、选目标，点「允许并试映」
-    O->>R: 读最近 30 条消息
-    O->>A: 台词 + 目标 + 勾选的消息（不含名字）
-    A-->>O: 三种说法 + 推荐
-    O->>O: 逐条核对出处、数字、承诺
-    O-->>你: 通过的说法和被拦原因，推荐句进草稿
-    你->>O: 发到群里 → 去核对 → 确认发送
-    O->>R: 再读一次群（有新消息就标出，等你重看）
-    O->>R: 原样发送
-    O->>R: 读回核验
-    O-->>你: 读回看到这条，才显示「已发到」
-```
+<p align="center">
+  <img src="docs/readme/sequence.png" alt="时序：你、OnCue、Rinx 宿主、宿主助手之间的 11 步，从允许并试映到读回核验后显示已发到" width="100%">
+</p>
 
 ## 架构与权限
 
-```mermaid
-flowchart TB
-    subgraph Rinx["Rinx 宿主（官方 1.3.0）"]
-        direction TB
-        O["<b>OnCue</b><br/>Splash 小程序 · 不直连网络 · 不持有密钥"]:::app
-        H["小程序宿主<br/>逐项授权 · 1 小时或关闭即收回"]:::host
-        O <--> H
-    end
-    H <--> M[("Matrix 服务器<br/>只限所选的群")]:::ext
-    H <--> K["octos 内核<br/>（宿主配置的助手）"]:::ext
-    K <--> L(["大模型"]):::ext
-
-    classDef app fill:#F4F1E8,stroke:#1F6B4A,stroke-width:2px,color:#1B2420
-    classDef host fill:#E8E3D4,stroke:#6B756F,color:#1B2420
-    classDef ext fill:#FFFFFF,stroke:#B8B1A0,color:#46524C
-```
+<p align="center">
+  <img src="docs/readme/architecture.png" alt="架构：OnCue 运行在 Rinx 宿主内，经小程序宿主逐项授权访问 Matrix 服务器（只限所选的群）和 octos 内核（宿主配置的助手）" width="100%">
+</p>
 
 | 申请的服务 | 用途 |
 | --- | --- |
