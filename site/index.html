@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3ede2">
+  <meta name="description" content="OnCue · 群聊试映室。GOSIM 智能体应用黑客松 2026 一等奖，MiniMax · 意创万象大奖。读群、试映、确认发送、看反响：助手写措辞，程序做核对，你来做决定。">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="OnCue · 群聊里的下一句，先试着说。">
+  <meta property="og:description" content="GOSIM 智能体应用黑客松 2026 一等奖。一个运行在 Rinx 里的群聊试映室。">
+  <meta property="og:url" content="https://codezzzsleep.github.io/OnCue/">
+  <meta property="og:image" content="https://codezzzsleep.github.io/OnCue/media/video-poster.png">
+  <link rel="canonical" href="https://codezzzsleep.github.io/OnCue/">
+  <link rel="icon" type="image/svg+xml" href="media/icon.svg">
+  <script>
+    (() => {
+      let theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "night" : "day";
+      try {
+        const saved = localStorage.getItem("oncue-theme");
+        if (saved === "day" || saved === "night") theme = saved;
+      } catch {}
+      document.documentElement.dataset.theme = theme;
+      document.documentElement.style.colorScheme = theme === "night" ? "dark" : "light";
+      document.querySelector('meta[name="theme-color"]').content = theme === "night" ? "#18242f" : "#f3ede2";
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Noto+Serif+SC:wght@400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+  <title>OnCue · 群聊试映室 — GOSIM 2026 一等奖</title>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <header class="header">
+    <a class="brand" href="#" aria-label="OnCue 首页">
+      <img src="media/icon.svg" width="36" height="36" alt="">
+      <span>OnCue<span class="brand-sub">群聊试映室</span></span>
+    </a>
+    <nav aria-label="主导航">
+      <a href="#experience">四幕体验</a>
+      <a href="#demo">看演示</a>
+      <a href="#verification">验证</a>
+      <a class="nav-source" href="https://github.com/codezzzsleep/OnCue">GitHub <span aria-hidden="true">↗</span></a>
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="切换到暗色主题" aria-pressed="false" title="切换到暗色主题" hidden>
+        <svg class="icon-moon" aria-hidden="true" viewBox="0 0 24 24" fill="none"><path d="M20.3 14.2A8.6 8.6 0 0 1 9.8 3.7 8.7 8.7 0 1 0 20.3 14.2Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        <svg class="icon-sun" aria-hidden="true" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4m0-14.2-1.4 1.4M6.3 17.7l-1.4 1.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </button>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="container hero-inner">
+      <div class="hero-copy">
+        <a class="award" href="https://create.gosim.org/agenticapp26/#winners">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><path d="M8 4h8v5a4 4 0 0 1-8 0V4Z" stroke="currentColor" stroke-width="1.5"/><path d="M8 5H4v2a4 4 0 0 0 4 4m8-6h4v2a4 4 0 0 1-4 4m-4 2v6m-4 0h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span><strong>GOSIM 2026 · 一等奖</strong><span>MiniMax · 意创万象大奖</span></span>
+          <span class="award-arrow" aria-hidden="true">↗</span>
+        </a>
+        <p class="eyebrow hero-eyebrow">A LITTLE ROOM BEFORE YOU SPEAK</p>
+        <h1 id="hero-title">群聊里的下一句，<br><em>先试着说。</em></h1>
+        <p class="hero-description">想澄清、想拒绝，或想把事情往前推一点。<br class="desktop-break">在 Rinx 里，先私下试映三种说法，<br class="desktop-break">再决定哪一句，值得发出去。</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#demo"><span class="play-icon" aria-hidden="true">▶</span> 看 2 分钟演示</a>
+          <a class="button button-text" href="#start">试用 OnCue <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="hero-note"><span class="status-dot" aria-hidden="true"></span>开源 · 运行在 Rinx · 由你确认后发送</div>
+      </div>
+      <div class="hero-visual">
+        <div class="screen-frame">
+          <div class="screen-top"><span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>OnCue / 私下试映</span><span class="screen-label">Rinx 1.3.0</span></div>
+          <img class="hero-screen" src="media/01-read.png" width="1000" height="800" alt="OnCue 在官方 Rinx 里的真实界面：已读入 12 条群聊消息，准备开口并选择表达目标" fetchpriority="high">
+        </div>
+        <div class="cue-note"><span class="cue-mark" aria-hidden="true">↗</span><div><strong>措辞交给助手，<br>决定留给自己。</strong><span>YOUR WORDS. YOUR CALL.</span></div></div>
+        <span class="visual-index" aria-hidden="true">01 — READ / 02 — REHEARSE / 03 — SEND / 04 — REFLECT</span>
+      </div>
+      </div>
+      <div class="hero-bottom container"><span>GOSIM 2026 / AGENTIC APP</span><span>读群 → 试映 → 上映 → 反响</span><a href="#experience">走进试映室 ↓</a></div>
+    </section>
+
+    <div class="manifesto-strip">
+      <div class="container"><p><span>助手</span>写措辞</p><span class="strip-arrow" aria-hidden="true">↗</span><p><span>程序</span>做核对</p><span class="strip-arrow" aria-hidden="true">↗</span><p><span>你</span>来做决定</p></div>
+    </div>
+
+    <section id="experience" class="section container" aria-labelledby="experience-title">
+      <div class="section-heading">
+        <div><p class="eyebrow">01 / FOUR ACTS, ONE CONVERSATION</p><h2 id="experience-title">一句话的四幕。</h2></div>
+        <p>从群里的原话出发，<br>再回到真实的对话里。</p>
+      </div>
+      <div class="stage-tabs" role="tablist" aria-label="查看 OnCue 的四步流程">
+        <button id="tab-read" class="stage-tab" role="tab" aria-selected="true" aria-controls="panel-read" tabindex="0"><span class="stage-number">01</span><span class="stage-name">读群<small>先听清楚</small></span><span class="stage-arrow" aria-hidden="true">↗</span></button>
+        <button id="tab-rehearse" class="stage-tab" role="tab" aria-selected="false" aria-controls="panel-rehearse" tabindex="-1"><span class="stage-number">02</span><span class="stage-name">试映<small>换三种说法</small></span><span class="stage-arrow" aria-hidden="true">↗</span></button>
+        <button id="tab-send" class="stage-tab" role="tab" aria-selected="false" aria-controls="panel-send" tabindex="-1"><span class="stage-number">03</span><span class="stage-name">上映<small>由你确认发送</small></span><span class="stage-arrow" aria-hidden="true">↗</span></button>
+        <button id="tab-reflect" class="stage-tab" role="tab" aria-selected="false" aria-controls="panel-reflect" tabindex="-1"><span class="stage-number">04</span><span class="stage-name">反响<small>接住下一句话</small></span><span class="stage-arrow" aria-hidden="true">↗</span></button>
+      </div>
+      <div class="stage-panel" id="panel-read" role="tabpanel" aria-labelledby="tab-read" tabindex="0">
+        <div class="stage-copy"><span class="section-index">ACT 01 / READ</span><h3>先听清，<br>再开口。</h3><p>打开就读所选群聊的最近消息。保留原编号，由你勾选这次参考哪些话，再写下想说的内容和表达目标。</p><ul class="feature-list"><li>最近 12 条消息，原话呈现</li><li>澄清条件 / 礼貌拒绝 / 推动下一步</li><li>只参考你选择的消息</li></ul><button class="zoom-button" type="button" data-zoom="media/01-read.png" data-caption="读群：打开即载入消息，准备开口并选择目标">查看完整截图 <span aria-hidden="true">↗</span></button></div>
+        <figure><img src="media/01-read.png" width="1000" height="800" loading="lazy" alt="读群真机截图：12 条消息已载入，台词与目标选择可见"><figcaption>官方 Rinx 1.3.0 · 真实运行截图</figcaption></figure>
+      </div>
+      <div class="stage-panel" id="panel-rehearse" role="tabpanel" aria-labelledby="tab-rehearse" tabindex="0" hidden>
+        <div class="stage-copy"><span class="section-index">ACT 02 / REHEARSE</span><h3>换一种说法，<br>保留你的意思。</h3><p>助手参考原话提出三种表达，每种附上依据。程序逐条核对引用、数字和承诺句式；哪一条没通过，就拦哪一条并说明原因。</p><ul class="feature-list"><li>三种说法，逐条核对</li><li>通过核对的推荐句进入草稿</li><li>可以自己改，也可以再请助手修订</li></ul><button class="zoom-button" type="button" data-zoom="media/02-check.png" data-caption="试映：不合格的说法被拦，通过的 C 路线获推荐">查看完整截图 <span aria-hidden="true">↗</span></button></div>
+        <figure><img src="media/02-check.png" width="1000" height="800" loading="lazy" alt="试映真机截图：承诺句式没有原文依据的 B 被拒绝，通过核对的 C 获推荐"><figcaption>官方 Rinx 1.3.0 · 真实运行截图</figcaption></figure>
+      </div>
+      <div class="stage-panel" id="panel-send" role="tabpanel" aria-labelledby="tab-send" tabindex="0" hidden>
+        <div class="stage-copy"><span class="section-index">ACT 03 / SEND</span><h3>最后那一下，<br>始终由你决定。</h3><p>先展开确认区，核对发到哪个群、完整正文，再确认发送。发送前复核新消息，发送后读回核实；结果不明时只重新读取。</p><ul class="feature-list"><li>两步确认，正文原样发送</li><li>群里有新消息，先标出来</li><li>发送结果不确定，不自动重发</li></ul><button class="zoom-button" type="button" data-zoom="media/03-confirm.png" data-caption="上映：核对目标群聊与完整正文后，再确认发送">查看完整截图 <span aria-hidden="true">↗</span></button></div>
+        <figure><img src="media/03-confirm.png" width="1000" height="800" loading="lazy" alt="确认发送真机截图：确认区展示目标群、完整正文和确认按钮"><figcaption>官方 Rinx 1.3.0 · 真实运行截图</figcaption></figure>
+      </div>
+      <div class="stage-panel" id="panel-reflect" role="tabpanel" aria-labelledby="tab-reflect" tabindex="0" hidden>
+        <div class="stage-copy"><span class="section-index">ACT 04 / REFLECT</span><h3>发出去之后，<br>对话还在继续。</h3><p>点「看反响」，把群友之后的回复按原话列出来。助手对照试映时的预想，给出下一句建议，通过核对后再交给你。</p><ul class="feature-list"><li>真实回复与助手对照分开展示</li><li>下一句也要通过规则检查</li><li>没有新回复，就如实说明</li></ul><button class="zoom-button" type="button" data-zoom="media/04-reaction.png" data-caption="反响：群友真实回复与助手对照分别呈现，下一句进入确认区">查看完整截图 <span aria-hidden="true">↗</span></button></div>
+        <figure><img src="media/04-reaction.png" width="1000" height="800" loading="lazy" alt="看反响真机截图：群友原话、助手对照与下一句建议"><figcaption>官方 Rinx 1.3.0 · 真实运行截图，第二账号名称已遮盖</figcaption></figure>
+      </div>
+      <noscript><p class="no-script">四步流程完整截图：<a href="media/01-read.png">读群</a> · <a href="media/02-check.png">试映</a> · <a href="media/03-confirm.png">确认发送</a> · <a href="media/04-reaction.png">看反响</a>。开启 JavaScript 可在此切换截图。</p></noscript>
+    </section>
+
+    <section id="demo" class="cinema" aria-labelledby="demo-title">
+      <div class="container">
+        <div class="section-heading"><div><p class="eyebrow">02 / THE REAL THING</p><h2 id="demo-title">看看这一句，怎样发生。</h2></div><span class="film-tag">1:56 / 真机录屏 · 中文配音</span></div>
+        <div class="video-shell"><video id="demo-video" controls playsinline preload="none" poster="media/video-poster.png" aria-label="OnCue 真实 Rinx 演示，1 分 56 秒，中文配音"><source src="media/demo.mp4" type="video/mp4"><p>你的浏览器无法播放此视频。<a href="media/demo.mp4">下载演示视频</a>或<a href="https://www.bilibili.com/video/BV18aWA6HECb">在 B 站观看</a>。</p></video><button id="play-video" class="video-start" type="button" aria-label="播放 OnCue 演示视频" hidden></button></div>
+        <p id="video-error" class="video-error" hidden>当前浏览器未能播放视频，请使用下方的 B 站观看或下载入口。</p>
+        <div class="film-footer"><p>官方 Rinx 1.3.0：读群 → 试映 → 核对 → 确认发送 → 看反响。录屏中的等待部分已加速。</p><div><a href="https://www.bilibili.com/video/BV18aWA6HECb">B 站观看 ↗</a><a href="media/demo.mp4" download="OnCue-demo.mp4">下载视频 ↓</a></div></div>
+      </div>
+    </section>
+
+    <section id="principles" class="section container" aria-labelledby="principles-title">
+      <div class="section-heading"><div><p class="eyebrow">03 / A CLEAR DIVISION OF LABOR</p><h2 id="principles-title">让助手帮忙，也把边界写清。</h2></div><p>措辞可以有多种，<br>权限和依据必须明确。</p></div>
+      <div class="principles-grid">
+        <article><span class="principle-number">01 / AGENT</span><h3>助手给选择。</h3><p>理解你想澄清、拒绝或推进的目标，提出三种措辞，按你的要求修订。助手的预想对白与群友原话分别呈现。</p></article>
+        <article><span class="principle-number">02 / PROGRAM</span><h3>程序做核对。</h3><p>检查结构、引用、数字与承诺句式，处理请求期限和迟到回复。草稿按群保存在本机，支持 A / B 两版对照。</p></article>
+        <article><span class="principle-number">03 / YOU</span><h3>你来做决定。</h3><p>选择参考消息，判断建议是否符合本意，修改草稿，核对房间与全文。应用只在你明确确认后发送。</p></article>
+      </div>
+      <div class="privacy-line"><span class="privacy-icon" aria-hidden="true">⌁</span><p>OnCue 本身不直接联网、不持有密钥。群聊和助手服务由 Rinx 授权，关闭应用或授权到期后由宿主收回。</p><a href="https://github.com/codezzzsleep/OnCue/blob/main/oncue/PRIVACY.md">数据说明 ↗</a></div>
+    </section>
+
+    <section id="verification" class="verification section" aria-labelledby="verification-title">
+      <div class="container">
+        <div class="section-heading"><div><p class="eyebrow">04 / BUILT, RUN, VERIFIED</p><h2 id="verification-title">每一步，都有运行依据。</h2></div><p>OnCue 0.5.4 · 应用验证记录<br><time datetime="2026-10-13">2026 年 10 月 13 日</time></p></div>
+        <div class="proof-grid">
+          <a class="proof" href="https://github.com/codezzzsleep/OnCue/blob/main/oncue/VERIFICATION.md"><div class="proof-value">85<span>/ 85</span></div><h3>界面场景运行</h3><p>75 个场景，三种窗口尺寸。<br>在 card-host 里注入宿主回复与失败。</p><span class="proof-link">界面契约与结果 ↗</span></a>
+          <a class="proof" href="https://github.com/codezzzsleep/OnCue/tree/main/evidence/logic-tests"><div class="proof-value">437<span>项</span></div><h3>12 套逻辑断言</h3><p>生产函数在真实虚拟机里执行。<br>涵盖解析、存储、核对与发送恢复。</p><span class="proof-link">归档结果与离线复核 ↗</span></a>
+          <a class="proof" href="https://github.com/codezzzsleep/OnCue/tree/main/evidence/native-130"><div class="proof-value proof-word">真机闭环<span>Rinx 1.3.0</span></div><h3>官方宿主运行</h3><p>读群、试映、发送读回、看反响，<br>以及确认前的新消息复核。</p><span class="proof-link">真实运行证据 ↗</span></a>
+        </div>
+        <div class="contribution"><div><span class="contribution-tag">OPEN SOURCE CONTRIBUTION</span><h3>从一个应用，走向通用测试工具。</h3><p>为 OnCue 编写的 <code>splash-app-verify</code>，通过场景和失败注入验证 Splash 应用；已作为 PR 提交给 OctoSense App Flow。</p></div><a class="button button-outline" href="https://github.com/OctoSense-org/OctoSense-App-Flow/pull/192">查看 PR #192 <span aria-hidden="true">↗</span></a></div>
+        <details class="boundaries"><summary>使用边界与未验证</summary><div><p>引用、数字和承诺句式检查是有限的规则约束；语义是否符合原文与本人意图，仍需要你判断。手工编辑的草稿需要重新核对。草稿仅支持一个写入窗口，没有跨进程锁和崩溃原子性保证。</p><p>Rinx 与宿主助手可能联网并保留历史；删除 OnCue 本地草稿不影响宿主或 Matrix 端的数据。</p><p><strong>未验证：</strong>应用在 macOS、Windows 与移动端的运行、商店安装路径，以及语义正确性、数值归属和规则误拒率。完整范围见<a href="https://github.com/codezzzsleep/OnCue/blob/main/oncue/VERIFICATION.md">验证记录</a>与<a href="https://github.com/codezzzsleep/OnCue/blob/main/oncue/BRIEF.md">产品说明</a>。</p></div></details>
+      </div>
+    </section>
+
+    <section id="start" class="section container start" aria-labelledby="start-title">
+      <div class="start-heading"><p class="eyebrow">05 / YOUR NEXT LINE</p><h2 id="start-title">下一次开口前，<br><em>给自己一间试映室。</em></h2><p>在 Rinx 里导入 OnCue。没有选房间时，<br>可以先用本地样例看一遍流程。</p><div class="start-actions"><a class="button button-primary" href="https://github.com/codezzzsleep/OnCue/blob/main/oncue/docs/RUNNING.md">查看运行说明 <span aria-hidden="true">↗</span></a><a class="button button-text" href="https://github.com/codezzzsleep/OnCue">获取源码 <span aria-hidden="true">↗</span></a></div></div>
+      <ol class="start-steps"><li><span>01</span><div><h3>准备 Rinx</h3><p>安装<a href="https://github.com/hagency-org/Rinx/releases/tag/v1.3.0">官方 Rinx 1.3.0</a>，登录 Matrix。真实试映需要在 Rinx 配置助手。</p></div></li><li><span>02</span><div><h3>导入应用包</h3><p>获取源码，在 Discover → Mini apps → Import an app 中选择 <code>bundle/</code>，填写要使用的房间。</p></div></li><li><span>03</span><div><h3>授权，然后试着说</h3><p>Review bundle，核对八项服务和目标房间，再 Run。写下你的台词，点「允许并试映」。</p></div></li></ol>
+    </section>
+  </main>
+
+  <footer class="footer"><div class="container footer-inner"><div><a class="brand" href="#"><img src="media/icon.svg" width="32" height="32" alt=""><span>OnCue</span></a><p>先试着说，再决定要不要发。</p></div><div class="footer-links"><a href="https://github.com/codezzzsleep/OnCue">源码 ↗</a><a href="https://github.com/codezzzsleep/OnCue/blob/main/OnCue%20%E5%A4%8D%E8%B5%9BPPT.pdf">复赛 PPT ↗</a><a href="https://create.gosim.org/agenticapp26/#winners">官方获奖名单 ↗</a></div><div class="footer-meta">OnCue / YCOROY<br>Apache-2.0 · GOSIM 2026</div></div></footer>
+
+  <dialog id="screenshot-dialog" aria-labelledby="screenshot-caption"><div class="dialog-toolbar"><p id="screenshot-caption"></p><button type="button" id="close-dialog" aria-label="关闭完整截图">关闭 <span aria-hidden="true">×</span></button></div><img id="full-screenshot" width="1000" height="800" alt=""></dialog>
+</body>
+</html>
