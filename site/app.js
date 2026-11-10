@@ -1,5 +1,40 @@
 "use strict";
 
+const themeToggle = document.getElementById("theme-toggle");
+const colorPreference = window.matchMedia("(prefers-color-scheme: dark)");
+let themeChosen = false;
+try {
+  themeChosen = ["day", "night"].includes(localStorage.getItem("oncue-theme"));
+} catch {}
+
+function applyTheme(theme) {
+  const night = theme === "night";
+  document.documentElement.dataset.theme = night ? "night" : "day";
+  document.documentElement.style.colorScheme = night ? "dark" : "light";
+  document.querySelector('meta[name="theme-color"]').content = night ? "#18242f" : "#f3ede2";
+  const label = night ? "切换到亮色主题" : "切换到暗色主题";
+  themeToggle.setAttribute("aria-label", label);
+  themeToggle.setAttribute("title", label);
+  themeToggle.setAttribute("aria-pressed", String(night));
+}
+
+applyTheme(document.documentElement.dataset.theme);
+themeToggle.hidden = false;
+themeToggle.addEventListener("click", () => {
+  const next = document.documentElement.dataset.theme === "night" ? "day" : "night";
+  themeChosen = true;
+  applyTheme(next);
+  try { localStorage.setItem("oncue-theme", next); } catch {}
+});
+colorPreference.addEventListener("change", (event) => {
+  if (!themeChosen) applyTheme(event.matches ? "night" : "day");
+});
+window.addEventListener("storage", (event) => {
+  if (event.key !== "oncue-theme") return;
+  themeChosen = ["day", "night"].includes(event.newValue);
+  applyTheme(themeChosen ? event.newValue : colorPreference.matches ? "night" : "day");
+});
+
 const video = document.getElementById("demo-video");
 const playVideo = document.getElementById("play-video");
 const videoError = document.getElementById("video-error");

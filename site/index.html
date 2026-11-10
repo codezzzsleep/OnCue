@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f6f5ef">
+  <meta name="theme-color" content="#f3ede2">
   <meta name="description" content="OnCue · 群聊试映室。GOSIM 智能体应用黑客松 2026 一等奖，MiniMax · 意创万象大奖。读群、试映、确认发送、看反响：助手写措辞，程序做核对，你来做决定。">
   <meta property="og:type" content="website">
   <meta property="og:title" content="OnCue · 群聊里的下一句，先试着说。">
@@ -12,6 +12,21 @@
   <meta property="og:image" content="https://codezzzsleep.github.io/OnCue/media/video-poster.png">
   <link rel="canonical" href="https://codezzzsleep.github.io/OnCue/">
   <link rel="icon" type="image/svg+xml" href="media/icon.svg">
+  <script>
+    (() => {
+      let theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "night" : "day";
+      try {
+        const saved = localStorage.getItem("oncue-theme");
+        if (saved === "day" || saved === "night") theme = saved;
+      } catch {}
+      document.documentElement.dataset.theme = theme;
+      document.documentElement.style.colorScheme = theme === "night" ? "dark" : "light";
+      document.querySelector('meta[name="theme-color"]').content = theme === "night" ? "#18242f" : "#f3ede2";
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Noto+Serif+SC:wght@400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script src="app.js" defer></script>
   <title>OnCue · 群聊试映室 — GOSIM 2026 一等奖</title>
@@ -28,11 +43,16 @@
       <a href="#demo">看演示</a>
       <a href="#verification">验证</a>
       <a class="nav-source" href="https://github.com/codezzzsleep/OnCue">GitHub <span aria-hidden="true">↗</span></a>
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="切换到暗色主题" aria-pressed="false" title="切换到暗色主题" hidden>
+        <svg class="icon-moon" aria-hidden="true" viewBox="0 0 24 24" fill="none"><path d="M20.3 14.2A8.6 8.6 0 0 1 9.8 3.7 8.7 8.7 0 1 0 20.3 14.2Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        <svg class="icon-sun" aria-hidden="true" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4m0-14.2-1.4 1.4M6.3 17.7l-1.4 1.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </button>
     </nav>
   </header>
 
   <main id="main">
-    <section class="hero container" aria-labelledby="hero-title">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="container hero-inner">
       <div class="hero-copy">
         <a class="award" href="https://create.gosim.org/agenticapp26/#winners">
           <svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><path d="M8 4h8v5a4 4 0 0 1-8 0V4Z" stroke="currentColor" stroke-width="1.5"/><path d="M8 5H4v2a4 4 0 0 0 4 4m8-6h4v2a4 4 0 0 1-4 4m-4 2v6m-4 0h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -56,6 +76,8 @@
         <div class="cue-note"><span class="cue-mark" aria-hidden="true">↗</span><div><strong>措辞交给助手，<br>决定留给自己。</strong><span>YOUR WORDS. YOUR CALL.</span></div></div>
         <span class="visual-index" aria-hidden="true">01 — READ / 02 — REHEARSE / 03 — SEND / 04 — REFLECT</span>
       </div>
+      </div>
+      <div class="hero-bottom container"><span>GOSIM 2026 / AGENTIC APP</span><span>读群 → 试映 → 上映 → 反响</span><a href="#experience">走进试映室 ↓</a></div>
     </section>
 
     <div class="manifesto-strip">
