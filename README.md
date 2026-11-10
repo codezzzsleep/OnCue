@@ -11,6 +11,7 @@
   </p>
   <p>
     <a href="https://www.bilibili.com/video/BV18aWA6HECb">演示视频（B 站）</a> ·
+    <a href="https://codezzzsleep.github.io/OnCue/">项目主页</a> ·
     <a href="#快速开始">快速开始</a> ·
     <a href="#工作原理">工作原理</a> ·
     <a href="oncue/VERIFICATION.md">验证记录</a> ·
@@ -21,6 +22,8 @@
 </div>
 
 OnCue 是运行在 OctoSense 的 Rinx 里的 Splash 小程序。它读你授权的群聊，请宿主助手写出三种说法，**由程序逐条核对事实**，最后**由你决定发不发**；发出去以后，再把群友的真实回复和试映时的预想对照，给出下一句。
+
+**GOSIM 智能体应用黑客松 2026 一等奖 · MiniMax · 意创万象大奖**，见[官方获奖名单](https://create.gosim.org/agenticapp26/#winners)。
 
 ## 功能
 
@@ -168,6 +171,7 @@ oncue/
   tests/                    界面场景与逻辑测试
   tools/                    打包、印章与证据工具
 skills/splash-app-verify/   测试技能（已向 App Flow 提交 PR #192）
+site/                       项目主页（四幕截图、演示与运行入口）
 evidence/                   真机截图、测试结果与演示视频
 build/                      审核问答与宿主问题复现材料
 ```
